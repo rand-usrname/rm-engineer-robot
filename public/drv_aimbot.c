@@ -156,8 +156,8 @@ void aim_bot_creat(void)
 {
 	/*定时器处理线程*/
 	rt_thread_t thread;
-	rt_sem_init(&Obtain_palstance_sem, "Aim_bot_sem", 0, RT_IPC_FLAG_FIFO);
-	thread = rt_thread_create("Aim_bot_sem", aim_bot_emtry, RT_NULL, 1024, 3, 1);
+	rt_sem_init(&Obtain_palstance_sem, "Obtain_palstance_sem", 0, RT_IPC_FLAG_FIFO);
+	thread = rt_thread_create("Obtain_palstance_thread", Obtain_palstance_emtry, RT_NULL, 1024, 3, 1);
 	if (thread != RT_NULL)
 	{
 			rt_thread_startup(thread);
@@ -181,4 +181,3 @@ void aim_bot_creat(void)
 	}
 	rt_thread_suspend(aim_thread);
 }
-INIT_APP_EXPORT(aim_bot_creat);
