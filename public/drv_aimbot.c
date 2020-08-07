@@ -4,26 +4,26 @@
 #define G   9.7988f 
 #define t_transmit 3
 #define pi_operator 0.01745f
-//½Ó¿Ú
+//ï¿½Ó¿ï¿½
 Aimbot_t *Aimbot_data;
 
-//ÊÓ¾õ·¢ËÍµÄÄ¿±ê×ø±ê
+//ï¿½Ó¾ï¿½ï¿½ï¿½ï¿½Íµï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 static Point_t *vision_point;
 
-//¶¨ÒåÒ»¸öÊý×é¶ÓÁÐ £¬ÓÃÓÚ´æ´¢½ü40msÄÚµÄ½ÇËÙ¶È¡£
+//ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú´æ´¢ï¿½ï¿½40msï¿½ÚµÄ½ï¿½ï¿½Ù¶È¡ï¿½
 static float Palstance_Deque[40] = {2.0f,0};
 
-//½ÇËÙ¶ÈµÄ»ñÈ¡½Ó¿ÚÔÝÊ±Î´È·¶¨ Ä¿Ç°¼Ù¶¨ÒÑÖª
+//ï¿½ï¿½ï¿½Ù¶ÈµÄ»ï¿½È¡ï¿½Ó¿ï¿½ï¿½ï¿½Ê±Î´È·ï¿½ï¿½ Ä¿Ç°ï¿½Ù¶ï¿½ï¿½ï¿½Öª
 static float current_yaw_palstance = 1.0f;
 static float current_roll_palstance = 1.0f;
 static float vision_palstance = 1.0f;
-//ÐèÒª »ñÈ¡×Óµ¯ËÙ¶È   µ±Ç°pitch yaw½Ç¶È
+//ï¿½ï¿½Òª ï¿½ï¿½È¡ï¿½Óµï¿½ï¿½Ù¶ï¿½   ï¿½ï¿½Ç°pitch yawï¿½Ç¶ï¿½
 static float bullet_speed = 0.0f;
 static float pitch_angle = 30.0f;
 static float yaw_angle = 10.0f;
-//ÊÓ¾õ´¦ÀíÍ¼ÏñÊ±¼ä
-static rt_uint8_t t_camera = 14;//µ¥Î»ms£¬
-//¿ìËÙ¿ª·½
+//ï¿½Ó¾ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½Ê±ï¿½ï¿½
+static rt_uint8_t t_camera = 14;//ï¿½ï¿½Î»msï¿½ï¿½
+//ï¿½ï¿½ï¿½Ù¿ï¿½ï¿½ï¿½
 static float Q_rsqrt( float number )
 {
     long i;
@@ -47,12 +47,12 @@ static rt_uint8_t Isgreater_than_zero(float data)
 }
 
 
-//¶ÓÁÐÌî³ä
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 static void get_new_palstance(float *pdata,float yaw_palstance, float roll_palstance, float current_pitch)
 {
 	float *temp = pdata;
 	float motor_palstance =  Q_rsqrt(yaw_palstance*yaw_palstance+roll_palstance*roll_palstance);
-	//ÅÐ¶Ï·ûºÅ
+	//ï¿½Ð¶Ï·ï¿½ï¿½ï¿½
 	if((-45 < current_pitch)&& (current_pitch<45))
 	{motor_palstance*= Isgreater_than_zero(yaw_palstance);}
 	else if((current_pitch>=45) && (current_pitch<135))
@@ -60,7 +60,7 @@ static void get_new_palstance(float *pdata,float yaw_palstance, float roll_palst
     Palstance_Deque[0] = motor_palstance;
 	rt_memcpy((Palstance_Deque+1),temp,39);
 }
-//×ø±êÏµ×ª»»£ºÉãÏñÍ·×ø±êÏµ×ªÎªµç»ú×ø±êÏµ £¬Ô­µãÎª·¢Éä»ú¹¹Ä¦²ÁÂÖÎ»ÖÃ´¦
+//ï¿½ï¿½ï¿½ï¿½Ïµ×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½Ïµ×ªÎªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïµ ï¿½ï¿½Ô­ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¦ï¿½ï¿½ï¿½ï¿½Î»ï¿½Ã´ï¿½
 static Point_t Transformed_coordinate(Point_t* vision_point,float pitch_angle)
 {
 	Point_t motor_point;
@@ -70,7 +70,7 @@ static Point_t Transformed_coordinate(Point_t* vision_point,float pitch_angle)
 
 	return motor_point;
 }
-//Í¨¹ý×ø±êÇó³öÎ´¼Ó²¹³¥Ê±µÄ¦¤pitch,¦¤yaw ÎªÊ¹ÓÃ·½±ã ÔÝÇÒÓÃAimbot_tÀàÐÍµÄ½á¹¹ÌåÔÝ´æ
+//Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½Ó²ï¿½ï¿½ï¿½Ê±ï¿½Ä¦ï¿½pitch,ï¿½ï¿½yaw ÎªÊ¹ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aimbot_tï¿½ï¿½ï¿½ÍµÄ½á¹¹ï¿½ï¿½ï¿½Ý´ï¿½
 static Aimbot_t Calc_from_point(Point_t *motor_point)
 {
 	Aimbot_t calc_angle;
@@ -79,7 +79,7 @@ static Aimbot_t Calc_from_point(Point_t *motor_point)
 	return calc_angle;
 }
 
-//ÖØÁ¦²¹³¥½Ç ÊäÈëµ±Ç°pitch ¦¤pitch,×Óµ¯ËÙ¶È£¬ÓëÄ¿±ê¾àÀë£¬ ·µ»Ø²¹³¥ºóµÄpitch;
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ëµ±Ç°pitch ï¿½ï¿½pitch,ï¿½Óµï¿½ï¿½Ù¶È£ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ë£¬ ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½pitch;
 static float Gravity_compensation(float current_pitch, float delta_pitch,float distance,rt_uint16_t bullet_speed)
 {
 	float target_pitch = (delta_pitch + current_pitch)*pi_operator;
@@ -94,15 +94,15 @@ static float Gravity_compensation(float current_pitch, float delta_pitch,float d
 	}
 }
 /*
-     ÌáÇ°Á¿ »ñÈ¡yawÖáÌáÇ°½Ç²¹³¥
-    1¡¢ »ñÈ¡Ä¿±ê½ÇËÙ¶È£ºÊÓ¾õ·µ»ØµÄÄ¿±ê½ÇËÙ¶È£¬ÔÆÌ¨¾ø¶Ô½ÇËÙ¶È£¬¶¯Ì¬Ê±ÖÍt_lag
-    2¡¢ »ñÈ¡ÌáÇ°½Ç£º×Óµ¯·ÉÐÐÊ±¼ä£º¾àÀë ×Óµ¯ËÙ¶È; Ä¿±ê½ÇËÙ¶È£¬
+     ï¿½ï¿½Ç°ï¿½ï¿½ ï¿½ï¿½È¡yawï¿½ï¿½ï¿½ï¿½Ç°ï¿½Ç²ï¿½ï¿½ï¿½
+    1ï¿½ï¿½ ï¿½ï¿½È¡Ä¿ï¿½ï¿½ï¿½ï¿½Ù¶È£ï¿½ï¿½Ó¾ï¿½ï¿½ï¿½ï¿½Øµï¿½Ä¿ï¿½ï¿½ï¿½ï¿½Ù¶È£ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½Ô½ï¿½ï¿½Ù¶È£ï¿½ï¿½ï¿½Ì¬Ê±ï¿½ï¿½t_lag
+    2ï¿½ï¿½ ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½Ç£ï¿½ï¿½Óµï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ä£ºï¿½ï¿½ï¿½ï¿½ ï¿½Óµï¿½ï¿½Ù¶ï¿½; Ä¿ï¿½ï¿½ï¿½ï¿½Ù¶È£ï¿½
 */
 static float Advance_yaw_angle(float vision_palstance, rt_uint8_t t_lag,
 							   float distance,rt_uint16_t bullet_speed)
 {
 	/****************************1****************************/
-	//µÃµ½¶¯Ì¬Ê±ÖÍÇ°µÄ½ÇËÙ¶È
+	//ï¿½Ãµï¿½ï¿½ï¿½Ì¬Ê±ï¿½ï¿½Ç°ï¿½Ä½ï¿½ï¿½Ù¶ï¿½
 	float Gimbal_palstance_lag = *(Palstance_Deque+t_lag);
 	float aim_palstance = Gimbal_palstance_lag+vision_palstance;
 	/****************************2****************************/
@@ -136,17 +136,17 @@ static void aim_bot_emtry(void *parameter)
 	while(1)
 	{
 		rt_sem_take(&Aim_bot_sem, RT_WAITING_FOREVER);
-		//×ø±ê×ª»»
+		//ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
 		Point_t temp_point = Transformed_coordinate(vision_point,pitch_angle);
-		//¼ÆËã³õÊ¼¦¤pitch ¦¤yaw
+		//ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½pitch ï¿½ï¿½yaw
 		Aimbot_t temp_aim_data = Calc_from_point(&temp_point);
-		//»ñÈ¡¾àÀë£¬×Óµ¯Ë®Æ½ËÙ¶È
+		//ï¿½ï¿½È¡ï¿½ï¿½ï¿½ë£¬ï¿½Óµï¿½Ë®Æ½ï¿½Ù¶ï¿½
 		float temp_dis = (temp_point.z)*(temp_point.z)+(temp_point.x)*(temp_point.x);
 		float distance = Q_rsqrt(temp_dis);
 		float bullet_speed_horizontal = bullet_speed*cos(pitch_angle);
-		//ÖØÁ¦²¹³¥
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		Aimbot_data->pitch = Gravity_compensation(pitch_angle,temp_aim_data.pitch,distance,bullet_speed_horizontal);
-		//ÌáÇ°Á¿Ô¤Ãé
+		//ï¿½ï¿½Ç°ï¿½ï¿½Ô¤ï¿½ï¿½
 		Aimbot_data->yaw = Advance_yaw_angle(vision_palstance,t_camera+t_transmit,distance,bullet_speed_horizontal);
 		
 	}
@@ -154,7 +154,7 @@ static void aim_bot_emtry(void *parameter)
 }
 void aim_bot_creat(void)
 {
-	/*¶¨Ê±Æ÷´¦ÀíÏß³Ì*/
+	/*ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½*/
 	rt_thread_t thread;
 	rt_sem_init(&Obtain_palstance_sem, "Obtain_palstance_sem", 0, RT_IPC_FLAG_FIFO);
 	thread = rt_thread_create("Obtain_palstance_thread", Obtain_palstance_emtry, RT_NULL, 1024, 3, 1);
@@ -162,17 +162,17 @@ void aim_bot_creat(void)
 	{
 			rt_thread_startup(thread);
 	}
-	/*¶¨Ê±Æ÷ÖÐ¶Ï*/
+	/*ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ð¶ï¿½*/
 	rt_timer_init(&Obtain_palstance_task,
                    "Obtain_palstance_task",
                    Obtain_palstance_IRQHandler,
                    RT_NULL,
                    1, RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
-	 /* Æô¶¯¶¨Ê±Æ÷ */
+	 /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ */
 	rt_timer_start(&Obtain_palstance_task);
 	
-	//³õÊ¼»¯Ò»¸öÏß³Ì ÓÃÓÚÔÚÊÓ¾õ·¢³öÒ»Ö¡Êý¾ÝÊ±´¦ÀíÊý¾Ý
-	//ÊÇ·ñÐèÒªÎ´°´×ÔÃé¼üÊ±¹ÒÆð¸ÃÏß³Ì £¬ °´ÏÂ×ÔÃé²Å»Ö¸´¸ÃÏß³Ì£¿
+	//ï¿½ï¿½Ê¼ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ß³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¾ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Ö¡ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	//ï¿½Ç·ï¿½ï¿½ï¿½ÒªÎ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å»Ö¸ï¿½ï¿½ï¿½ï¿½ß³Ì£ï¿½
 	rt_sem_init(&Aim_bot_sem, "Aim_bot_sem", 0, RT_IPC_FLAG_FIFO);
 	aim_thread = rt_thread_create("Aim_bot_sem", aim_bot_emtry, RT_NULL, 1024, 2, 1);
 	if (aim_thread != RT_NULL)
@@ -181,3 +181,4 @@ void aim_bot_creat(void)
 	}
 	rt_thread_suspend(aim_thread);
 }
+INIT_APP_EXPORT(aim_bot_creat);
