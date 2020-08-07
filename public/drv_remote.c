@@ -1,41 +1,41 @@
 #include "drv_remote.h"
 
-//Á½¸ö´¢´æÊı¾İµÄÈİÆ÷ÓÃÓÚ½»Ìæ
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú½ï¿½ï¿½ï¿½
 static RC_Ctrl_t ctrl_data_container[2]={1024,1024,1024,1024,3,3,0};
 
-//¶ÔÍâ²¿µÄÖ¸Õë
+//ï¿½ï¿½ï¿½â²¿ï¿½ï¿½Ö¸ï¿½ï¿½
 RC_Ctrl_t *RC_data;
 
-//ÉÏ´ÎÊı¾İÖ¸Õë
+//ï¿½Ï´ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½
 static RC_Ctrl_t *RC_data_last;
 
-//»ñÈ¡s1 s2ÊÇ·ñ¸Ä±ä ²¢»ñÈ¡µ±Ç°Öµ
+//ï¿½ï¿½È¡s1 s2ï¿½Ç·ï¿½Ä±ï¿½ ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½Ç°Öµ
 static rt_uint8_t remote_sx_data[2];
-//»ñÈ¡°´¼ü°´ÏÂ, µÍ16ÎªÃ¿Î»ÔİÊ±´æ´¢Ò»¸ö°´¼üĞÅÏ¢£¬¸ß16Î»Îª±£ÁôÎ»
+//ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½16ÎªÃ¿Î»ï¿½ï¿½Ê±ï¿½æ´¢Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½16Î»Îªï¿½ï¿½ï¿½ï¿½Î»
 static rt_uint32_t Key_Press_Data = 0;
-//º¯ÊıÔ­ĞÍ
-//ÅĞ¶ÏÄ³¸ö¼üÊÇ·ñ²úÉúËÉ¿ª¶¯×÷£¨£¡Ö»ÄÜÅĞ¶Ï°´¼üºÍÊó±êÊı¾İ£¬Èô´«ÈëÆäËû²ÎÊı»á²úÉúÎ´Öª½á¹û£¡£©
+//ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½
+//ï¿½Ğ¶ï¿½Ä³ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½É¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½ï¿½Ğ¶Ï°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´Öªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 static rt_uint8_t _RCD_loosen(rt_uint8_t *targetdata,rt_uint8_t length);
-//ÅĞ¶ÏÄ³¸ö¼üÊÇ·ñ²úÉú°´ÏÂ¶¯×÷£¨£¡Ö»ÄÜÅĞ¶Ï°´¼üºÍÊó±êÊı¾İ£¬Èô´«ÈëÆäËû²ÎÊı»á²úÉúÎ´Öª½á¹û£¡£©
+//ï¿½Ğ¶ï¿½Ä³ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½ï¿½Ğ¶Ï°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´Öªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 static rt_uint16_t _RCD_press(rt_uint8_t *targetdata,rt_uint8_t length);
-//Ê¹ÓÃÊ±½«Òª±È½ÏµÄÊı¾İ´«Èëº¯Êı£¬if(RCD_change(RC_data->Key_Data.A)) £¬¼´¿ÉÅĞ¶Ï¼üÅÌÊı¾İAÊÇ·ñ¸Ä±ä
+//Ê¹ï¿½ï¿½Ê±ï¿½ï¿½Òªï¿½È½Ïµï¿½ï¿½ï¿½ï¿½İ´ï¿½ï¿½ëº¯ï¿½ï¿½ï¿½ï¿½if(RCD_change(RC_data->Key_Data.A)) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¶Ï¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Ç·ï¿½Ä±ï¿½
 static rt_uint8_t _RCD_change(rt_uint8_t *targetdata,rt_uint8_t length);
 
-//º¯Êıºê¶¨Òå
+//ï¿½ï¿½ï¿½ï¿½ï¿½ê¶¨ï¿½ï¿½
 #define RCD_change(targetdata)	_RCD_change((rt_uint8_t*)(&targetdata),sizeof(targetdata))
 #define RCD_press(targetdata)	_RCD_press((rt_uint8_t*)(&targetdata),sizeof(targetdata))	
 #define RCD_loosen(targetdata)	_RCD_loosen((rt_uint8_t*)(&targetdata),sizeof(targetdata))
 	
-//Êı¾İ½âËãº¯Êı
+//ï¿½ï¿½ï¿½İ½ï¿½ï¿½ãº¯ï¿½ï¿½
 static int remote_data_process(rt_uint8_t *pData, RC_Ctrl_t *RC_CtrlData)
 {
-	//ÅĞ¶ÏÊı¾İÖ¸ÕëÊÇ·ñÊÇ¿ÕÖ¸Õë
+	//ï¿½Ğ¶ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ç¿ï¿½Ö¸ï¿½ï¿½
 	if (pData == NULL)
 	{
 		return 0;
 	}
 
-	//ÌáÈ¡Ò»²¿·ÖÊı¾İ
+	//ï¿½ï¿½È¡Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	rt_uint8_t s1 = ((pData[5] >> 4) & 0x000c) >> 2;
 	rt_uint8_t s2 = ((pData[5] >> 4) & 0x0003);
 	rt_uint16_t ch0 = ((rt_int16_t)pData[0] | ((rt_int16_t)pData[1] << 8)) & 0x07FF;
@@ -43,18 +43,18 @@ static int remote_data_process(rt_uint8_t *pData, RC_Ctrl_t *RC_CtrlData)
 	rt_uint16_t ch2 = (((rt_int16_t)pData[2] >> 6) | ((rt_int16_t)pData[3] << 2) | ((rt_int16_t)pData[4] << 10)) & 0x07FF;
 	rt_uint16_t ch3 = (((rt_int16_t)pData[4] >> 1) | ((rt_int16_t)pData[5] << 7)) & 0x07FF;
 
-	//ÅĞ¶Ï²¿·ÖÊı¾İÓĞĞ§ĞÔ
+	//ï¿½Ğ¶Ï²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ§ï¿½ï¿½
 	if (
 		((s1 == 1) || (s1 == 2) || (s1 == 3)) &&
 		((s2 == 1) || (s2 == 2) || (s2 == 3)) &&
-		((pData[12] == 0) || (pData[12] == 1)) && //ÅĞ¶ÏÊó±ê×ó¼üÊı¾İ
-		((pData[13] == 0) || (pData[13] == 1)) && //ÅĞ¶ÏÊó±êÓÒ¼üÊı¾İ
+		((pData[12] == 0) || (pData[12] == 1)) && //ï¿½Ğ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		((pData[13] == 0) || (pData[13] == 1)) && //ï¿½Ğ¶ï¿½ï¿½ï¿½ï¿½ï¿½Ò¼ï¿½ï¿½ï¿½ï¿½ï¿½
 		(ch0 < 1684) && (ch0 > 364) &&
 		(ch1 < 1684) && (ch1 > 364) &&
 		(ch2 < 1684) && (ch2 > 364) &&
 		(ch3 < 1684) && (ch3 > 364))
 	{
-		//½«½âËãºÃµÄÊı¾İ¸³Öµ
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½ï¿½ï¿½ï¿½İ¸ï¿½Öµ
 		RC_CtrlData->Remote_Data.ch0 = ch0;
 		RC_CtrlData->Remote_Data.ch1 = ch1;
 		RC_CtrlData->Remote_Data.ch2 = ch2;
@@ -62,14 +62,14 @@ static int remote_data_process(rt_uint8_t *pData, RC_Ctrl_t *RC_CtrlData)
 		RC_CtrlData->Remote_Data.s1 = s1;
 		RC_CtrlData->Remote_Data.s2 = s2;
 
-		//½âËãÊó±êÊı¾İ
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		RC_CtrlData->Mouse_Data.x_speed = ((rt_int16_t)pData[6]) | ((rt_int16_t)pData[7] << 8);
 		RC_CtrlData->Mouse_Data.y_speed = ((rt_int16_t)pData[8]) | ((rt_int16_t)pData[9] << 8);
 		RC_CtrlData->Mouse_Data.z_speed = ((rt_int16_t)pData[10]) | ((rt_int16_t)pData[11] << 8);
 		RC_CtrlData->Mouse_Data.press_l = pData[12];
 		RC_CtrlData->Mouse_Data.press_r = pData[13];
 
-		//½âËã¼üÅÌÊı¾İ
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		rt_uint16_t keydata = ((rt_uint16_t)pData[14]) | ((rt_uint16_t)pData[15] << 8);
 		RC_CtrlData->Key_Data.W = (keydata & 0x0001) == 0x0001;
 		RC_CtrlData->Key_Data.S = (keydata & 0x0002) == 0x0002;
@@ -91,20 +91,20 @@ static int remote_data_process(rt_uint8_t *pData, RC_Ctrl_t *RC_CtrlData)
 	return 0;
 }
 
-/* ´®¿Ú½ÓÊÕÏûÏ¢½á¹¹*/
+/* ï¿½ï¿½ï¿½Ú½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½á¹¹*/
 struct rx_msg
 {
 	rt_device_t dev;
 	rt_size_t size;
 };
 
-/* ´®¿ÚÉè±¸¾ä±ú */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½è±¸ï¿½ï¿½ï¿½ */
 static rt_device_t serial;
 
-/* ÏûÏ¢¶ÓÁĞ¿ØÖÆ¿é */
+/* ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½Ğ¿ï¿½ï¿½Æ¿ï¿½ */
 static struct rt_messagequeue rx_mq;
 
-/* ½ÓÊÕÊı¾İ»Øµ÷º¯Êı */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ»Øµï¿½ï¿½ï¿½ï¿½ï¿½ */
 static rt_err_t uart_input(rt_device_t dev, rt_size_t size)
 {
 	struct rx_msg msg;
@@ -115,8 +115,8 @@ static rt_err_t uart_input(rt_device_t dev, rt_size_t size)
 	result = rt_mq_send(&rx_mq, &msg, sizeof(msg));
 	if (result == -RT_EFULL)
 	{
-		/* ÏûÏ¢¶ÓÁĞÂú */
-		rt_kprintf("message queue full£¡\n");
+		/* ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+		rt_kprintf("message queue fullï¿½ï¿½\n");
 	}
 	return result;
 }
@@ -127,31 +127,31 @@ static void serial_thread_entry(void *parameter)
 	rt_err_t result;
 	rt_uint32_t rx_length;
 	rt_uint8_t rx_buffer[RT_SERIAL_RB_BUFSZ + 1];
-	//³õÊ¼»¯Êı¾İÖ¸Õë
+	//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½
 	RC_data = ctrl_data_container;
 	RC_data_last = ctrl_data_container + 1;
 	while (1)
 	{
 		rt_memset(&msg, 0, sizeof(msg));
-		/* ´ÓÏûÏ¢¶ÓÁĞÖĞ¶ÁÈ¡ÏûÏ¢*/
+		/* ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¶ï¿½È¡ï¿½ï¿½Ï¢*/
 		result = rt_mq_recv(&rx_mq, &msg, sizeof(msg), RT_WAITING_FOREVER);
 		if (result == RT_EOK)
 		{
-			/* ´Ó´®¿Ú¶ÁÈ¡Êı¾İ*/
+			/* ï¿½Ó´ï¿½ï¿½Ú¶ï¿½È¡ï¿½ï¿½ï¿½ï¿½*/
 			rx_length = rt_device_read(msg.dev, 0, rx_buffer, msg.size);
 			rx_buffer[rx_length] = '\0';
 
-			//ÇĞ»»Êı¾İÖ¸Õë
-			RC_Ctrl_t *a = RC_data_last;//ÇĞ»»ÓÃµÄÁÙÊ±Êı¾İ
+			//ï¿½Ğ»ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½
+			RC_Ctrl_t *a = RC_data_last;//ï¿½Ğ»ï¿½ï¿½Ãµï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
 			RC_data_last = RC_data;
 			RC_data = a;
-			//½âËãÊı¾İµ½±¾´ÎÊı¾İÈİÆ÷
+			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			remote_data_process(rx_buffer, RC_data);
 			
-			//ÅĞ¶Ïs1 s2ÊÇ·ñÓĞ¸Ä±ä²¢±£´æ
+			//ï¿½Ğ¶ï¿½s1 s2ï¿½Ç·ï¿½ï¿½Ğ¸Ä±ä²¢ï¿½ï¿½ï¿½ï¿½
 			remote_sx_data[0] |= RCD_change(RC_data->Remote_Data.s1);
 			remote_sx_data[1] |= RCD_change(RC_data->Remote_Data.s2);
-			//»ñÈ¡°´¼ü°´ÏÂĞÅÏ¢
+			//ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 			Key_Press_Data |= (RCD_press(RC_data->Key_Data.W));
 			Key_Press_Data |= (RCD_press(RC_data->Key_Data.S) << 1);
 			Key_Press_Data |= (RCD_press(RC_data->Key_Data.A) << 2);
@@ -177,35 +177,35 @@ int remote_uart_init(void)
 	rt_err_t ret = RT_EOK;
 	static char msg_pool[256];
 
-	/* step1£º²éÕÒ´®¿ÚÉè±¸ */
+	/* step1ï¿½ï¿½ï¿½ï¿½ï¿½Ò´ï¿½ï¿½ï¿½ï¿½è±¸ */
 	serial = rt_device_find("uart1");
 
-	/* ³õÊ¼»¯ÅäÖÃ²ÎÊı */
+	/* ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½Ã²ï¿½ï¿½ï¿½ */
 	struct serial_configure config = RT_SERIAL_CONFIG_DEFAULT; 
 
-	/* step2£ºĞŞ¸Ä´®¿ÚÅäÖÃ²ÎÊı */
-	config.baud_rate = 100000;		//ĞŞ¸Ä²¨ÌØÂÊÎª 100000
-	config.data_bits = DATA_BITS_9; //Êı¾İÎ» 9
+	/* step2ï¿½ï¿½ï¿½Ş¸Ä´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã²ï¿½ï¿½ï¿½ */
+	config.baud_rate = 100000;		//ï¿½Ş¸Ä²ï¿½ï¿½ï¿½ï¿½ï¿½Îª 100000
+	config.data_bits = DATA_BITS_9; //ï¿½ï¿½ï¿½ï¿½Î» 9
 	config.stop_bits = STOP_BITS_1; //Í£Ö¹Î» 1
-	config.bufsz = 128;				//ĞŞ¸Ä»º³åÇø buff size Îª 128
-	config.parity = PARITY_EVEN;	//Å¼Ğ£Ñé
+	config.bufsz = 128;				//ï¿½Ş¸Ä»ï¿½ï¿½ï¿½ï¿½ï¿½ buff size Îª 128
+	config.parity = PARITY_EVEN;	//Å¼Ğ£ï¿½ï¿½
 
-	/* step3£º¿ØÖÆ´®¿ÚÉè±¸¡£Í¨¹ı¿ØÖÆ½Ó¿Ú´«ÈëÃüÁî¿ØÖÆ×Ö£¬Óë¿ØÖÆ²ÎÊı */
+	/* step3ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½è±¸ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Æ½Ó¿Ú´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö£ï¿½ï¿½ï¿½ï¿½ï¿½Æ²ï¿½ï¿½ï¿½ */
 	rt_device_control(serial, RT_DEVICE_CTRL_CONFIG, &config);
 
-	/* ³õÊ¼»¯ÏûÏ¢¶ÓÁĞ */
+	/* ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½ */
 	rt_mq_init(&rx_mq, "rx_mq",
-			   msg_pool,			  /* ´æ·ÅÏûÏ¢µÄ»º³åÇø */
-			   sizeof(struct rx_msg), /* Ò»ÌõÏûÏ¢µÄ×î´ó³¤¶È */
-			   sizeof(msg_pool),	  /* ´æ·ÅÏûÏ¢µÄ»º³åÇø´óĞ¡ */
-			   RT_IPC_FLAG_FIFO);	 /* Èç¹ûÓĞ¶à¸öÏß³ÌµÈ´ı£¬°´ÕÕÏÈÀ´ÏÈµÃµ½µÄ·½·¨·ÖÅäÏûÏ¢ */
+			   msg_pool,			  /* ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½Ä»ï¿½ï¿½ï¿½ï¿½ï¿½ */
+			   sizeof(struct rx_msg), /* Ò»ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½ó³¤¶ï¿½ */
+			   sizeof(msg_pool),	  /* ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½Ä»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¡ */
+			   RT_IPC_FLAG_FIFO);	 /* ï¿½ï¿½ï¿½ï¿½Ğ¶ï¿½ï¿½ï¿½ß³ÌµÈ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÈµÃµï¿½ï¿½Ä·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ */
 
-	/* ÒÔ DMA ½ÓÊÕ¼°ÂÖÑ¯·¢ËÍ·½Ê½´ò¿ª´®¿ÚÉè±¸ */
+	/* ï¿½ï¿½ DMA ï¿½ï¿½ï¿½Õ¼ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½Í·ï¿½Ê½ï¿½ò¿ª´ï¿½ï¿½ï¿½ï¿½è±¸ */
 	rt_device_open(serial, RT_DEVICE_FLAG_DMA_RX);
-	/* ÉèÖÃ½ÓÊÕ»Øµ÷º¯Êı */
+	/* ï¿½ï¿½ï¿½Ã½ï¿½ï¿½Õ»Øµï¿½ï¿½ï¿½ï¿½ï¿½ */
 	rt_device_set_rx_indicate(serial, uart_input);
 
-	/* ´´½¨ serial Ïß³Ì */
+	/* ï¿½ï¿½ï¿½ï¿½ serial ï¿½ß³ï¿½ */
 	rt_thread_t thread = rt_thread_create(
 		"remotr_serial", 
 		serial_thread_entry, 
@@ -214,7 +214,7 @@ int remote_uart_init(void)
 		2, 
 		1);
 
-	/* ´´½¨³É¹¦ÔòÆô¶¯Ïß³Ì */
+	/* ï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½ */
 	if (thread != RT_NULL)
 	{
 		rt_thread_startup(thread);
@@ -226,9 +226,10 @@ int remote_uart_init(void)
 
 	return ret;
 }
+INIT_APP_EXPORT(remote_uart_init);
 static rt_uint8_t _RCD_change(rt_uint8_t *targetdata,rt_uint8_t length)
 {
-	//Ëã³ö¶ÔÓ¦µÄÀúÊ·Êı¾İµØÖ·
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½Ê·ï¿½ï¿½ï¿½İµï¿½Ö·
 	rt_uint8_t *targetdatalast = (rt_uint8_t*)RC_data_last + ((rt_uint32_t)targetdata - (rt_uint32_t)RC_data);
 	while(length)
 	{
@@ -243,7 +244,7 @@ static rt_uint8_t _RCD_change(rt_uint8_t *targetdata,rt_uint8_t length)
 }
 static rt_uint16_t _RCD_press(rt_uint8_t *targetdata,rt_uint8_t length)
 {
-	//Ëã³ö¶ÔÓ¦µÄÀúÊ·Êı¾İµØÖ·
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½Ê·ï¿½ï¿½ï¿½İµï¿½Ö·
 	rt_uint8_t *targetdatalast = (rt_uint8_t*)RC_data_last + ((rt_uint32_t)targetdata - (rt_uint32_t)RC_data);
 	if ((*targetdata == 1)&&(*targetdatalast == 0))
 	{
@@ -256,7 +257,7 @@ static rt_uint16_t _RCD_press(rt_uint8_t *targetdata,rt_uint8_t length)
 }
 static rt_uint8_t _RCD_loosen(rt_uint8_t *targetdata,rt_uint8_t length)
 {
-	//Ëã³ö¶ÔÓ¦µÄÀúÊ·Êı¾İµØÖ·
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½Ê·ï¿½ï¿½ï¿½İµï¿½Ö·
 	rt_uint8_t *targetdatalast = (rt_uint8_t*)RC_data_last + ((rt_uint32_t)targetdata - (rt_uint32_t)RC_data);
 	if ((*targetdata == 0)&&(*targetdatalast == 1))
 	{

@@ -181,3 +181,4 @@ void aim_bot_creat(void)
 	}
 	rt_thread_suspend(aim_thread);
 }
+INIT_APP_EXPORT(aim_bot_creat);
