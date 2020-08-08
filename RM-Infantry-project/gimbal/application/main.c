@@ -20,8 +20,7 @@ int main(void)
 	remote_uart_init();
 	while(1)
 	{
-		chassis_speed_set(0,(RC_data->Remote_Data.ch0 - 1024)*3,(RC_data->Remote_Data.ch2 - 1024)*3,(RC_data->Remote_Data.ch3 - 1024)*3
-		);
+		chassis_speed_set(0,(RC_data->Remote_Data.ch0 - 1024)*3,(RC_data->Remote_Data.ch2 - 1024)*3,(RC_data->Remote_Data.ch3 - 1024)*3);
 		rt_thread_mdelay(10);
 	}
 }
