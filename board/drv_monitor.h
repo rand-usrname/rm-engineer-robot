@@ -18,7 +18,8 @@
 
 #include <rtthread.h>
 #include <rtdevice.h>
-#include "core_board.h"
+#include "drv_rgblight.h"
+#include "drv_buzzer.h"
 
 #define MONITOR_PERIOD	500	//设定监控周期，单位ms
 

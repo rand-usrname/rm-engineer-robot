@@ -22,7 +22,7 @@
 #define CORE_WHITE		255,255,255
 #define CORE_BLACK		0,0,0
 #define CORE_RED		255,0,0
-#define CORE_BLUW		0,0,255
+#define CORE_BLUE		0,0,255
 #define CORE_GREEN		0,255,0
 #define CORE_YELLOW		255,255,0
 #define CORE_PURPLE		128,0,128
