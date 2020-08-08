@@ -1,0 +1,59 @@
+menu "Thread Config"
+
+    #底盘控制线程选取
+    config THREAD_CHASSIS_CONTROL
+        bool "Enable chassis control thread"
+        select THREAD_CAN_RECEIVE
+        select PID_CALCULATE
+        default n
+
+    #底盘种类选取
+    if THREAD_CHASSIS_CONTROL
+        choice
+            prompt "select chassis kind"
+            default MECANUM_WHEEL
+            config MECANUM_WHEEL
+                bool "mecanum"
+            
+            config OMNI_WHEEL
+                bool "omnidirectional"
+        endchoice
+    endif
+    
+    #云台控制线程选取
+    config THREAD_GIMBAL_CONTROL
+        bool "Enable gimbal control thread"
+        select THREAD_CAN_RECEIVE
+        select PID_CALCULATE
+        default n
+
+    #发射机构控制线程选取
+    config THREAD_STRIKE_CONTRAL
+        bool "Enable strike contral thread"
+        select THREAD_GIMBAL_CONTROL
+    
+    #视觉自动瞄准
+    config THREAD_AINBOT
+        bool "Enable aim bot"
+        select THREAD_CAN_RECEIVE
+
+    #CAN接收线程选取
+    config THREAD_CAN_RECEIVE
+        bool "Enable can receive thread"
+        select BSP_USING_CAN
+        select BSP_USING_CAN1
+        select BSP_USING_CAN2
+        default n
+
+    #遥控器接收线程
+    config THREAD_REMOTE
+        bool "Enable remote thread"
+        select BSP_USING_UART
+        select BSP_USING_UART1
+
+    #PID文件
+    config PID_CALCULATE
+        bool "Using PID library"
+        default n
+
+endmenu

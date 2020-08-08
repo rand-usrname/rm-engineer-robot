@@ -1,9 +1,9 @@
 #include "drv_aimbot.h"
 #include "math.h"
 
-#define G   9.7988f 
-#define t_transmit 3
-#define pi_operator 0.01745f
+#define G			9.7988f 
+#define t_transmit	3
+#define pi_operator	0.01745f
 //接口
 Aimbot_t *Aimbot_data;
 
@@ -17,12 +17,15 @@ static float Palstance_Deque[40] = {2.0f,0};
 static float current_yaw_palstance = 1.0f;
 static float current_roll_palstance = 1.0f;
 static float vision_palstance = 1.0f;
+
 //需要 获取子弹速度   当前pitch yaw角度
 static float bullet_speed = 0.0f;
 static float pitch_angle = 30.0f;
 static float yaw_angle = 10.0f;
+
 //视觉处理图像时间
 static rt_uint8_t t_camera = 14;//单位ms，
+
 //快速开方
 static float Q_rsqrt( float number )
 {

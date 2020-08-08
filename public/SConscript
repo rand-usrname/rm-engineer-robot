@@ -1,0 +1,32 @@
+import rtconfig
+from building import *
+
+cwd = GetCurrentDir()
+CPPPATH = [cwd, str(Dir('#'))]
+group = []
+src = []
+
+if GetDepend(['THREAD_CHASSIS_CONTROL']):
+    src += ['drv_chassis.c']
+
+if GetDepend(['THREAD_GIMBAL_CONTROL']):
+    src += ['drv_gimbal.c']
+
+if GetDepend(['THREAD_STRIKE_CONTRAL']):
+    src += ['drv_strike.c']
+
+if GetDepend(['THREAD_AINBOT']):
+    src += ['drv_aimbot.c']
+
+if GetDepend(['THREAD_CAN_RECEIVE']):
+    src += ['drv_canthread.c']
+
+if GetDepend(['THREAD_REMOTE']):
+    src += ['drv_remote.c']
+
+if GetDepend(['PID_CALCULATE']):
+    src += ['pid.c']
+
+group = group + DefineGroup('public', src, depend = [''], CPPPATH = CPPPATH)
+
+Return('group')
