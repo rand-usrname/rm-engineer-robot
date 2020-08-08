@@ -14,26 +14,33 @@
 ********************************************************************************/
 
 #include "drv_monitor.h"
-
-//ÁõëËßÜÁ∫øÁ®ãÂè•ÊüÑ
+//º‡ ”œﬂ≥Ãæ‰±˙
 static rt_thread_t 	monitor_device 	= RT_NULL;
 
-//Êä•Ë≠¶Á∫øÁ®ãÂè•ÊüÑ
+//±®æØœﬂ≥Ãæ‰±˙
 static rt_thread_t 	alarm_device 		= RT_NULL;
 
-//Â∞èÁúãÈó®ÁãóÈìæË°®Â§¥ÊåáÈíà
+//–°ø¥√≈π∑¡¥±ÌÕ∑÷∏’Î
 swdg_dev_t*         monitor_hp      = RT_NULL;
 
 #ifdef BSP_USING_WDT
-	//Á°¨‰ª∂ÁúãÈó®ÁãóËÆæÂ§áÂè•ÊüÑ
+	//”≤º˛ø¥√≈π∑…Ë±∏æ‰±˙
 	static rt_device_t 	wdg_dev 				= RT_NULL;
 #endif
 
+#define RGB_FLASH_TIME  120
+#define BUZZER_SET  set_buzzer(500);rt_thread_mdelay(40);set_buzzer(0);rt_thread_mdelay(80);
+#define RGB_RED_flash  set_RGB(CORE_RED);rt_thread_mdelay(RGB_FLASH_TIME);set_RGB(CORE_BLACK);
+#define RGB_BLUE_flash  set_RGB(CORE_BLUE);rt_thread_mdelay(RGB_FLASH_TIME);set_RGB(CORE_BLACK);
+#define RGB_WHITE_flash  set_RGB(CORE_WHITE);rt_thread_mdelay(RGB_FLASH_TIME);set_RGB(CORE_BLACK);
+#define RGB_YELLOW_flash  set_RGB(CORE_YELLOW);rt_thread_mdelay(RGB_FLASH_TIME);set_RGB(CORE_BLACK);
+#define RGB_GREEN_flash  set_RGB(CORE_GREEN);rt_thread_mdelay(RGB_FLASH_TIME);set_RGB(CORE_BLACK);
+#define RGB_PURPLE_flash  set_RGB(CORE_PURPLE);rt_thread_mdelay(RGB_FLASH_TIME);set_RGB(CORE_BLACK);
 /**
-* @briefÔºö  ÁõëËßÜÂô®Á∫øÁ®ã
-* @paramÔºö  Êó†	
-* @returnÔºö	Êó†
-* @authorÔºö mqy
+* @brief£∫  º‡ ”∆˜œﬂ≥Ã
+* @param£∫  Œﬁ	
+* @return£∫	Œﬁ
+* @author£∫ mqy
 */
 static void monitor_thread(void* parameter)
 {
@@ -42,94 +49,97 @@ static void monitor_thread(void* parameter)
     swdg_dev_t *swdg_dev_tem = monitor_hp;
     while(swdg_dev_tem != RT_NULL)
     {
-    	if(swdg_dev_tem->time_residue < MONITOR_PERIOD)
-		{
-			swdg_dev_tem->alarm_flag = 1;
-		}
-		else
-		{
-			swdg_dev_tem->alarm_flag = 0;
-			swdg_dev_tem->time_residue -= MONITOR_PERIOD;
-		}
-		swdg_dev_tem = swdg_dev_tem->next;
+      if(swdg_dev_tem->time_residue < MONITOR_PERIOD)
+			{
+				swdg_dev_tem->alarm_flag = 1;
+			}
+			else
+			{
+				swdg_dev_tem->alarm_flag = 0;
+				swdg_dev_tem->time_residue -= MONITOR_PERIOD;
+			}
+			swdg_dev_tem = swdg_dev_tem->next;
     }
 		
-	#ifdef BSP_USING_WDT
-		//ÂÆöÊó∂ÂñÇÁãó‰∏çÁÑ∂Â∞±gg‰∫Üw
-		rt_device_control(wdg_dev, RT_DEVICE_CTRL_WDT_KEEPALIVE, RT_NULL);
-	#endif
+		#ifdef BSP_USING_WDT
+			//∂® ±Œππ∑≤ª»ªæÕgg¡Àw
+			rt_device_control(wdg_dev, RT_DEVICE_CTRL_WDT_KEEPALIVE, RT_NULL);
+		#endif
 		
-		//Âª∂Êó∂
+		//—” ±
     rt_thread_mdelay(MONITOR_PERIOD);
   }
 }
 /**
-* @briefÔºö  Êä•Ë≠¶Á∫øÁ®ã
-* @paramÔºö  Êó†	
-* @returnÔºö	Êó†
-* @authorÔºö mqy
+* @brief£∫  ±®æØœﬂ≥Ã
+* @param£∫  Œﬁ	
+* @return£∫	Œﬁ
+* @author£∫ mqy
 */
-static void raise_the_alarm(alarm_horn_e alarm_horn);
+static void raise_the_alarm(rt_base_t mode);
 static void alarm_thread(void* parameter)
 {
-  	while(1)
-  	{
+  while(1)
+  {
 		swdg_dev_t *swdg_dev_tem = monitor_hp;
 		while(swdg_dev_tem != RT_NULL)
 		{
 			if(swdg_dev_tem->alarm_flag)
 			{
-				raise_the_alarm(swdg_dev_tem->alarm_horn);
+				rt_thread_suspend(swdg_dev_tem->thread);
+				if(rt_pin_read(67))
+				{raise_the_alarm(swdg_dev_tem->alarm_mode);}
 			}
 			swdg_dev_tem = swdg_dev_tem->next;
 		}
 		rt_thread_mdelay(MONITOR_PERIOD);
-  	}
+  }
 }
 
 /**
-* @briefÔºö  ËØ•ÂáΩÊï∞ÂàùÂßãÂåñÁõëËßÜÂô®
-* @paramÔºö  Êó†	
-* @returnÔºö	0ÔºöÂàùÂßãÂåñÂ§±Ë¥•
-* @authorÔºö mqy
+* @brief£∫  ∏√∫Ø ˝≥ı ºªØº‡ ”∆˜
+* @param£∫  Œﬁ	
+* @return£∫	0£∫≥ı ºªØ ß∞‹
+* @author£∫ mqy
 */
 static int monitor_init(void)
 {
-	//ÁõëËßÜÂô®Á∫øÁ®ãÂàõÂª∫
+	rt_pin_mode(67,PIN_MODE_INPUT_PULLDOWN);
+	//º‡ ”∆˜œﬂ≥Ã¥¥Ω®
 	monitor_device = rt_thread_create(
 	"monitor",
-	monitor_thread,	//ÂÖ•Âè£ÂáΩÊï∞
-	RT_NULL,				//ÂÖ•Âè£ÂèÇÊï∞
-	1024,						//Á∫øÁ®ãÊ†à
-	25,							//‰ºòÂÖàÁ∫ß
+	monitor_thread,	//»Îø⁄∫Ø ˝
+	RT_NULL,				//»Îø⁄≤Œ ˝
+	1024,						//œﬂ≥Ã’ª
+	25,							//”≈œ»º∂
 	2);
 	
-	//Êü•ÁúãÊòØÂê¶ÂàõÂª∫ÊàêÂäü
+	//≤Èø¥ «∑Ò¥¥Ω®≥…π¶
 	if(monitor_device != RT_NULL)
 	{
 		rt_thread_startup(monitor_device);
 	}
 	
-	//Êä•Ë≠¶Á∫øÁ®ãÂàõÂª∫
+	//±®æØœﬂ≥Ã¥¥Ω®
 	alarm_device = rt_thread_create(
-	"monitor",
-	alarm_thread,		//ÂÖ•Âè£ÂáΩÊï∞
-	RT_NULL,				//ÂÖ•Âè£ÂèÇÊï∞
-	1024,						//Á∫øÁ®ãÊ†à
-	26,							//‰ºòÂÖàÁ∫ß
+	"alarm",
+	alarm_thread,		//»Îø⁄∫Ø ˝
+	RT_NULL,				//»Îø⁄≤Œ ˝
+	1024,						//œﬂ≥Ã’ª
+	26,							//”≈œ»º∂
 	2);
 	
-	//Êü•ÁúãÊòØÂê¶ÂàõÂª∫ÊàêÂäü
+	//≤Èø¥ «∑Ò¥¥Ω®≥…π¶
 	if(alarm_device != RT_NULL)
 	{
 		rt_thread_startup(alarm_device);
 	}
 	
 	#ifdef BSP_USING_WDT
-		//Êü•ÊâæÂêØÂä®Á°¨‰ª∂ÁúãÈó®ÁãóIWDG timer
+		//≤È’“∆Ù∂Ø”≤º˛ø¥√≈π∑IWDG timer
 		wdg_dev = rt_device_find("wdt");
 		
-		//ÂàùÂßãÂåñÂêåÊó∂ÂêØÂä®IWDGÔºàËøôÈáåË∑üemmmRTTÂØπÁúãÈó®ÁãóÁöÑÊèèËø∞‰∏çÂ§™‰∏ÄÊ†∑Ôºâ
+		//≥ı ºªØÕ¨ ±∆Ù∂ØIWDG£®’‚¿Ô∏˙emmmRTT∂‘ø¥√≈π∑µƒ√Ë ˆ≤ªÃ´“ª—˘£©
 		rt_device_init(wdg_dev);
 	#endif
 	
@@ -139,99 +149,125 @@ static int monitor_init(void)
 INIT_APP_EXPORT(monitor_init);
 
 /**
-* @briefÔºö  ÂàõÂª∫‰∏Ä‰∏™ÁúãÈó®Áãó
-* @paramÔºö  nameÔºöÁõëËßÜÂêçÁß∞
-            time_thresholdÔºöÊä•Ë≠¶Êó∂Èó¥ÔºåË∂ÖËøáËØ•Êó∂Èó¥‰∏çÂèçÈ¶àÂàô‰ºöÊä•Ë≠¶ÔºàÂçï‰ΩçmsÔºâ
-            alarm_hornÔºöÊä•Ë≠¶ÂΩ¢ÂºèÔºåÂèØÂèñÂÄº‰∏∫Êûö‰∏æÂÄº
-* @returnÔºö	0ÔºöÂàùÂßãÂåñÂ§±Ë¥•
-* @authorÔºö mqy
+* @brief£∫  ¥¥Ω®“ª∏ˆø¥√≈π∑
+* @param£∫  name£∫º‡ ”√˚≥∆
+            time_threshold£∫±®æØ ±º‰£¨≥¨π˝∏√ ±º‰≤ª∑¥¿°‘Úª·±®æØ£®µ•Œªms£©
+            alarm_horn£∫±®æØ–Œ Ω£¨ø…»°÷µŒ™√∂æŸ÷µ
+* @return£∫	0£∫≥ı ºªØ ß∞‹
+* @author£∫ mqy
 */
-swdg_dev_t* swdg_creaat(const char* name,
+swdg_dev_t* swdg_create(const char* name,rt_thread_t thread,
                       rt_uint32_t time_threshold,
-                      alarm_horn_e alarm_horn)
+                      rt_base_t mode)
 {
-  swdg_dev_t* swdg_dev_tem = (swdg_dev_t*)rt_malloc(sizeof(swdg_dev_t));//Áî≥ËØ∑Á©∫Èó¥
+  swdg_dev_t* swdg_dev_tem = (swdg_dev_t*)rt_malloc(sizeof(swdg_dev_t));//…Í«Îø’º‰
 	if(swdg_dev_tem == RT_NULL)
 	{
 		return RT_NULL;
 	}
-	//Êã∑Ë¥ùÂ≠óÁ¨¶‰∏≤
-	rt_strncpy(swdg_dev_tem->name, name, RT_NAME_MAX);
+	//øΩ±¥◊÷∑˚¥Æ
+  rt_strncpy(swdg_dev_tem->name, name, RT_NAME_MAX);
 	
-	//ÊûÑÂª∫ÈìæË°®
+	//ππΩ®¡¥±Ì
 	swdg_dev_tem->next = monitor_hp;
 	monitor_hp = swdg_dev_tem;
 	
-	//ËµãÂÄº
-	swdg_dev_tem->alarm_horn = alarm_horn;
+	//∏≥÷µ
+	swdg_dev_tem->alarm_mode = mode;
+	swdg_dev_tem->thread = thread;
 	swdg_dev_tem->time_threshold = time_threshold;
 	swdg_dev_tem->time_residue = time_threshold;
 	swdg_dev_tem->alarm_flag = 0;
 	return swdg_dev_tem;
 }
-/**
-* @briefÔºö  ÁßªÈô§‰∏Ä‰∏™ÁúãÈó®Áãó
-* @paramÔºö  ÁúãÈó®ÁãóÂè•ÊüÑ
-* @returnÔºö	0ÔºöÂàùÂßãÂåñÂ§±Ë¥•
-* @authorÔºö mqy
-*/
-int swdg_delete(swdg_dev_t* swdg_dev)
-{
-	//ÈÅçÂéÜÈìæË°®ÔºåÊ∏ÖÈô§ËØ•ËÆæÂ§á
-	swdg_dev_t **swdg_dev_tem = &monitor_hp;
-	while((*swdg_dev_tem) != RT_NULL)
-	{
-		//Âà§Êñ≠Áõ∏Á≠â
-		if((*swdg_dev_tem) == monitor_hp)
-		{
-			//ÂèòÈáèa‰∏¥Êó∂ÂÇ®Â≠ò‰∏Ä‰∏ã
-			swdg_dev_t *a = (*swdg_dev_tem)->next;
-			(*swdg_dev_tem)->next = RT_NULL;
-			(*swdg_dev_tem) = a;
-			return 1;
-		}
-		swdg_dev_tem = (&(*swdg_dev_tem)->next);
-	}
-	return 0;
-}
 
 /**
-* @briefÔºö  ÁªôÁúãÈó®ÁãóÂñÇÈ£ü
-* @paramÔºö  Êó†
-* @returnÔºö	Êó†
-* @authorÔºö mqy
+* @brief£∫  ∏¯ø¥√≈π∑Œπ ≥
+* @param£∫  Œﬁ
+* @return£∫	Œﬁ
+* @author£∫ mqy
 */
 void swdg_feed(swdg_dev_t* swdg_dev)
 {
 	swdg_dev->time_residue = swdg_dev->time_threshold;
+	rt_thread_resume(swdg_dev->thread);
 	return;
 }
 /**
-* @briefÔºö  Êä•Ë≠¶ÂáΩÊï∞
-* @paramÔºö  alarm_hornÔºöÊä•Ë≠¶ÂΩ¢Âºè
-* @returnÔºö	Êó†
-* @authorÔºö mqy
+* @brief£∫  ±®æØ∫Ø ˝
+* @param£∫  alarm_horn£∫±®æØ–Œ Ω
+* @return£∫	Œﬁ
+* @author£∫ mqy
 */
-static void raise_the_alarm(alarm_horn_e alarm_horn)
+static void raise_the_alarm(rt_base_t mode)
 {
-	switch(alarm_horn)
+	switch(mode)
 	{
-		case NO_ALARM:
+		case 0x11:
+		    RGB_RED_flash
+		    BUZZER_SET
+		    rt_thread_mdelay(400);
 			break;
-		case BUZZER_100HZ_300MS:
-			set_buzzer(100);
-			rt_thread_mdelay(300);
-			set_buzzer(0);
+		case 0x21:
+			RGB_BLUE_flash
+		    BUZZER_SET
+		    rt_thread_mdelay(400);
 			break;
-		case BUZZER_200HZ_600MS:
-			set_buzzer(200);
-			rt_thread_mdelay(600);
-			set_buzzer(0);
+		case 0x31:
+			RGB_WHITE_flash
+		    BUZZER_SET
+		    rt_thread_mdelay(400);
 			break;
-		case RGB_WHITE_900MS:
-			set_RGB(CORE_WHITE);
-			rt_thread_mdelay(900);
-			set_RGB(CORE_BLACK);
+		case 0x41:
+			RGB_YELLOW_flash
+		    BUZZER_SET
+		    rt_thread_mdelay(400);
+			break;
+		case 0x51:
+			RGB_GREEN_flash
+		    BUZZER_SET
+		    rt_thread_mdelay(400);
+			break;
+		case 0x61:
+			RGB_PURPLE_flash
+		    BUZZER_SET
+		    rt_thread_mdelay(400);
+			break;
+		case 0x12:
+			BUZZER_SET
+			RGB_RED_flash
+		    BUZZER_SET
+		    rt_thread_mdelay(400);
+			break;
+		case 0x22:
+			BUZZER_SET
+			RGB_BLUE_flash
+		    BUZZER_SET
+		    rt_thread_mdelay(400);
+			break;
+		case 0x32:
+			BUZZER_SET
+			RGB_WHITE_flash
+		    BUZZER_SET
+		    rt_thread_mdelay(400);
+			break;
+		case 0x42:
+			BUZZER_SET
+			RGB_YELLOW_flash
+		    BUZZER_SET
+		    rt_thread_mdelay(400);
+			break;
+		case 0x52:
+			BUZZER_SET
+			RGB_GREEN_flash
+		    BUZZER_SET
+		    rt_thread_mdelay(400);
+			break;
+		case 0x62:
+			BUZZER_SET
+			RGB_PURPLE_flash
+		    BUZZER_SET
+		    rt_thread_mdelay(400);
 			break;
 		default:
 			break;
