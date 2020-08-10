@@ -1,8 +1,10 @@
 #ifndef __DRV_STRIKE_H__
 #define __DRV_STRIKE_H__
 #include <rtthread.h>
-#include "ctrl_motor.h"
-
+#include "drv_motor.h"
+#include "drv_refsystem.h"
+#include "drv_remote.h"
+#include "drv_canthread.h"
 
 #define HEAT_PERIOD											100				/*热量控制周期 100ms*/
 /*发弹模式*/
@@ -35,11 +37,7 @@ typedef struct
 	rt_uint8_t	  status;										/*发弹状态*/
 	Heatctrl_t 	  heat;											/*热量模块*/
 }Strike_t;
-
-/*子弹速度设定*/
-void Gun_speed_set(struct Motor_t *motor,Robodata_t *Robodata,Strike_t *strike,rt_base_t mode)
-/*卡弹判定*/
-void strike_stuck(struct Motor_t *motor, Strike_t *gun);
-/*发弹函数*/
-void strike_fire(struct Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire);
+void motor_servo_set(uint16_t duty);
+void Gun_mode_set(Strike_t *strike,rt_base_t mode);
+static void Gun_speed_set(Refdata_t *Refdata,Strike_t *strike,rt_base_t mode);
 #endif
