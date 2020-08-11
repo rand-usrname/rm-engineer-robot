@@ -28,11 +28,12 @@ void pid_init(pid_t *pid,
 * @brief：该函数根据四个电机的设定参数分别计算出其输出
 * @param [in]	target:要计算的pid结构体
 				error:期望值与实际值的误差（单位rpm
-* @return：		无
+* @return：		pid的计算结果
 * @author：mqy
 */
-void pid_output_calculate(pid_t* target,rt_int16_t error)
+int pid_output_calculate(pid_t* target,int nowdata)
 {
+	int error = target->set - nowdata;
 	target->err_old = target->err;
 	target->err = error;
 	target->i_value += target->ki * error;
@@ -63,6 +64,7 @@ void pid_output_calculate(pid_t* target,rt_int16_t error)
 	{
 		target->out = target->out_limit_down;
 	}
+	return target->out;
 }
 
 /**
