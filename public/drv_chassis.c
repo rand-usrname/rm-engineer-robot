@@ -9,7 +9,6 @@ static motor_t			chassis_motor[4];
 //运动数据，包括云台两轴角度，期望速度等
 static chassis_data_t	motion_data;
 
-#define ABS(a) (((a)>0)?(a):(-a))
 /**
 * @brief：按照参数设定底盘的运动角速度与速度，速度结果将会被保存在本文件的四个轮子的数据中
 * @param [in]	angle:设定本次操作的正方向（即本次操作的水平坐标系的y轴正方向
@@ -53,10 +52,10 @@ static void motor_speed_set(rt_uint16_t angle,rt_int16_t angular_velocity,rt_int
 	    float v4 = (float)x - (float)angular_velocity*((float)3.1415926/(float)1800.0*VEHICLE_DIAMETER);
 	
 	    //2.40946为单位转换的系数，v为期望的轮子线速度，期望速度使用rpm作为单位
-	    chassis_motor[(rt_uint8_t)(LEFT_FRONT- 0x201)].expected_speed = (rt_int16_t)((float)2.40946*v1);
-	    chassis_motor[(rt_uint8_t)(RIGHT_FRONT- 0x201)].expected_speed = -(rt_int16_t)((float)2.40946*v2);
-	    chassis_motor[(rt_uint8_t)(LEFT_BACK- 0x201)].expected_speed = (rt_int16_t)((float)2.40946*v3);
-	    chassis_motor[(rt_uint8_t)(RIGHT_BACK- 0x201)].expected_speed = -(rt_int16_t)((float)2.40946*v4);
+	    chassis_motor[(rt_uint8_t)(LEFT_FRONT- 0x201)].speedpid.set = (rt_int16_t)((float)2.40946*v1);
+	    chassis_motor[(rt_uint8_t)(RIGHT_FRONT- 0x201)].speedpid.set = -(rt_int16_t)((float)2.40946*v2);
+	    chassis_motor[(rt_uint8_t)(LEFT_BACK- 0x201)].speedpid.set = (rt_int16_t)((float)2.40946*v3);
+	    chassis_motor[(rt_uint8_t)(RIGHT_BACK- 0x201)].speedpid.set = -(rt_int16_t)((float)2.40946*v4);
     #endif
 }
 /**
@@ -84,19 +83,7 @@ static void chassis_contral(void)
 		case FOLLOW:
 		{
 			//在跟随模式下需要计算设定角速度
-			rt_int16_t error = motion_data.follow_angle - motion_data.yaw_data.angle;
-			if(ABS(error) > (8191 - ABS(error)))
-			{
-				if(error > 0)
-				{
-					error = 8191 - error;
-				}
-				else
-				{
-					error = 8191 + error;
-				}
-			}
-			pid_output_calculate(&motion_data.anglepid,error);
+			pid_output_motor(&motion_data.anglepid,motion_data.follow_angle);
 			
 			motor_speed_set(
 			motion_data.yaw_data.angle,//传入当前角度参数
@@ -134,7 +121,6 @@ static void chassis_contral_thread(void* parameter)
 	wheelc_message.rtr	= RT_CAN_DTR;	//数据帧
 	wheelc_message.priv = 0;			//报文优先级最高
 	wheelc_message.len = 8;				//长度8
-	rt_int16_t motor_error;				//临时存储电机偏差
 	
 	while(1)
 	{
@@ -142,8 +128,7 @@ static void chassis_contral_thread(void* parameter)
 		chassis_contral();
 		for(int a = 0;a<4;a++)
 		{
-			motor_error = chassis_motor[a].expected_speed - chassis_motor[a].motordata.speed;
-			pid_output_calculate(&chassis_motor[a].speedpid,motor_error);
+			pid_output_calculate(&chassis_motor[a].speedpid,chassis_motor[a].motordata.speed);
 			//chassis_motor[a].motorpid.out = 200;
 		}
 		
@@ -213,7 +198,6 @@ int chassis_init(void)
     //若均成功则开始初始化数据
 	for(rt_uint8_t a = 0;a<4;a++)
 	{
-		chassis_motor[a].expected_speed = 0;
 		chassis_motor[a].motorID = (drv_can1ID_e)(0x201 + a);//初始化ID数值
 	}
 	pid_init(&chassis_motor[0].speedpid,6,0.004,0.2,500,8000,-8000);

@@ -27,7 +27,7 @@ extern void pid_init(pid_t *pid,
 	rt_int16_t out_limite_up, 		//输出上限幅
 	rt_int16_t out_limite_down);	//输出下限幅
 		
-extern int pid_output_calculate(pid_t* target,int nowdata)
+extern int pid_output_calculate(pid_t* target,int nowdata);
 extern void pid_clear(pid_t* target);
 	
 #endif

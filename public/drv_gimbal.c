@@ -19,12 +19,10 @@ static int anglepid_calculate(gimbalmotor_t* motor,int gyroangle)
 	switch (motor->angledata_source)
 	{
 	case GYRO:
-		pid_output_calculate(&motor->anglepid_gyro,motor->set - gyroangle);
-		return motor->anglepid_gyro.out;
+		return pid_output_motor(&motor->anglepid_gyro,gyroangle);
 
 	case DJI_MOTOR:
-		pid_output_calculate(&motor->anglepid_dji,motor->set - gyroangle);
-		return motor->anglepid_dji.out;
+		return pid_output_motor(&motor->anglepid_dji,gyroangle);
 
 	default:
 		return 0;
@@ -39,21 +37,19 @@ static int anglepid_calculate(gimbalmotor_t* motor,int gyroangle)
 */
 static int gimbalpid_cal(gimbalmotor_t* motor,int gyroangle,int gyrospeed,rt_uint8_t angle_time)
 {
-	int error = 0;
 	switch (motor->control_mode)
 	{
 	case  ANGLE:
 		if(angle_time > 9)
 		{
-			motor->speedset = anglepid_calculate(motor,gyroangle);
+			motor->speedpid.set = anglepid_calculate(motor,gyroangle);
 		}
 	case PALSTANCE:
 		if(motor->control_mode == PALSTANCE)
 		{
-			motor->speedset = motor->set;
+			motor->speedpid.set = motor->set;
 		}
-		error = motor->speedset - gyrospeed;
-		pid_output_calculate(&motor->speedpid,error);
+		pid_output_calculate(&motor->speedpid,gyrospeed);
 
 	case CURRENT://若为电流环则设置电流值，
 		if(motor->control_mode == CURRENT)
@@ -169,11 +165,9 @@ int gimbal_init(void)
 	pitch.control_mode = ANGLE;
 
 	yaw.motorID = YAW_ID;
-	yaw.speedset = 0;
 	yaw.angledata_source = GYRO;//默认数据源陀螺仪
 
 	pitch.motorID = PITCH_ID;
-	pitch.speedset = 0;
 	pitch.angledata_source = GYRO;//默认数据源陀螺仪
 
 	//初始化PID
@@ -247,4 +241,25 @@ int refresh_gimbal_motor_data(struct rt_can_msg* message)
 			break;
 	}
 	return 0;
+}
+
+/**
+* @brief：获取yaw轴角度
+* @param [in]	data_source:希望的数据源
+* @return：		yaw轴角度，格式0-8191
+* @author：mqy
+*/
+int get_yawangle(void)
+{
+	return yaw.motordata.angle;
+}
+/**
+* @brief：获取pitch轴角度
+* @param [in]	data_source:希望的数据源
+* @return：		pitch轴角度，格式0-8191
+* @author：mqy
+*/
+int get_pitchangle(void)
+{
+	return pitch.motordata.angle;
 }

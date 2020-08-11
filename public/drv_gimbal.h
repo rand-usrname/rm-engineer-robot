@@ -45,8 +45,6 @@ typedef struct
 	int				set;				//设定值
 
 	pid_t		    speedpid;			//pid参数结构体
-	int 			speedset;			//电机的期望转速
-
 	data_source_t	angledata_source;	
 	pid_t			anglepid_dji;		//数据源电机时pid
 	pid_t			anglepid_gyro;		//数据源陀螺仪时pid
@@ -66,6 +64,7 @@ extern int refresh_gimbal_motor_data(struct rt_can_msg* message);
 extern int gimbal_init(void);
 
 //读取函数
-
+extern int get_yawangle(data_source_t data_source);
+extern int get_pitchangle(data_source_t data_source);
 
 #endif

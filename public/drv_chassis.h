@@ -32,7 +32,6 @@ typedef struct
 	drv_can1ID_e 	motorID;			//枚举定义电机ID
 	motordata_t		motordata;			//电机数据结构体
 	pid_t		    speedpid;			//pid参数结构体
-	int 			expected_speed;		//电机的期望转速
 	
 } motor_t;
 //该结构体用于四个麦轮的控制和数据存储
