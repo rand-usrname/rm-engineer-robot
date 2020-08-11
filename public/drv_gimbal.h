@@ -53,11 +53,11 @@ typedef struct
 //该结构体用于四个麦轮的控制和数据存储
 
 //设置函数
-extern void gimbal_current_set(rt_uint16_t yaw,rt_uint16_t pitch);
-extern void gimbal_absangle_set(rt_uint16_t yaw,rt_uint16_t pitch);
-extern void gimbal_addangle_set(rt_uint16_t yaw,rt_uint16_t pitch);
-extern void gimbal_palstance_set(rt_uint16_t yaw,rt_uint16_t pitch);
-extern void angle_datasource_set(data_source_t yaw,data_source_t pitch);
+extern void gimbal_current_set(rt_uint16_t yawset,rt_uint16_t pitchset);
+extern void gimbal_absangle_set(rt_uint16_t yawset,rt_uint16_t pitchset);
+extern void gimbal_addangle_set(rt_uint16_t yawset,rt_uint16_t pitchset);
+extern void gimbal_palstance_set(rt_uint16_t yawset,rt_uint16_t pitchset);
+extern void angle_datasource_set(data_source_t yawset,data_source_t pitchset);
 
 //必须调用的函数
 extern int refresh_gimbal_motor_data(struct rt_can_msg* message);

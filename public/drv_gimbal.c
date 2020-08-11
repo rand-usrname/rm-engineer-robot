@@ -244,6 +244,45 @@ int refresh_gimbal_motor_data(struct rt_can_msg* message)
 }
 
 /**
+* @brief：设置函数
+* @param [in]	data_source:希望的数据源
+* @return：		yaw轴角度，格式0-8191
+* @author：mqy
+*/
+void gimbal_current_set(rt_uint16_t yawset,rt_uint16_t pitchset)
+{
+	yaw.control_mode = CURRENT;
+	pitch.control_mode = CURRENT;
+	yaw.set = yawset;
+	pitch.set = pitchset;
+}
+void gimbal_absangle_set(rt_uint16_t yawset,rt_uint16_t pitchset)
+{
+	yaw.control_mode = ANGLE;
+	pitch.control_mode = ANGLE;
+	yaw.set = yawset;
+	pitch.set = pitchset;
+}
+void gimbal_addangle_set(rt_uint16_t yawset,rt_uint16_t pitchset)
+{
+	yaw.control_mode = ANGLE;
+	pitch.control_mode = ANGLE;
+	yaw.set += yawset;
+	pitch.set += pitchset;
+}
+void gimbal_palstance_set(rt_uint16_t yawset,rt_uint16_t pitchset)
+{
+	yaw.control_mode = PALSTANCE;
+	pitch.control_mode = PALSTANCE;
+	yaw.set = yawset;
+	pitch.set = pitchset;
+}
+void angle_datasource_set(data_source_t yawset,data_source_t pitchset)
+{
+	yaw.angledata_source = yawset;
+	pitch.angledata_source = pitchset;
+}
+/**
 * @brief：获取yaw轴角度
 * @param [in]	data_source:希望的数据源
 * @return：		yaw轴角度，格式0-8191
