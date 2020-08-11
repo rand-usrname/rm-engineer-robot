@@ -1,76 +1,67 @@
 #include "drv_strike.h"
 
-#define Infantry
-//#define Hero
-//#define Sentry
-//#define Mobile
-
 #define snail   0
 #define fire_angle 60
 
-static rt_uint8_t cacel_heat_ctrl = 0;
 
-//ï¿½ï¿½ï¿½ï¿½Ò»Ð©ï¿½ï¿½Öªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½
-rt_uint8_t level;
-rt_uint16_t now_heat;
-/***********************************ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½******************************************/
+#define PWM_DEV_NAME        "pwm3"  	  /* PWMÉè±¸Ãû³Æ */
+#define PWM_DEV_CHANNEL_1     1       															/* PWMÍ¨µÀ Ä¦²ÁÂÖ */
+#define PWM_DEV_CHANNEL_2     2       															/* PWMÍ¨µÀ Ä¦²ÁÂÖ*/
+#define PWM_DEV_CHANNEL_3     3																	/* PWMÍ¨µÀ µ¯²Öµç»ú*/
+static struct rt_device_pwm *pwm_dev;	
+
+
+
+/***********************************ÓÃ»§´úÂë******************************************/
 static Strike_t gun1={0};
 
-/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½Ê±ï¿½Ð´*/
-static void heat_control(Heatctrl_t *p_temp)
+/* ÈÈÁ¿¿ØÖÆº¯Êý µÃÖØÐÂ±à*/
+void heat_control(Heatctrl_t *p_temp)
 {
-	if(p_temp == &gun1.heat)
-	{
-		/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì«ï¿½Ù£ï¿½Í£Ö¹ï¿½ï¿½ï¿½ï¿½*/
-		if(gun1.heat.now<(gun1.speed/100)){gun1.status |= STRICK_STOP;}
-		else{gun1.status &= ~STRICK_STOP;}
-		if(gun1.heat.rate > 75){}
-		else if(gun1.heat.rate > 10){}
-	}
+	
 }
 
-/***********************************ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½******************************************/
+/***********************************ÈÈÁ¿¿ØÖÆÄ£¿é******************************************/
 
 
 
 /**
- * @brief  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È´ï¿½ï¿½ï¿½ï¿½
+ * @brief  ÈÈÁ¿ÉÏÏÞÉèÖÃ
  */
-static void heat_max_set(Heatctrl_t *heat,rt_uint8_t level)
+static void heat_max_set(Heatctrl_t *heat,Refdata_t *Refdata)
 {
-	#ifdef Infantry
-	switch (level)
+	if(Refdata->robot_id == 1 || Refdata->robot_id == 101)
 	{
-		case 2:
-			heat->max = 240;
-		    heat->rate = (100*(heat->now))/(heat->max);
-			break;
-		case 3:
-			heat->max = 360;
-		    heat->rate = (100*(heat->now))/(heat->max);
-			break;
+		heat->max = Refdata->heat_limit_42;
+	    heat->rate = 100*(heat->max - heat->now)/(heat->max);
 	}
-	#endif
-	#ifdef Hero
-	switch (level)
+	else if(((3<=Refdata->robot_id)&&(Refdata->robot_id<=5))||((103<=Refdata->robot_id)&&(Refdata->robot_id<=105)))
 	{
-		case 2:
-			heat->max = 300;
-		    heat->rate = (100*(heat->now))/(heat->max);
-			break;
-		case 3:
-			heat->max = 400;
-		    heat->rate = (100*(heat->now))/(heat->max);
-			break;
+		heat->max = Refdata->heat_limit_17;
+	    heat->rate = 100*(heat->max - heat->now)/(heat->max);
 	}
-	#endif
+	
 }
 /**
- * @brief  ï¿½ï¿½ï¿½ï¿½ÊµÊ±ï¿½ï¿½ï¿½ï¿½
+ * @brief  ¸üÐÂÊµÊ±ÈÈÁ¿
  */
-static void refresh_heat(Heatctrl_t *heat,rt_uint16_t now_heat)
+static void refresh_heat(Heatctrl_t *heat,Refdata_t *Refdata)
 {
-	heat->now = now_heat;
+	if(Refdata->robot_id == 1 || Refdata->robot_id == 101)
+	{
+		heat->now = Refdata->heat_17;
+	    heat->rate = 100*(heat->max - heat->now)/(heat->max);
+	}
+	else if(((3<=Refdata->robot_id)&&(Refdata->robot_id<=5))||((103<=Refdata->robot_id)&&(Refdata->robot_id<=105)))
+	{
+		heat->now = Refdata->heat_42;
+	    heat->rate = 100*(heat->max - heat->now)/(heat->max);
+	}
+	else if(Refdata->robot_id==2||Refdata->robot_id==102)
+	{
+		heat->now = Refdata->heat_mobile;
+	    heat->rate = 100*(heat->max - heat->now)/(heat->max);
+	}
 }
 static struct rt_semaphore refresh_heat_sem;
 static struct rt_timer refresh_heat_timer;
@@ -83,7 +74,7 @@ static void refresh_heat_emtry(void *parameter)
 	while(1)
 	{
 		rt_sem_take(&refresh_heat_sem, RT_WAITING_FOREVER);
-		refresh_heat(&gun1.heat,now_heat);
+		refresh_heat(&gun1.heat,Refdata);
 	}
 }
 static void refresh_heat_init(void)
@@ -103,7 +94,7 @@ static void refresh_heat_init(void)
 	rt_timer_start(&refresh_heat_timer);
 }
 /**
- * @brief  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½
+ * @brief  ÈÈÁ¿¿ØÖÆÏß³Ì
  */
 static void heatctrl_thread(void *parameter)
 {
@@ -113,15 +104,15 @@ static void heatctrl_thread(void *parameter)
 		p_temp = &gun1.heat;
 	 while(!(p_temp == RT_NULL))
 	 {
-		 /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ¼ï¿½Ê£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù·Ö±ï¿½*/
-		 heat_max_set(p_temp,level);
-		 heat_control(p_temp);			/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
+		 /*ÉèÖÃÈÈÁ¿ÉÏÏÞ*/
+		 heat_max_set(p_temp,Refdata);
+		 heat_control(p_temp);			/*ÈÈÁ¿¿ØÖÆº¯Êý*/
 	 }
 	 rt_thread_mdelay(HEAT_PERIOD);
  }
 }
 /**
- * @brief  ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³Ì£ï¿½
+ * @brief  ¿ªÊ¼ÈÈÁ¿¿ØÖÆÏß³Ì
  */
 static void heatctrl_start(void)
 {
@@ -134,76 +125,154 @@ static void heatctrl_start(void)
 	}
 }
 /**
- * @brief  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @param  heatï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½Ò»ï¿½Î³ï¿½Ê¼ï¿½ï¿½
- * @param  maxï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
+ * ³õÊ¼»¯ÈÈÁ¿Ä£¿é
  */
-static void heatctrl_init(Heatctrl_t *heat)
+static void heatctrl_init(Heatctrl_t *heat,Refdata_t *Refdata)
 {
-	#ifdef Infantry
-	heat->max = 120;
-	heat->now = 120;
-	heat->rate = 20;
-	#endif
-	#ifdef Hero
-	heat->max = 200;
-	heat->now = 200
+	heat_max_set(heat,Refdata);
+	heat->now = heat->max;
 	heat->rate = 100;
-	#endif
-	#ifdef Sentry
-	heat->max = 320;
-	heat->now = 320;
-	heat->rate = 100;
-	#endif
-	#ifdef Mobile
-	heat->max = 150;
-	heat->now = 150;
-	heat->rate = 100;
-	#endif
 	heatctrl_start();
 }
 /************************************ End **************************************************/
-
-
-
-/***********************************ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½******************************************/
+/*********************************** snailµç»ú¼°µ¯²Ö **************************************/
 /**
- * @brief  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
- * @param  gunï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½Ö¸ï¿½ï¿½
+ * @brief  Ä¦²Áµç»ú³õÊ¼»¯£¨timµÄpwm³õÊ¼»¯£©
+ * @retval RT_EOK or RT_ERROR(³É¹¦»òÊ§°Ü)
  */
-void strike_init(Strike_t *gun,rt_base_t mode)
+int motor_rub_init(void)
+{
+	pwm_dev = (struct rt_device_pwm *)rt_device_find("pwm1");
+	if(!pwm_dev){return RT_ERROR;}
+	/*ÉèÖÃÖÜÆÚºÍÂö³å¿í¶È*/
+	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_2, 20000000,1000000);
+	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_1, 20000000,1000000);
+	/* Ê¹ÄÜÉè±¸ */
+	rt_pwm_enable(pwm_dev, PWM_DEV_CHANNEL_2);
+	rt_pwm_enable(pwm_dev, PWM_DEV_CHANNEL_1);
+	return RT_EOK;
+}
+/**
+ * @brief  ¶æ»ú£¨µ¯²ÖÃÅ¿ª¹Ø£©³õÊ¼»¯
+ * @param  duty Õ¼¿Õ±È£¨0-1000¶ÔÓÚ0%-%100£©
+ * @retval RT_EOK or RT_ERROR(³É¹¦»òÊ§°Ü)
+ */
+int motor_servo_init(void)
+{
+	pwm_dev = (struct rt_device_pwm *)rt_device_find("pwm1");
+	if(!pwm_dev){return RT_ERROR;}
+	/*ÉèÖÃÖÜÆÚºÍÂö³å¿í¶È*/
+	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_3, 10000,5000);
+	/* Ê¹ÄÜÉè±¸ */
+	rt_pwm_enable(pwm_dev, PWM_DEV_CHANNEL_3);
+	return RT_EOK;
+}
+
+void motor_rub_set(uint16_t duty)
+{
+	RT_ASSERT(duty<=1000);
+	
+	/*ÉèÖÃÖÜÆÚºÍÂö³å¿í¶È*/
+	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_1, 20000000,20000000*duty/1000);
+	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_2, 20000000,20000000*duty/1000);
+}
+
+/**
+ * @brief  µ¯²Ö¶æ»úËÙ¶ÈÉè¶¨
+ * @param  duty Õ¼¿Õ±È£¨0-1000¶ÔÓÚ0%-%100£©
+ * @retval None
+ */
+void motor_servo_set(uint16_t duty)
+{
+	RT_ASSERT(duty<=1000);
+	
+	/*ÉèÖÃÖÜÆÚºÍÂö³å¿í¶È*/
+	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_3, 10000,10000*duty/1000);
+}
+/************************************ End *************************************************/
+/***********************************·¢Éä»ú¹¹*****************************************/
+Motor_t m_rub[2];//Á½Ä¦²ÁÂÖ  snailµç»úÔÙ¿¼ÂÇ
+Motor_t m_load;
+
+/**
+ * @brief ·¢Éä»ú¹¹³õÊ¼»¯
+*/
+static void Gun_init(Strike_t *gun,rt_base_t mode)
 {
 	gun->mode = mode;			
 	gun->speed = 0;
 	gun->status = 0;
-	heatctrl_init(&gun->heat);
-}
-INIT_APP_EXPORT(strike_init);
-void Gun_speed_set(struct Motor_t *motor,rt_uint16_t speed)
-{
-	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½m/s ×ªï¿½ï¿½ï¿½ï¿½Ä¦ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½Ù¶ï¿½
-	gun1.speed = speed;
+	heatctrl_init(&gun->heat,Refdata);
+	motor_servo_init();
 	#if snail
-	motor_rub_set(speed);
+	//³õÊ¼»¯PWM
+	motor_rub_init();
 	#else
-	motor->spe.set = speed;
+	//´Ë´¦Ó¦´«ÈëÔÆÌ¨µÄRobodata.hÖÐ¸øÄ¦²ÁÂÖ·ÖÅäµÄid
+	motor_init(&m_rub[0],0x201,1);
+	motor_init(&m_rub[1],0x202,1);
+	motor_init(&m_load,0x203,1);
 	#endif
 }
+static void Gun_speed_set(Refdata_t *Refdata,Strike_t *strike,rt_base_t mode)
+{
+	
+	switch(mode)
+	{
+		case STRICK_LOWSPEED: 
+			break;
+		case STRICK_MIDDLESPEED:
+			break;
+		case STRICK_HIGHTSPEED:
+			break;
+	}
+	if(Refdata->robot_id == 1 || Refdata->robot_id == 101)
+	{
+		if(strike->speed>Refdata->heat_limit_17)
+			strike->speed = Refdata->heat_limit_17;
+	}
+	else if(((3<=Refdata->robot_id)&&(Refdata->robot_id<=5))||((103<=Refdata->robot_id)&&(Refdata->robot_id<=105)))
+	{
+		if(strike->speed>Refdata->heat_limit_42)
+			strike->speed = Refdata->heat_limit_42;
+	}
+	#if snail
+	motor_rub_set(strike->speed);
+	#else
+	//ÐèÒª»»Ëã£¿
+	m_rub[0].set_speed = strike->speed;
+	m_rub[1].set_speed = -strike->speed;
+	#endif
+}
+void Gun_mode_set(Strike_t *strike,rt_base_t mode)
+{
+	switch (mode)
+	{
+		case STRICK_NOLIMITE:
+			strike->mode = STRICK_NOLIMITE;
+			break;
+		case STRICK_SINGLE:
+			strike->mode = STRICK_SINGLE;
+			break;
+		case STRICK_TRIPLE:
+			strike->mode = STRICK_TRIPLE;
+			break;
+	}
+}
 /**
- * @brief  ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
- * @param  motorï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½Ö¸ï¿½ï¿½
+ * @brief  ¿¨µ¯ÅÐ¶¨
  */
-void strike_stuck(struct Motor_t *motor, Strike_t *gun)
+static void strike_stuck(Motor_t *motor, Strike_t *gun)
 {
 	static rt_uint16_t stuck_time = 0;
-	static rt_tick_t tick = 0;																			/*ï¿½ï¿½Â¼ÏµÍ³Ê±ï¿½ï¿½*/
+	static rt_tick_t tick = 0;						/*ÏµÍ³Ê±¼ä*/
 	static rt_uint8_t temp = 0;
-	/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
+	
 	if(gun->status & STRICK_STUCK)
 	{	
 		if(temp == 1)
 		{
-			if(rt_tick_get() > tick)																	/*ï¿½ï¿½×ª1000ms*/
+			if(rt_tick_get() > tick)			    
 			{
 				gun->status &= ~STRICK_STUCK;
 				stuck_time = 0;
@@ -212,20 +281,21 @@ void strike_stuck(struct Motor_t *motor, Strike_t *gun)
 		}
 		else
 		{
-			motor->ang.set = motor->dji.angle + 3000;									/**/
+			//motor->set_angle = motor->angle + 3000;			/*·´×ª ÐèÒªÊÖ¶¯ÉèÖÃÒ»ÏÂ*/
 			tick = rt_tick_get()+1000;
 			temp=1;
 		}
 	}
-	else if(~(gun->status & STRICK_STOP))														/*ï¿½ï¿½ï¿½Ã»ï¿½Ð½ï¿½Ö¹×ªï¿½ï¿½*/
+	else if(~(gun->status & STRICK_STOP))					/*Èç¹ûÃ»ÓÐ½ûÖ¹·¢Éä*/
 	{
-		/*ï¿½Ù¶È»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
+		/*µç»úÊä³ö¹ý´ó*/
 		if(ABS(motor->spe.out) > 7777)
 		{
 			stuck_time++;
 		}
-		//else {stuck_time=0;}
-		/*ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½*/
+		else {stuck_time=0;}
+		
+		/*¿¨µ¯ÅÐ¶¨*/
 		if(stuck_time > 111)
 		{
 			gun->status |= STRICK_STUCK;
@@ -234,38 +304,37 @@ void strike_stuck(struct Motor_t *motor, Strike_t *gun)
 }
 
 /**
- * @brief  ï¿½ï¿½ï¿½ï¿½Ä£Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * @param  gunï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½Ö¸ï¿½ï¿½
- * @param  if_fireï¿½ï¿½ï¿½Ç·ñ¿ª»ï¿½,1ï¿½ï¿½ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½
+ * @brief   ¿ª»ðº¯Êý
+ * @param   if_fire=1 ¿ª»ð
  */
-void strike_fire(struct Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
+static void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 {
-	static rt_tick_t tick = 0;										/*ï¿½ï¿½Â¼ÏµÍ³Ê±ï¿½ï¿½*/
-	static rt_tick_t tick_sleep = 0;								/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½*/
+	static rt_tick_t tick = 0;										/*»ñÈ¡ÏµÍ³Ê±¼ä*/
+	static rt_tick_t tick_sleep = 0;								/*·¢µ¯ÐÝÏ¢Ê±¼ä*/
 	
-	if((gun->status & STRICK_STOP)&&(!cacel_heat_ctrl))									/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½Ó·ï¿½ï¿½ï¿½*/
+	if(gun->status & STRICK_STOP)		   
 	{
-		motor->ang.set = motor->dji.angle;
+		motor->set_angle = motor->angle;
 		return;
 	}
 	if(rt_tick_get() - tick < tick_sleep)
-    {return;}					                                    /*ï¿½ï¿½ï¿½ï¿½ï¿½Ú¼ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½Ú¼ä£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¶ï¿½ï¿½ï¿½Ö±ï¿½Ó·ï¿½ï¿½ï¿½**/
+    {return;}					                                    /*´¦ÓÚÐÝÏ¢ÆÚ¼äÖ±½Ó·µ»Ø*/
 	else
 	{
 		if(if_fire==1)
 		{
-			/*Ò»ï¿½Î·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
-			if(gun->mode & STRICK_NOLIMITE)														/*ï¿½ï¿½Í£×ªï¿½ï¿½*/
+			/*·¢µ¯Ä£Ê½*/
+			if(gun->mode & STRICK_NOLIMITE)														/*È«×Ô¶¯*/
 			{
-				tick_sleep=0;																	/*ï¿½ï¿½ï¿½Ê±ï¿½ï¿½*/
+				tick_sleep=0;																	/*²»ÐÝÃß*/
 				motor_angle_set(motor, fire_angle);
 			}
-			else if(gun->mode & STRICK_SINGLE)													/*ï¿½ï¿½ï¿½ï¿½*/
+			else if(gun->mode & STRICK_SINGLE)													/*µ¥·¢*/
 			{
 				tick_sleep=500;
 				motor_angle_set(motor, fire_angle);
 			}
-			else if(gun->mode & STRICK_TRIPLE)	                                               /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
+			else if(gun->mode & STRICK_TRIPLE)	                                               /*ÈýÁ¬·¢*/
 			{
 				tick_sleep=1000;
 				motor_angle_set(motor, fire_angle*3);
@@ -275,3 +344,119 @@ void strike_fire(struct Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 	}
 }
 /************************************ End **************************************************/
+/************************************·¢Éä»ú¹¹Ïß³Ì*******************************************/
+static struct rt_semaphore task_1ms_sem;     													/* ÓÃÓÚ½ÓÊÕÏûÏ¢µÄÐÅºÅÁ¿ */
+static struct rt_semaphore task_10ms_sem;     													/* ÓÃÓÚ½ÓÊÕÏûÏ¢µÄÐÅºÅÁ¿ */
+static struct rt_semaphore task_101ms_sem;     													/* ÓÃÓÚ½ÓÊÕÏûÏ¢µÄÐÅºÅÁ¿ */
+/*1msÈÎÎñ*/
+static struct rt_timer task_1ms;
+/*10msÈÎÎñ*/
+static struct rt_timer task_10ms;
+/*101msÈÎÎñ*/
+static struct rt_timer task_101ms;
+
+/* task_1ms ³¬Ê±º¯Êý */
+static void task_1ms_IRQHandler(void *parameter)
+{
+	rt_sem_release(&task_1ms_sem);
+}
+/* task_10ms ³¬Ê±º¯Êý */
+static void task_10ms_IRQHandler(void *parameter)
+{
+	rt_sem_release(&task_10ms_sem);
+}
+/* task_101ms ³¬Ê±º¯Êý */
+static void task_101ms_IRQHandler(void *parameter)
+{
+	rt_sem_release(&task_101ms_sem);
+}
+
+static void task_1ms_emtry(void *parameter)
+{
+	while(1)
+	{
+		rt_sem_take(&task_1ms_sem, RT_WAITING_FOREVER);
+		//pidËÙ¶È»·
+		pid_output_calculate(&m_rub[0].spe,(m_rub[0].set_speed-m_rub[0].speed));
+		pid_output_calculate(&m_rub[1].spe,(m_rub[1].set_speed-m_rub[1].speed));
+		pid_output_calculate(&m_load.spe,(m_load.ang.out-m_load.speed));
+		//·¢ËÍµçÁ÷
+		
+	}
+}
+static void task_10ms_emtry(void *parameter)
+{
+	while(1)
+	{
+		rt_sem_take(&task_10ms_sem, RT_WAITING_FOREVER);
+		//pid½Ç¶È»·
+		pid_output_calculate(&m_load.ang,motor_angle_judge(&m_load));
+	}
+}
+static void task_101ms_emtry(void *parameter)
+{
+	while(1)
+	{
+		rt_sem_take(&task_101ms_sem, RT_WAITING_FOREVER);
+		//¿¨µ¯ÅÐ¶Ï
+		
+		//·¢µ¯ÅÐ¶¨
+		if(Obtain_Sx_Data(2)&&(RC_data->Remote_Data.s2==1))
+		{
+			strike_fire(&m_load,&gun1,1);
+		}
+	}
+}
+
+/**
+ * @brief  ÈÎÎñ´´½¨
+ */
+void strike_start(void)
+{
+	/*¶¨Ê±Æ÷´¦ÀíÏß³Ì*/
+	rt_thread_t thread;
+	rt_sem_init(&task_1ms_sem, "1ms_sem", 0, RT_IPC_FLAG_FIFO);
+	thread = rt_thread_create("1ms_sem", task_1ms_emtry, RT_NULL, 1024, 1, 1);
+	if (thread != RT_NULL)
+	{
+			rt_thread_startup(thread);
+	}
+	
+	rt_sem_init(&task_10ms_sem, "10ms_sem", 0, RT_IPC_FLAG_FIFO);
+	thread = rt_thread_create("10ms_sem", task_10ms_emtry, RT_NULL, 1024, 1, 1);
+	if (thread != RT_NULL)
+	{
+			rt_thread_startup(thread);
+	}
+	
+	rt_sem_init(&task_101ms_sem, "101ms_sem", 0, RT_IPC_FLAG_FIFO);
+	thread = rt_thread_create("101ms_sem", task_101ms_emtry, RT_NULL, 1024, 1, 1);
+	if (thread != RT_NULL)
+	{
+			rt_thread_startup(thread);
+	}
+	
+	/*¶¨Ê±Æ÷ÖÐ¶Ï*/
+	rt_timer_init(&task_1ms,
+                   "1mstask",
+                   task_1ms_IRQHandler,
+                   RT_NULL,
+                   1, RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
+	rt_timer_init(&task_10ms,
+								 "10mstask",
+								 task_10ms_IRQHandler,
+								 RT_NULL,
+								 10, RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
+	rt_timer_init(&task_101ms,
+								 "101mstask",
+								 task_101ms_IRQHandler,
+								 RT_NULL,
+								 101, RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
+	 /* Æô¶¯¶¨Ê±Æ÷ */
+	rt_timer_start(&task_1ms);
+	rt_timer_start(&task_10ms);
+	rt_timer_start(&task_101ms);
+	Gun_init(&gun1,STRICK_NOLIMITE);
+}
+
+

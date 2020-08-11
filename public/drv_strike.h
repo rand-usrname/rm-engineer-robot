@@ -1,45 +1,43 @@
 #ifndef __DRV_STRIKE_H__
 #define __DRV_STRIKE_H__
 #include <rtthread.h>
-#include "ctrl_motor.h"
+#include "drv_motor.h"
+#include "drv_refsystem.h"
+#include "drv_remote.h"
+#include "drv_canthread.h"
+
+#define HEAT_PERIOD											100				/*ÈÈÁ¿¿ØÖÆÖÜÆÚ 100ms*/
+/*·¢µ¯Ä£Ê½*/
+#define STRICK_NOLIMITE	    0x01								        /*È«×Ô¶¯*/
+#define	STRICK_SINGLE       0x02										/*µ¥·¢*/
+#define	STRICK_TRIPLE       0x04										/*ÈýÁ¬·¢*/
+
+#define	STRICK_LOWSPEED 	0x08										/*µÍËÙ*/
+#define	STRICK_MIDDLESPEED	0x10										/*ÖÐËÙ*/
+#define	STRICK_HIGHTSPEED   0x20										/*¸ßËÙ*/
+
+#define STRICK_STUCK				0x01								/*¿¨µ¯*/
+#define STRICK_STOP					0x02								/*Í£Ö¹·¢µ¯*/
 
 
-#define HEAT_PERIOD											100				/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½Î»ms*/
-/*ï¿½ï¿½ï¿½ï¿½Ä£Ê½*/
-#define STRICK_NOLIMITE	    0x01								        /*ï¿½ï¿½ï¿½ï¿½ï¿½Æ¿ï¿½ï¿½ï¿½*/
-#define	STRICK_SINGLE       0x02										/*ï¿½ï¿½ï¿½ï¿½*/
-#define	STRICK_TRIPLE       0x04										/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
-
-#define	STRICK_LOWSPEED 	0x08										/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
-#define	STRICK_MIDDLESPEED	0x10										/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
-#define	STRICK_HIGHTSPEED   0x20										/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
-/*ï¿½ï¿½ï¿½ï¿½×´Ì¬*/
-#define STRICK_STUCK				0x01								/*ï¿½ï¿½ï¿½ï¿½*/
-#define STRICK_STOP					0x02								/*ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½*/
-
-
-/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ½á¹¹ï¿½ï¿½*/
+/*ÈÈÁ¿Ä£¿é*/
 typedef struct _Heatctrl_t
 {
-	rt_int32_t 					now;							/*ï¿½ï¿½ï¿½ï¿½Ê£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
-	rt_uint32_t 				max;							/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
-	rt_uint8_t 					rate;							/*ï¿½ï¿½Ç°Ê£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù·Ö±ï¿½*/
+	rt_int32_t 					now;							/*µ±Ç°ÈÈÁ¿*/
+	rt_uint32_t 				max;							/*ÈÈÁ¿ÉÏÏÞ*/
+	rt_uint8_t 					rate;							/*Ê£ÓàÈÈÁ¿°Ù·Ö±È*/
 }Heatctrl_t;
 
 
-/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½*/
+/*·¢ÉäÄ£¿é*/
 typedef struct
 {
-	rt_uint16_t   speed;										/*Ä¦ï¿½ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½*/
-	rt_uint8_t    mode;											/*ï¿½ï¿½ï¿½Ä£Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ä£¬3ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Òªï¿½Ä³ï¿½Ã¶ï¿½Ù£ï¿½*/
-	rt_uint8_t	  status;										/*×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½Ù¶È»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½Ã¿ï¿½ï¿½ï¿½*/
-	Heatctrl_t 	  heat;											/*Ç¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¿ï¿½*/
+	rt_uint16_t   speed;										/*·¢µ¯ËÙ¶È ½¨Òém/s*/
+	rt_uint8_t    mode;											/*·¢µ¯Ä£Ê½*/
+	rt_uint8_t	  status;										/*·¢µ¯×´Ì¬*/
+	Heatctrl_t 	  heat;											/*ÈÈÁ¿Ä£¿é*/
 }Strike_t;
-
-/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½*/
-void strike_init(Strike_t *gun,rt_base_t mode);
-/*ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½*/
-void strike_stuck(struct Motor_t *motor, Strike_t *gun);
-/*ï¿½ï¿½ï¿½ï¿½Ä£Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
-void strike_fire(struct Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire);
+void motor_servo_set(uint16_t duty);
+void Gun_mode_set(Strike_t *strike,rt_base_t mode);
+static void Gun_speed_set(Refdata_t *Refdata,Strike_t *strike,rt_base_t mode);
 #endif
