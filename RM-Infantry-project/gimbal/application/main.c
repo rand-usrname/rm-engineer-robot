@@ -11,16 +11,14 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 #include <board.h>
-#include "drv_chassis.h"
+#include "drv_gimbal.h"
 #include "drv_remote.h"
 
 int main(void)
 {
-	chassis_init();
 	remote_uart_init();
 	while(1)
 	{
-		chassis_speed_set(0,(RC_data->Remote_Data.ch0 - 1024)*3,(RC_data->Remote_Data.ch2 - 1024)*3,(RC_data->Remote_Data.ch3 - 1024)*3);
 		rt_thread_mdelay(10);
 	}
 }

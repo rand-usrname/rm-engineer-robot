@@ -1,13 +1,13 @@
 #include "drv_chassis.h"
 
 //底盘电机PID线程句柄
-static rt_thread_t 		contral_speed_thread 	= RT_NULL;
+static rt_thread_t 		chassis_control 	= RT_NULL;
 
 //电机控制结构体，索引0对应最小ID
 static motor_t			chassis_motor[4];
 
 //运动数据，包括云台两轴角度，期望速度等
-static motion_data_t	motion_data;
+static chassis_data_t	motion_data;
 
 #define ABS(a) (((a)>0)?(a):(-a))
 /**
@@ -113,7 +113,7 @@ static void chassis_contral(void)
 }
 /**
 * @brief：根据四个电机的设定参数分别计算出其输出并发送数据
-					在初始化之后该函数每经过x ms会执行一次
+				在初始化之后该函数每经过x ms会执行一次
 * @param [in]	parameter:该参数不会被使用
 * @return：		无
 * @author：mqy
@@ -179,7 +179,7 @@ int chassis_init(void)
     rt_sem_init(&chassis_2ms_sem, "2ms_sem", 0, RT_IPC_FLAG_FIFO);
 	
     //初始化底盘线程
-	contral_speed_thread = rt_thread_create(
+	chassis_control = rt_thread_create(
 	"chassis_control",		//线程名
 	chassis_contral_thread,	//线程入口
 	RT_NULL,				//入口参数无
@@ -188,13 +188,13 @@ int chassis_init(void)
 	2);						//线程时间片大小
 
 	//线程创建失败返回false
-	if(contral_speed_thread == RT_NULL)
+	if(chassis_control == RT_NULL)
 	{
 		return 0;
 	}
 
     //线程启动失败返回false
-	if(rt_thread_startup(contral_speed_thread) != RT_EOK)
+	if(rt_thread_startup(chassis_control) != RT_EOK)
 	{
 		return 0;
 	}
@@ -282,12 +282,12 @@ int refresh_chassis_motor_data(struct rt_can_msg* message)
 
 	return 0;
 }
-int refresh_yuntai_motor_data(struct rt_can_msg* message)
+int refresh_gimbal_motor_data(struct rt_can_msg* message)
 {
 	//其他数据
 	switch(message->id)
 	{
-		case YAW:
+		case YAW_ID:
 			assign_motor_data(&motion_data.yaw_data,message);
 			//转换角度数值的坐标系
 			if(motion_data.yaw_data.angle < YAE_ZERO_ANGLE)
@@ -300,7 +300,7 @@ int refresh_yuntai_motor_data(struct rt_can_msg* message)
 			}
 			return 1;
 			
-		case PITCH:
+		case PITCH_ID:
 			assign_motor_data(&motion_data.pitch_data,message);
 			return 1;
 			

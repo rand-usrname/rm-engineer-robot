@@ -22,9 +22,9 @@ void can2_rec(struct rt_can_msg *msg)
 {
     switch(msg->id)
     {
-        case YAW:
-        case PITCH:
-            refresh_yuntai_motor_data(msg);
+        case YAW_ID:
+        case PITCH_ID:
+            refresh_gimbal_motor_data(msg);
             return;
         case CHASSIS_CTL:
 

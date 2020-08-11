@@ -49,11 +49,11 @@ void SystemClock_Config(void)
 }
 
 /**
-* @briefï¼š	è¯¥å‡½æ•°è®¾ç½®ä¸¤ä¸ªç¯çš„çŠ¶æ€
-* @param [in] pinï¼šledå¼•è„šï¼Œå¯å–å€¼LED1æˆ–LED2
-			statusï¼šä¸º0æ—¶ç¯ç­ï¼Œé0å€¼æ—¶äº®
-* @returnï¼š	æ— 
-* @authorï¼š	mqy
+* @brief£º	¸Ãº¯ÊıÉèÖÃÁ½¸öµÆµÄ×´Ì¬
+* @param [in] pin£ºledÒı½Å£¬¿ÉÈ¡ÖµLED1»òLED2
+			status£ºÎª0Ê±µÆÃğ£¬·Ç0ÖµÊ±ÁÁ
+* @return£º	ÎŞ
+* @author£º	mqy
 */
 void led_set(rt_base_t pin,rt_uint8_t status)
 {
@@ -67,13 +67,13 @@ void led_set(rt_base_t pin,rt_uint8_t status)
     }
 }
 /**
-* @briefï¼šè¯¥å‡½æ•°è®¾ç½®ä¸¤ä¸ªç¯çš„çŠ¶æ€
-* @param [in] pinï¼šæŒ‰é”®æˆ–æ‹¨ç å¼€å…³å¼•è„šï¼Œå¯å–å€¼
-			BUTTON	æŒ‰é”®
-			SWITCH1	æ‹¨ç å¼€å…³1
-			SWITCH1	æ‹¨ç å¼€å…³2
-* @returnï¼š	0å¯¹åº”æŒ‰é”®ç¯ç­ï¼Œ1å¯¹åº”ç¯äº®
-* @authorï¼šmqy
+* @brief£º¸Ãº¯ÊıÉèÖÃÁ½¸öµÆµÄ×´Ì¬
+* @param [in] pin£º°´¼ü»ò²¦Âë¿ª¹ØÒı½Å£¬¿ÉÈ¡Öµ
+			BUTTON	°´¼ü
+			SWITCH1	²¦Âë¿ª¹Ø1
+			SWITCH1	²¦Âë¿ª¹Ø2
+* @return£º	0¶ÔÓ¦°´¼üµÆÃğ£¬1¶ÔÓ¦µÆÁÁ
+* @author£ºmqy
 */
 int key_get(rt_base_t pin)
 {

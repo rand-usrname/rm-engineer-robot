@@ -4,46 +4,27 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 
-#ifdef MECANUM_WHEEL
-
-    //前后轮间距，单位mm
-    #define VEHICLE_WIDTH		390//单位毫米
-    //左右轮间距，单位mm
-    #define VEHICLE_LONG		390//单位毫米
-	
-#endif
-#ifdef OMNI_WHEEL
-
-    //全向轮旋转直径
-    #define VEHICLE_DIAMETER    469//单位毫米
-
-#endif
-
-#define YAE_ZERO_ANGLE          3360
-#define PITCH_ZERO_ANGLE        0
 
 typedef enum
 {
     //发送
-    MOTOR_CONTROL = 0x200,
+    GIMBAL_MCTL = 0x200,
 
     //接收
-	LEFT_FRONT  = 0x201,    //四个底盘轮子的ID
-	RIGHT_FRONT	= 0x202,
-	LEFT_BACK	= 0x203,
-	RIGHT_BACK	= 0x204
-    
+    GYRO_ID     = 0x1315,
+    YAW_ID      = 0x206,
+    PITCH_ID    = 0x207
+
 }drv_can1ID_e;
 //底盘CAN1设备ID
 
-
 typedef enum
 {
+    //发送
+    CHASSIS_CTL = 0x100,
+    
     //接收
-    YAW         = 0x206,
-    PITCH       = 0x207,
 
-    CHASSIS_CTL = 0x100
 }drv_can2ID_e;
 //底盘CAN2设备ID
 

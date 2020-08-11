@@ -40,8 +40,8 @@ typedef enum
 typedef enum
 {
     //Ω” ’
-    YAW         = 0x206,
-    PITCH       = 0x207,
+    YAW_ID      = 0x206,
+    PITCH_ID    = 0x207,
 
     CHASSIS_CTL = 0x100
 }drv_can2ID_e;

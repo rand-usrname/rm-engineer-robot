@@ -90,8 +90,6 @@
 #define RT_USING_CAN
 #define RT_CAN_USING_HDR
 #define RT_USING_PIN
-#define RT_USING_PWM
-#define RT_USING_WDT
 
 /* Using WiFi */
 
@@ -175,36 +173,22 @@
 
 /* Onboard Peripheral Drivers */
 
-#define CORE_USING_MONITOR
-#define CORE_USING_BUZZER
-#define CORE_USING_RGB_LIGHT
 
 /* On-chip Peripheral Drivers */
 
 #define BSP_USING_GPIO
 #define BSP_USING_UART
 #define BSP_USING_UART1
-#define BSP_UART1_RX_USING_DMA
 #define BSP_USING_UART8
-#define BSP_USING_PWM
-#define BSP_USING_PWM2
-#define BSP_USING_PWM2_CH3
-#define BSP_USING_PWM5
-#define BSP_USING_PWM5_CH3
-#define BSP_USING_PWM9
-#define BSP_USING_PWM9_CH1
-#define BSP_USING_PWM9_CH2
 #define BSP_USING_CAN
 #define BSP_USING_CAN1
 #define BSP_USING_CAN2
-#define BSP_USING_WDT
 
 /* Board extended module Drivers */
 
 /* Thread Config */
 
-#define THREAD_CHASSIS_CONTROL
-#define OMNI_WHEEL
+#define THREAD_GIMBAL_CONTROL
 #define THREAD_CAN_RECEIVE
 #define THREAD_REMOTE
 #define PID_CALCULATE

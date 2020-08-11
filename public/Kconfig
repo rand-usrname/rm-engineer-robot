@@ -3,8 +3,8 @@ menu "Thread Config"
     #底盘控制线程选取
     config THREAD_CHASSIS_CONTROL
         bool "Enable chassis control thread"
-        select THREAD_CAN_RECEIVE
-        select PID_CALCULATE
+        select THREAD_CAN_RECEIVE   #CAN控制线程
+        select PID_CALCULATE        #PID
         default n
 
     #底盘种类选取
@@ -23,19 +23,23 @@ menu "Thread Config"
     #云台控制线程选取
     config THREAD_GIMBAL_CONTROL
         bool "Enable gimbal control thread"
-        select THREAD_CAN_RECEIVE
-        select PID_CALCULATE
+        select THREAD_CAN_RECEIVE   #CAN接收线程
+        select PID_CALCULATE        #PID
+        select USING_GYRO           #陀螺仪
         default n
 
     #发射机构控制线程选取
     config THREAD_STRIKE_CONTRAL
         bool "Enable strike contral thread"
-        select THREAD_GIMBAL_CONTROL
+        select PID_CALCULATE        #PID
+        select THREAD_CAN_RECEIVE   #CAN接收线程
+        default n
     
     #视觉自动瞄准
     config THREAD_AINBOT
         bool "Enable aim bot"
-        select THREAD_CAN_RECEIVE
+        select THREAD_CAN_RECEIVE   #CAN接收
+        default n
 
     #CAN接收线程选取
     config THREAD_CAN_RECEIVE
@@ -50,10 +54,17 @@ menu "Thread Config"
         bool "Enable remote thread"
         select BSP_USING_UART
         select BSP_USING_UART1
+        default n
 
     #PID文件
     config PID_CALCULATE
         bool "Using PID library"
+        default n
+
+    #陀螺仪文件选取
+    config USING_GYRO
+        bool "Using gyro module"
+        select THREAD_CAN_RECEIVE   #依赖CAN接收线程
         default n
 
 endmenu

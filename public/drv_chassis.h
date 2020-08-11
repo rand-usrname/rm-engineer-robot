@@ -50,12 +50,12 @@ typedef struct
 	rt_int16_t 		xspeed;				//单位mm/s
 	rt_int16_t		yspeed;				//单位mm/s
 
-} motion_data_t;
+} chassis_data_t;
 
 extern void chassis_speed_set(rt_uint16_t follow_angle,rt_int16_t angular_velocity,rt_int16_t xspeed,rt_int16_t yspeed);
 extern void sport_mode_set(sport_mode_e sport_mode);
 extern int refresh_chassis_motor_data(struct rt_can_msg* message);
-extern int refresh_yuntai_motor_data(struct rt_can_msg* message);
+extern int refresh_gimbal_motor_data(struct rt_can_msg* message);
 extern int chassis_init(void);
 
 #endif

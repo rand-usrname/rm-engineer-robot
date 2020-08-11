@@ -27,6 +27,9 @@ if GetDepend(['THREAD_REMOTE']):
 if GetDepend(['PID_CALCULATE']):
     src += ['pid.c']
 
+if GetDepend(['USING_GYRO']):
+    src += ['drv_gyro.c']
+
 group = group + DefineGroup('public', src, depend = [''], CPPPATH = CPPPATH)
 
 Return('group')
