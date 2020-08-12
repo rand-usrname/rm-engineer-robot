@@ -24,6 +24,12 @@ if GetDepend(['THREAD_CAN_RECEIVE']):
 if GetDepend(['THREAD_REMOTE']):
     src += ['drv_remote.c']
 
+if GetDepend(['THREAD_REF_SYSTEM']):
+    src += ['drv_refsystem.c']
+
+if GetDepend(['MOTOR_CONTROL']):
+    src += ['drv_motor.c']
+
 if GetDepend(['PID_CALCULATE']):
     src += ['pid.c']
 

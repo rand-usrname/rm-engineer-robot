@@ -56,6 +56,19 @@ menu "Thread Config"
         select BSP_USING_UART1
         default n
 
+    #使用裁判系统
+    config THREAD_REF_SYSTEM
+        bool "Enable referee system"
+        select BSP_USING_UART6
+        select BSP_UART6_RX_USING_DMA
+        default n
+
+    #电机驱动文件
+    config MOTOR_CONTROL
+        bool "Using motor control"
+        select PID_CALCULATE
+        default n
+
     #PID文件
     config PID_CALCULATE
         bool "Using PID library"
