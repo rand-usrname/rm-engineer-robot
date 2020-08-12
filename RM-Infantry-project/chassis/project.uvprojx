@@ -549,6 +549,21 @@
               <FilePath>..\..\public\drv_chassis.c</FilePath>
             </File>
             <File>
+              <FileName>drv_gimbal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\public\drv_gimbal.c</FilePath>
+            </File>
+            <File>
+              <FileName>drv_strike.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\public\drv_strike.c</FilePath>
+            </File>
+            <File>
+              <FileName>drv_aimbot.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\public\drv_aimbot.c</FilePath>
+            </File>
+            <File>
               <FileName>drv_canthread.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\public\drv_canthread.c</FilePath>
@@ -559,9 +574,24 @@
               <FilePath>..\..\public\drv_remote.c</FilePath>
             </File>
             <File>
+              <FileName>drv_refsystem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\public\drv_refsystem.c</FilePath>
+            </File>
+            <File>
+              <FileName>drv_motor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\public\drv_motor.c</FilePath>
+            </File>
+            <File>
               <FileName>pid.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\public\pid.c</FilePath>
+            </File>
+            <File>
+              <FileName>drv_gyro.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\public\drv_gyro.c</FilePath>
             </File>
           </Files>
         </Group>
