@@ -3,7 +3,7 @@
 
 #include <rtthread.h>
 #include <rtdevice.h>
-#include <arm_math.h>
+//#include <arm_math.h>
 
 #define GYRO_ANGLE_ID			0x101
 #define GYRO_SPEED_ID			0x102
