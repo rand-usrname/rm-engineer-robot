@@ -64,7 +64,7 @@ extern int refresh_gimbal_motor_data(struct rt_can_msg* message);
 extern int gimbal_init(void);
 
 //¶ÁÈ¡º¯Êý
-extern int get_yawangle(data_source_t data_source);
-extern int get_pitchangle(data_source_t data_source);
+extern int get_yawangle(void);
+extern int get_pitchangle(void)
 
 #endif

@@ -34,9 +34,10 @@ void pid_init(pid_t *pid,
 * @return：		pid的计算结果
 * @author：mqy
 */
-int pid_output_calculate(pid_t* target,int nowdata)
+int pid_output_calculate(pid_t* target,int set,int now)
 {
-	int error = target->set - nowdata;
+	target->set = set;
+	int error = target->set - now;
 	target->err_old = target->err;
 	target->err = error;
 	target->i_value += target->ki * error;
@@ -77,9 +78,10 @@ int pid_output_calculate(pid_t* target,int nowdata)
 * @return：		pid的计算结果
 * @author：mqy
 */
-int pid_output_motor(pid_t* target,int nowdata)
+int pid_output_motor(pid_t* target,int set,int now)
 {
-	int error = target->set - nowdata;
+	target->set = set;
+	int error = target->set - now;
 	if(ABS(error) > (8191 - ABS(error)))
 	{
 		if(error > 0)
