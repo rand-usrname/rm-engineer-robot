@@ -19,10 +19,10 @@ static int anglepid_calculate(gimbalmotor_t* motor,int gyroangle)
 	switch (motor->angledata_source)
 	{
 	case GYRO:
-		return pid_output_motor(&motor->anglepid_gyro,gyroangle);
+		return pid_output_motor(&motor->anglepid_gyro,motor->anglepid_gyro.set,gyroangle);
 
 	case DJI_MOTOR:
-		return pid_output_motor(&motor->anglepid_dji,gyroangle);
+		return pid_output_motor(&motor->anglepid_dji,motor->anglepid_dji.set,gyroangle);
 
 	default:
 		return 0;
@@ -49,7 +49,7 @@ static int gimbalpid_cal(gimbalmotor_t* motor,int gyroangle,int gyrospeed,rt_uin
 		{
 			motor->speedpid.set = motor->set;
 		}
-		pid_output_calculate(&motor->speedpid,gyrospeed);
+		pid_output_calculate(&motor->speedpid,motor->speedpid.set,gyrospeed);
 
 	case CURRENT://若为电流环则设置电流值，
 		if(motor->control_mode == CURRENT)
@@ -103,7 +103,8 @@ static void gimbal_contral_thread(void* parameter)
 		angle_time++;
 
 		//计算云台电机等
-		gimbalpid_cal(&yaw,?,?,angle_time);
+		gimbalpid_cal(&yaw,Gryo_data.yaw,Gryo_data.yaw_speed,angle_time);
+		gimbalpid_cal(&pitch,Gryo_data.pitch,Gryo_data.pitch_speed,angle_time);
 
 		//发送数据
 		wheelc_message.data[0] = pitch.speedpid.out>>8;

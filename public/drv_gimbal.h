@@ -65,6 +65,6 @@ extern int gimbal_init(void);
 
 //¶ÁÈ¡º¯Êý
 extern int get_yawangle(void);
-extern int get_pitchangle(void)
+extern int get_pitchangle(void);
 
 #endif
