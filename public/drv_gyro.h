@@ -2,10 +2,7 @@
 #define __DRV_GYRO_H__
 #include <rtthread.h>
 #include <rtdevice.h>
-<<<<<<< HEAD
-=======
 //#include <arm_math.h>
->>>>>>> d994937ccd4a91bd2114f9c1c1a136da02ba8046
 
 #define GYRO_ANGLE_ID			0x101
 #define GYRO_SPEED_ID			0x102
