@@ -40,9 +40,9 @@ typedef struct
 
 
 /*ÍÓÂÝÒÇÊý¾Ý¶ÁÈ¡*/
-void gyro_read_speed(struct rt_can_msg* rxmsg);
-void gyro_read_angle(struct rt_can_msg* rxmsg);
-void IMU_transfer2_gimbal();
+extern void gyro_read_speed(struct rt_can_msg* rxmsg);
+extern void gyro_read_angle(struct rt_can_msg* rxmsg);
+extern void IMU_transfer2_gimbal();
 
 
 
