@@ -16,8 +16,6 @@ typedef enum
 
 typedef struct
 {
-	rt_int16_t set_angle;                                       /* 设定角度 */
-	rt_int16_t set_speed;                                       /* 设定速度 */
 	rt_uint16_t angle;											 /*角度 0~8191*/
 	rt_int16_t speed;                                            /* 角速度 */
 	rt_int16_t current;                                          /* 电流 */ 
@@ -43,5 +41,4 @@ rt_size_t motor_current_send(rt_device_t dev, 											/*电机电流发送*/
 void motor_init(Motor_t *motor,rt_uint32_t ID,float radio);
 void motor_speed_set(Motor_t *motor,int speed);
 void motor_angle_set(Motor_t *motor,int angle);
-rt_int16_t motor_angle_judge(Motor_t *motor);
 #endif

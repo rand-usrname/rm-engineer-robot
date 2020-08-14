@@ -240,8 +240,8 @@ static void Gun_speed_set(Refdata_t *Refdata,Strike_t *strike,rt_base_t mode)
 	motor_rub_set(strike->speed);
 	#else
 	//需要换算？
-	m_rub[0].set_speed = strike->speed;
-	m_rub[1].set_speed = -strike->speed;
+	m_rub[0].spe.set = strike->speed;
+	m_rub[1].spe.set = -strike->speed;
 	#endif
 }
 void Gun_mode_set(Strike_t *strike,rt_base_t mode)
@@ -281,7 +281,7 @@ static void strike_stuck(Motor_t *motor, Strike_t *gun)
 		}
 		else
 		{
-			//motor->set_angle = motor->angle + 3000;			/*反转 需要手动设置一下*/
+			//motor->ang.set = motor->angle + 3000;			/*反转 需要手动设置一下*/
 			tick = rt_tick_get()+1000;
 			temp=1;
 		}
@@ -314,7 +314,7 @@ static void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 	
 	if(gun->status & STRICK_STOP)		   
 	{
-		motor->set_angle = motor->angle;
+		motor->ang.set = motor->angle;
 		return;
 	}
 	if(rt_tick_get() - tick < tick_sleep)
@@ -377,9 +377,9 @@ static void task_1ms_emtry(void *parameter)
 	{
 		rt_sem_take(&task_1ms_sem, RT_WAITING_FOREVER);
 		//pid速度环
-		pid_output_calculate(&m_rub[0].spe,(m_rub[0].set_speed-m_rub[0].speed));
-		pid_output_calculate(&m_rub[1].spe,(m_rub[1].set_speed-m_rub[1].speed));
-		pid_output_calculate(&m_load.spe,(m_load.ang.out-m_load.speed));
+		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].speed);
+		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].speed);
+		pid_output_calculate(&m_load.spe,m_load.ang.out,m_load.speed);
 		//发送电流
 		
 	}
@@ -390,7 +390,7 @@ static void task_10ms_emtry(void *parameter)
 	{
 		rt_sem_take(&task_10ms_sem, RT_WAITING_FOREVER);
 		//pid角度环
-		pid_output_calculate(&m_load.ang,motor_angle_judge(&m_load));
+		pid_output_calculate(&m_load.ang,m_load.ang.set,m_load.angle);
 	}
 }
 static void task_101ms_emtry(void *parameter)

@@ -83,7 +83,7 @@ static void chassis_contral(void)
 		case FOLLOW:
 		{
 			//在跟随模式下需要计算设定角速度
-			pid_output_motor(&motion_data.anglepid,motion_data.follow_angle);
+			pid_output_motor(&motion_data.anglepid,motion_data.anglepid.set,motion_data.follow_angle);
 			
 			motor_speed_set(
 			motion_data.yaw_data.angle,//传入当前角度参数
@@ -128,7 +128,7 @@ static void chassis_contral_thread(void* parameter)
 		chassis_contral();
 		for(int a = 0;a<4;a++)
 		{
-			pid_output_calculate(&chassis_motor[a].speedpid,chassis_motor[a].motordata.speed);
+			pid_output_calculate(&chassis_motor[a].speedpid,chassis_motor[a].speedpid.set,chassis_motor[a].motordata.speed);
 			//chassis_motor[a].motorpid.out = 200;
 		}
 		

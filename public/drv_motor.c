@@ -95,7 +95,7 @@ void motor_init(Motor_t *motor,rt_uint32_t ID,float radio)
  */
 void motor_speed_set(Motor_t *motor,int speed)
 {
-	motor->set_speed = speed;
+	motor->spe.set = speed;
 }
 
 /**
@@ -117,20 +117,20 @@ void motor_angle_set(Motor_t *motor,int angle)
 //		if(err>0){err-=8192;}
 //		else {err += 8192;}
 //	}
-	motor->set_angle += angle;
+	motor->ang.set += angle;
 }
 rt_int16_t motor_angle_judge(Motor_t *motor)
 {
 	rt_int16_t err;	
-	if(motor->set_angle > 8191)
+	if(motor->ang.set > 8191)
 	{
-		motor->set_angle -= 8191;
+		motor->ang.set -= 8191;
 	}
-	else if(motor->set_angle < 0)
+	else if(motor->ang.set < 0)
 	{
-		motor->set_angle += 8191;
+		motor->ang.set += 8191;
 	}
-	err = motor->set_angle - motor->angle;
+	err = motor->ang.set - motor->angle;
 	if(ABS(err) > (8192/2))
 	{
 		if(err>0){err -= 8192;}
