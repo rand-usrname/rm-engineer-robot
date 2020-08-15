@@ -81,18 +81,32 @@ int pid_output_calculate(pid_t* target,int set,int now)
 int pid_output_motor(pid_t* target,int set,int now)
 {
 	target->set = set;
-	int error = target->set - now;
-	if(ABS(error) > (8191 - ABS(error)))
+	rt_int16_t error = 0;	
+	if(target->set > 8191)
 	{
-		if(error > 0)
-		{
-			error = 8191 - error;
-		}
-		else
-		{
-			error = 8191 + error;
-		}
+		target->set -= 8191;
 	}
+	else if(target->set < 0)
+	{
+		target->set += 8191;
+	}
+	error = target->set - now;
+	if(ABS(error) > (8192/2))
+	{
+		if(error>0){error -= 8192;}
+		else {error += 8192;}
+	}
+//	if(ABS(error) > (8191 - ABS(error)))
+//	{
+//		if(error > 0)
+//		{
+//			error = 8191 - error;
+//		}
+//		else
+//		{
+//			error = 8191 + error;
+//		}
+//	}
 	target->err_old = target->err;
 	target->err = error;
 	target->i_value += target->ki * error;
