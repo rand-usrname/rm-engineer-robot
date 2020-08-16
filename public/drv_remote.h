@@ -54,16 +54,13 @@ typedef	struct __Key_Data
 		uint8_t V;
 		uint8_t B;
 }Key_Data_t;
-typedef struct __KeyBoard
-{
-	uint16_t v;
-	Key_Data_t Key_Data;
-}KeyBoard_t;
+
 typedef struct __RC_Ctrl
 {
 	Remote_t Remote_Data;
 	Mouse_t Mouse_Data;
-	KeyBoard_t KeyBoard_Data;
+	rt_uint16_t v;
+	Key_Data_t Key_Data;
 }RC_Ctrl_t;
 
 extern RC_Ctrl_t RC_data;
