@@ -40,7 +40,7 @@ typedef struct
 typedef struct
 {
 	control_mode_t	control_mode;		//控制模式
-	drv_can2ID_e 	motorID;			//枚举定义电机ID
+	drv_can1ID_e 	motorID;			//枚举定义电机ID
 	motordata_t		motordata;			//电机数据结构体
 	int				set;				//设定值
 

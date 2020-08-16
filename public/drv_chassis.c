@@ -9,6 +9,8 @@ static motor_t			chassis_motor[4];
 //运动数据，包括云台两轴角度，期望速度等
 static chassis_data_t	motion_data;
 
+#define ABS(a) (((a)>0)?(a):(-a))
+
 /**
 * @brief：按照参数设定底盘的运动角速度与速度，速度结果将会被保存在本文件的四个轮子的数据中
 * @param [in]	angle:设定本次操作的正方向（即本次操作的水平坐标系的y轴正方向
@@ -72,7 +74,7 @@ static void chassis_contral(void)
 		case NO_FOLLOW:
 		{
 			motor_speed_set(
-			motion_data.yaw_data.angle,			//传入当前角度参数
+			motion_data.follow_angle,			//传入当前角度参数
 			motion_data.angular_velocity,		//不跟随时传入当前角速度
 			motion_data.xspeed,
 			motion_data.yspeed
@@ -99,6 +101,35 @@ static void chassis_contral(void)
 	}
 }
 /**
+* @brief：将地盘功率限制在期望范围内
+* @param [in]	powermax:限制的功率大小，单位 mW - 毫瓦
+				该函数还通过直接读写的方式获取当前四个电机的电流
+* @return：计划为1时限制，0时未作出限制
+* @author：mqy
+*/
+static int power_limit(int powermax)
+{
+	//进行电流求和
+	int allcurrent = 0;
+	allcurrent += ABS(chassis_motor[0].motordata.current);
+	allcurrent += ABS(chassis_motor[1].motordata.current);
+	allcurrent += ABS(chassis_motor[2].motordata.current);
+	allcurrent += ABS(chassis_motor[3].motordata.current);
+
+	//通过功率得出步兵当前可行的最大电流，量纲与allcurrent相同
+	int Imax = powermax/25;		//电流最大值，单位 mA，实际供电电压25.5
+	Imax = Imax*8192/10000;		//转换至电机发送数据的量纲
+	if(Imax < allcurrent)		//若电流超限
+	{
+		chassis_motor[0].speedpid.out = ((int)chassis_motor[0].speedpid.out)*Imax/allcurrent;
+		chassis_motor[1].speedpid.out = ((int)chassis_motor[1].speedpid.out)*Imax/allcurrent;
+		chassis_motor[2].speedpid.out = ((int)chassis_motor[2].speedpid.out)*Imax/allcurrent;
+		chassis_motor[3].speedpid.out = ((int)chassis_motor[3].speedpid.out)*Imax/allcurrent;
+		return 1;
+	}
+	return 0;					//不超限返回0
+}
+/**
 * @brief：根据四个电机的设定参数分别计算出其输出并发送数据
 				在初始化之后该函数每经过x ms会执行一次
 * @param [in]	parameter:该参数不会被使用
@@ -116,7 +147,7 @@ static void chassis_contral_thread(void* parameter)
 {
 	struct rt_can_msg wheelc_message;
 	
-	wheelc_message.id	= MOTOR_CONTROL;  //设置ID
+	wheelc_message.id	= CHASSIS_CTLID;//设置ID
 	wheelc_message.ide	= RT_CAN_STDID;	//标准帧
 	wheelc_message.rtr	= RT_CAN_DTR;	//数据帧
 	wheelc_message.priv = 0;			//报文优先级最高
@@ -131,6 +162,9 @@ static void chassis_contral_thread(void* parameter)
 			pid_output_calculate(&chassis_motor[a].speedpid,chassis_motor[a].speedpid.set,chassis_motor[a].motordata.speed);
 			//chassis_motor[a].motorpid.out = 200;
 		}
+
+		//测试代码进行功率限制
+		//power_limit(2000);
 		
 		//发送数据
 		wheelc_message.data[0] = chassis_motor[0].speedpid.out>>8;
@@ -210,6 +244,7 @@ int chassis_init(void)
 	motion_data.xspeed = 0;
 	motion_data.yspeed = 0;
 	motion_data.sport_mode = NO_FOLLOW;//默认不跟随
+	
 	return 1;
 }
 /**
@@ -231,6 +266,16 @@ void chassis_speed_set(rt_uint16_t follow_angle,rt_int16_t angular_velocity,rt_i
 	motion_data.angular_velocity = angular_velocity;
 	motion_data.xspeed = xspeed;
 	motion_data.yspeed = yspeed;
+}
+/**
+* @brief：设定运动模式
+* @param [in]	sport_mode:期望的运动模式
+* @return：		无
+* @author：mqy
+*/
+void sport_mode_set(sport_mode_e sport_mode)
+{
+	motion_data.sport_mode = sport_mode;
 }
 /**
 * @brief：refresh_motor_data函数会使用该函数来更新数据

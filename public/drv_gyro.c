@@ -3,8 +3,8 @@
 //#include <arm_math.h>
 //#include "ahrs.h"
 
-struct IMU_t HERO_IMU;//IMU????,??m/s^2,rad/s
-struct IMU_atti_t HERO_IMU_atti;
+IMU_t HERO_IMU;//IMU????,??m/s^2,rad/s
+gimbal_atti_t HERO_IMU_atti;
 
 
 
