@@ -66,7 +66,7 @@ typedef struct __RC_Ctrl
 	KeyBoard_t KeyBoard_Data;
 }RC_Ctrl_t;
 
-extern RC_Ctrl_t RC_Ctrl_Data;
+extern RC_Ctrl_t RC_data;
 
 extern int remote_uart_init(void);
 
