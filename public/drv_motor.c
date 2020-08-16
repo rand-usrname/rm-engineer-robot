@@ -1,12 +1,11 @@
 #include "drv_motor.h"
-
 /**
  * @brief  对反馈角度进行换算为0-8191
  * @param  angle：角度
  * @param  motor：电机数据结构体
  * @retval None
  */
-static void motor_angle_adjust(rt_uint16_t angle,Motor_t* motor)
+static void motor_angle_adjsut(rt_uint16_t angle,DjiMotor_t* motor)
 {
 	float angletemp = 0;
 	
@@ -44,7 +43,7 @@ static void motor_angle_adjust(rt_uint16_t angle,Motor_t* motor)
  * @param  moto：电机数据结构
  * @retval None
  */
-void motor_readmsg(struct rt_can_msg* rxmsg,Motor_t* motor)
+void motor_readmsg(struct rt_can_msg* rxmsg,DjiMotor_t* motor)
 {
 	rt_uint16_t angle;
 	
@@ -53,7 +52,7 @@ void motor_readmsg(struct rt_can_msg* rxmsg,Motor_t* motor)
 	motor->temperature = rxmsg->data[6];
 	
 	angle = (rt_int16_t)(rxmsg->data[0]<<8 | rxmsg->data[1]);
-	motor_angle_adjust(angle, motor);
+	motor_angle_adjsut(angle, motor);
 }
 
 /**
@@ -81,60 +80,13 @@ rt_size_t motor_current_send(rt_device_t dev,
 	return rt_device_write(dev, 0, &txmsg, sizeof(txmsg));
 }
 
-/**
- * @brief  电机初始化 pid 自己初始化
- */
+
+void motor_angle_set(Motor_t *motor,float angle)
+{
+	motor->ang.set +=  (rt_int16_t)(angle/360.0f*8192);
+}
 void motor_init(Motor_t *motor,rt_uint32_t ID,float radio)
 {
-	motor->motorID = ID;
-	motor->ratio = radio;
-}
-/**
- * @brief  设置电机匀速运动
- * @retval 返回电流  
- */
-void motor_speed_set(Motor_t *motor,int speed)
-{
-	motor->spe.set = speed;
-}
-
-/**
- * @brief  设置电机角度 -180-180°
- * @retval 返回电流
- */
-void motor_angle_set(Motor_t *motor,int angle)
-{	
-//	int now = motor->angle;
-//	int temp_set = now + (int)(angle/360.0*8192);
-//	int err = 0;	
-//	if(temp_set > 8191)
-//	{temp_set -= 8191;}
-//	else if(temp_set<0)
-//	{temp_set += 8191;}
-//	err = temp_set - now;
-//	if(ABS(err)> (8191/2))
-//	{
-//		if(err>0){err-=8192;}
-//		else {err += 8192;}
-//	}
-	motor->ang.set += angle;
-}
-rt_int16_t motor_angle_judge(Motor_t *motor)
-{
-	rt_int16_t err;	
-	if(motor->ang.set > 8191)
-	{
-		motor->ang.set -= 8191;
-	}
-	else if(motor->ang.set < 0)
-	{
-		motor->ang.set += 8191;
-	}
-	err = motor->ang.set - motor->angle;
-	if(ABS(err) > (8192/2))
-	{
-		if(err>0){err -= 8192;}
-		else {err += 8192;}
-	}
-	return err;
+	motor->dji.motorID = ID;
+	motor->dji.ratio = radio;
 }
