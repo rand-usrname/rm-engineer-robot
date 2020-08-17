@@ -44,7 +44,7 @@ typedef struct
 extern void gyro_read_speed(struct rt_can_msg* rxmsg);	
 //CAN1…Ë±∏	GYRO_ANGLE_ID	0x101
 extern void gyro_read_angle(struct rt_can_msg* rxmsg);
-extern void IMU_transfer2_gimbal();
+extern void IMU_transfer2_gm();
 
 
 

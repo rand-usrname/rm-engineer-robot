@@ -44,16 +44,22 @@ void gyro_read_speed(struct rt_can_msg* rxmsg)
 	HERO_IMU.roll_speed 	= ((rt_int16_t)(rxmsg->data[2]<<8 | rxmsg->data[3])) / 100.0f;
 	HERO_IMU.yaw_speed 		= ((rt_int16_t)(rxmsg->data[4]<<8 | rxmsg->data[5])) / 100.0f;
 	
+	//如果云台控制线程存在
+	#ifdef THREAD_GIMBAL_CONTROL
+
+	IMU_transfer2gimbal();
+
+	#endif
+
 }
 
-//如果云台控制线程存在
-//#ifdef THREAD_GIMBAL_CONTROL
 
-//大地系(IMU)转到电机系
-void IMU_transfer2_gimbal()
+
+//大地系(IMU)转到云台电机系
+void IMU_transfer2gm()
 {
 	float pitch_ecd_offset;
-	int dir = 0;
+	int dir = 0;//
 
 	gimbal_atti.pitch = HERO_IMU.pitch - pitch_ecd_offset;
 	gimbal_atti.yaw = HERO_IMU.yaw;
@@ -83,7 +89,7 @@ void IMU_transfer2_gimbal()
 
 }
 
-#endif
+
 
 
 
