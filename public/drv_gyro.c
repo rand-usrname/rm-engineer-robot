@@ -6,7 +6,7 @@
 struct IMU_t HERO_IMU;//IMU传回数据,单位m/s^2,rad/s
 struct IMU_atti_t HERO_IMU_atti;
 
-float invSqrt(float x);
+float invSqrt(float x);	//快速开平方
 
 /***
   * @Name     gyro_read_angle
