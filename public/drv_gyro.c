@@ -59,7 +59,7 @@ void gyro_read_speed(struct rt_can_msg* rxmsg)
 void IMU_transfer2gm()
 {
 	float pitch_ecd_offset;
-	int dir = 0;//
+	int dir = 0;	//角速度方向
 
 	gimbal_atti.pitch = HERO_IMU.pitch - pitch_ecd_offset;
 	gimbal_atti.yaw = HERO_IMU.yaw;
@@ -69,14 +69,14 @@ void IMU_transfer2gm()
 
 	if(fabs(HERO_IMU.yaw_speed) > fabs(HERO_IMU.roll_speed))//符号取决于较大值的符号
 	{
-		if(Gryo_data.yaw_speed > 0)
+		if(HERO_IMU.yaw_speed > 0)
 			dir = 1;
 		else
 			dir = -1;
 	}
 	else
 	{
-		if(Gryo_data.roll_speed > 0)
+		if(HERO_IMU.roll_speed > 0)
 			dir = 1;
 		else
 			dir = -1;
