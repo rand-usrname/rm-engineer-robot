@@ -101,7 +101,7 @@ static void gimbal_contral_thread(void* parameter)
 		angle_time++;
 
 		//计算云台电机等
-		gimbalpid_cal(&yaw,Gryo_data.yaw,Gryo_data.yaw_speed,angle_time);
+		gimbalpid_cal(&yaw,gimbal_atti.yaw,gimbal_atti.yaw_speed,angle_time);
 		gimbalpid_cal(&pitch,Gryo_data.pitch,Gryo_data.pitch_speed,angle_time);
 
 		//发送数据
