@@ -101,8 +101,8 @@ static void gimbal_contral_thread(void* parameter)
 		angle_time++;
 
 		//计算云台电机等
-		gimbalpid_cal(&yaw,HERO_IMU.yaw,HERO_IMU.yaw_speed,angle_time);
-		gimbalpid_cal(&pitch,HERO_IMU.pitch,HERO_IMU.pitch_speed,angle_time);
+		gimbalpid_cal(&yaw,gimbal_atti.yaw,gimbal_atti.yaw_speed,angle_time);
+		gimbalpid_cal(&pitch,gimbal_atti.pitch,gimbal_atti.pitch_speed,angle_time);
 
 		//发送数据
 		wheelc_message.data[0] = pitch.speedpid.out>>8;

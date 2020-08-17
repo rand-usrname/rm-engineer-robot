@@ -9,7 +9,7 @@
 
 typedef struct
 {
-	//大地坐标系
+	//IMU,大地坐标系
 	float pitch;										/*pitch*///与安装方向有关
 	float yaw;											/*yaw*/
 	float roll;											/*roll*///与安装方向有关
@@ -36,7 +36,7 @@ typedef struct
 	float yaw_speed;											/*YAW轴角速度*/
 
 	
-}gimbal_atti_t;//IMU姿态结构体
+}ATTI_t;//姿态结构体
 
 
 /*陀螺仪数据读取*/
@@ -44,11 +44,11 @@ typedef struct
 extern void gyro_read_speed(struct rt_can_msg* rxmsg);	
 //CAN1设备	GYRO_ANGLE_ID	0x101
 extern void gyro_read_angle(struct rt_can_msg* rxmsg);
-extern void IMU_transfer2_gimbal();
+extern void IMU_transfer2_gm();
 
 
 
 extern IMU_t HERO_IMU;//单位m/s^2,rad/s
-extern gimbal_atti_t gimbal_atti;
+extern ATTI_t gimbal_atti;//
 #endif
 
