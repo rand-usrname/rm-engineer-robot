@@ -47,7 +47,7 @@ void gyro_read_speed(struct rt_can_msg* rxmsg)
 	//如果云台控制线程存在
 	#ifdef THREAD_GIMBAL_CONTROL
 
-	IMU_transfer2gimbal();
+	IMU_transfer2gm();
 
 	#endif
 
