@@ -28,7 +28,7 @@ int main(void)
 	int bs = 500;
 	while(1)
 	{
-		sport_mode_set(NO_FOLLOW);
+		sport_mode_set(ONLY_CHASSIS);
 		if(Change_from_middle(S1))
 		{
 			if(RC_data.Remote_Data.s1 == 1)
@@ -49,7 +49,7 @@ int main(void)
 	//功率限制测试主函数
 //	while(1)
 //	{
-//		sport_mode_set(NO_FOLLOW);
+//		sport_mode_set(ONLY_CHASSIS);
 //		chassis_speed_set(7176,(RC_data.Remote_Data.ch0 - 1024)*3,(RC_data.Remote_Data.ch2 - 1024)*8,(RC_data.Remote_Data.ch3 - 1024)*8);
 //		rt_thread_mdelay(10);
 //	}
@@ -65,7 +65,7 @@ int main(void)
 //	beginyaw = (int)((HERO_IMU.yaw + 180.0)*8192.0/360.0);//记录初始位置
 //	while(1)
 //	{
-//		sport_mode_set(NO_FOLLOW);
+//		sport_mode_set(ONLY_CHASSIS);
 //		beginyaw -= (RC_data.Remote_Data.ch0 - 1024)/50;
 //		while(beginyaw > 8191)
 //		{

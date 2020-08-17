@@ -11,9 +11,11 @@
 
 typedef enum
 {
-	NO_FOLLOW,							//底盘不跟随
-	FOLLOW								//小陀螺运动模式
-	
+	NO_FOLLOW,							//底盘不跟随云台，但以云台朝向为前方
+	FOLLOW_GIMBAL,						//底盘跟随云台
+
+	ONLY_CHASSIS,						//仅存在底盘，无角速度闭环
+
 }sport_mode_e;
 //底盘运动模式
 

@@ -72,18 +72,16 @@ static void chassis_contral(void)
 	switch(motion_data.sport_mode)
 	{
 		case NO_FOLLOW:
-		{
 			motor_speed_set(
-			motion_data.follow_angle,			//传入当前角度参数
+			motion_data.yaw_data.angle,			//传入当前角度参数
 			motion_data.angular_velocity,		//不跟随时传入当前角速度
 			motion_data.xspeed,
 			motion_data.yspeed
 			);
 			//chassis_speed_set();
 			break;
-		}
-		case FOLLOW:
-		{
+
+		case FOLLOW_GIMBAL:
 			//在跟随模式下需要计算设定角速度
 			pid_output_motor(&motion_data.anglepid,motion_data.anglepid.set,motion_data.follow_angle);
 			
@@ -94,9 +92,18 @@ static void chassis_contral(void)
 			motion_data.yspeed
 			);
 			break;
-		}
+
+		case ONLY_CHASSIS:
+			motor_speed_set(
+			motion_data.follow_angle,//传入当前角度参数
+			motion_data.anglepid.out,//跟随时传入角度环闭环的参数
+			motion_data.xspeed,
+			motion_data.yspeed
+			);
+			break;
+
 		default:
-			
+			motor_speed_set(0,0,0,0);//在没有模式的情况下，速度置零
 			break;
 	}
 }
@@ -249,7 +256,8 @@ int chassis_init(void)
 }
 /**
 * @brief：按照参数设定以云台为前方的速度
-* @param [in]	follow_angle:设定跟随角度（单位° 范围0-360，超出范围的会转化到该范围内
+* @param [in]	follow_angle:设定跟随角度（单位° 范围0-8191，超出范围的值会转化到该范围内
+				在 ONLY_CHASSIS 模式下该参数为前方
 				angular_velocity:设定底盘自转角速度（单位 0.1 °/s 即 pi/1800 rad/s
 				xspeed:期望的x轴速度分量（单位mm/s
 				yspeed:期望的y轴速度分量（单位mm/s
