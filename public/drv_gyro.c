@@ -1,5 +1,6 @@
 #include "stm32f4xx.h"
 #include "drv_gyro.h"
+#include "math.h"
 //#include <arm_math.h>
 //#include "ahrs.h"
 
@@ -7,7 +8,7 @@ IMU_t HERO_IMU;//IMU传回数据,unit:m/s^2,rad/s
 ATTI_t gimbal_atti;
 
 float invSqrt(float x);	//快速开平方
-void IMU_transfer2gm();
+void IMU_transfer2gm(void);
 
 /***
   * @Name     gyro_read_angle
@@ -57,7 +58,7 @@ void gyro_read_speed(struct rt_can_msg* rxmsg)
 
 
 //大地系(IMU)转到云台电机系
-void IMU_transfer2gm()
+void IMU_transfer2gm(void)
 {
 	float pitch_ecd_offset;
 	int dir = 0;	//角速度方向
