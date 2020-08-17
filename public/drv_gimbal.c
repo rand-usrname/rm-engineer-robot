@@ -82,7 +82,7 @@ static void gimbal_contral_thread(void* parameter)
 {
 	struct rt_can_msg wheelc_message;
 	
-	wheelc_message.id	= GIMBAL_MCTL;  //设置ID
+	wheelc_message.id	= GIMBAL_CTL;  //设置ID
 	wheelc_message.ide	= RT_CAN_STDID;	//标准帧
 	wheelc_message.rtr	= RT_CAN_DTR;	//数据帧
 	wheelc_message.priv = 0;			//报文优先级最高
