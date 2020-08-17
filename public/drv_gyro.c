@@ -7,6 +7,7 @@ IMU_t HERO_IMU;//IMU传回数据,unit:m/s^2,rad/s
 ATTI_t gimbal_atti;
 
 float invSqrt(float x);	//快速开平方
+void IMU_transfer2gm();
 
 /***
   * @Name     gyro_read_angle
