@@ -35,16 +35,16 @@ static void motor_speed_set(rt_uint16_t angle,rt_int16_t angular_velocity,rt_int
 
     //麦轮运动解算
 	#ifdef MECANUM_WHEEL
-	    float v1 = (float)1.41421*(y + x) + angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
-	    float v2 = (float)1.41421*(y - x) - angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
-	    float v3 = (float)1.41421*(y - x) + angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
-	    float v4 = (float)1.41421*(y + x) - angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
+	    float v1 = (float)(y + x) + angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
+	    float v2 = (float)(y - x) - angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
+	    float v3 = (float)(y - x) + angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
+	    float v4 = (float)(y + x) - angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
 	
 	    //2.40946为单位转换的系数，v为期望的轮子线速度，期望速度使用rpm作为单位
-	    chassis_motor[(rt_uint8_t)(LEFT_FRONT- 0x201)].expected_speed = (rt_int16_t)((float)2.40946*v1);
-	    chassis_motor[(rt_uint8_t)(RIGHT_FRONT- 0x201)].expected_speed = -(rt_int16_t)((float)2.40946*v2);
-	    chassis_motor[(rt_uint8_t)(LEFT_BACK- 0x201)].expected_speed = (rt_int16_t)((float)2.40946*v3);
-	    chassis_motor[(rt_uint8_t)(RIGHT_BACK- 0x201)].expected_speed = -(rt_int16_t)((float)2.40946*v4);
+	    chassis_motor[(rt_uint8_t)(LEFT_FRONT- 0x201)].speedpid.set = (rt_int16_t)((float)2.40946*v1);
+	    chassis_motor[(rt_uint8_t)(RIGHT_FRONT- 0x201)].speedpid.set = -(rt_int16_t)((float)2.40946*v2);
+	    chassis_motor[(rt_uint8_t)(LEFT_BACK- 0x201)].speedpid.set = (rt_int16_t)((float)2.40946*v3);
+	    chassis_motor[(rt_uint8_t)(RIGHT_BACK- 0x201)].speedpid.set = -(rt_int16_t)((float)2.40946*v4);
     #endif
     //全向轮运动解算
     #ifdef OMNI_WHEEL
