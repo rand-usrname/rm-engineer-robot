@@ -2,10 +2,10 @@
 #define __DRV_GYRO_H__
 #include <rtthread.h>
 #include <rtdevice.h>
+#include "robodata.h"
 //#include <arm_math.h>
 
-#define GYRO_ANGLE_ID			0x101
-#define GYRO_SPEED_ID			0x102
+
 
 typedef struct
 {
@@ -40,13 +40,15 @@ typedef struct
 
 
 /*陀螺仪数据读取*/
-extern void gyro_read_speed(struct rt_can_msg* rxmsg);
+//CAN1设备	GYRO_ANGLE_ID	0x101
+extern void gyro_read_speed(struct rt_can_msg* rxmsg);	
+//CAN1设备	GYRO_ANGLE_ID	0x101
 extern void gyro_read_angle(struct rt_can_msg* rxmsg);
 extern void IMU_transfer2_gimbal();
 
 
 
-extern struct IMU_t HERO_IMU;//单位m/s^2,rad/s
-extern struct gimbal_atti_t gimbal_atti;
+extern IMU_t HERO_IMU;//单位m/s^2,rad/s
+extern gimbal_atti_t gimbal_atti;
 #endif
 
