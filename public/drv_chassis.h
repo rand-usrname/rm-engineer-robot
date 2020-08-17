@@ -42,6 +42,7 @@ typedef struct
 	pid_t		    anglepid;			//角度环pid，在需要跟随时计算角速度
 	motordata_t		pitch_data;			//pitch轴当前数据（以水平为0度
 	motordata_t		yaw_data;			//yaw轴数据
+	int				powermax;			//最大功率限制
 	
 	//以下三个数据储存以云台为正方向的期望速度
 	rt_uint16_t		follow_angle;		//跟随角度，范围0-8191

@@ -25,13 +25,16 @@
 typedef enum
 {
     //发送
-    MOTOR_CONTROL = 0x200,
+    CHASSIS_CTLID = 0x200,
 
     //接收
 	LEFT_FRONT  = 0x201,    //四个底盘轮子的ID
 	RIGHT_FRONT	= 0x202,
 	LEFT_BACK	= 0x203,
-	RIGHT_BACK	= 0x204
+	RIGHT_BACK	= 0x204,
+
+    GYRO_ANGLE_ID = 0x101,  //陀螺仪数据结算ID
+    GYRO_SPEED_ID = 0x102
     
 }drv_can1ID_e;
 //底盘CAN1设备ID

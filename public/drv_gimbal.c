@@ -4,8 +4,8 @@
 static rt_thread_t 		gimbal_control 	= RT_NULL;
 
 //yaw pitch电机数据结构体
-static gimbalmotor_t	yaw		= {0};
-static gimbalmotor_t	pitch	= {0};
+static gimbalmotor_t	yaw;
+static gimbalmotor_t	pitch;
 
 /**
 * @brief：该函数计算角度环并输出
@@ -87,8 +87,6 @@ static void gimbal_contral_thread(void* parameter)
 	wheelc_message.rtr	= RT_CAN_DTR;	//数据帧
 	wheelc_message.priv = 0;			//报文优先级最高
 	wheelc_message.len = 8;				//长度8
-
-	rt_int16_t motor_error;				//临时存储电机偏差
 
 	rt_uint8_t angle_time = 0;			//记录速度环次数以执行角度环
 	while(1)

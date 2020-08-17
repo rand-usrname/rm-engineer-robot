@@ -8,22 +8,22 @@ rt_uint16_t temp_s_data = 0;
 
 void RCReadKeyBoard_Data(RC_Ctrl_t *RC_CtrlData)
 {
-		RC_CtrlData->KeyBoard_Data.Key_Data.W = (RC_CtrlData->KeyBoard_Data.v&0x0001)==0x0001;
-		RC_CtrlData->KeyBoard_Data.Key_Data.S = (RC_CtrlData->KeyBoard_Data.v&0x0002)==0x0002;
-		RC_CtrlData->KeyBoard_Data.Key_Data.A = (RC_CtrlData->KeyBoard_Data.v&0x0004)==0x0004;
-		RC_CtrlData->KeyBoard_Data.Key_Data.D = (RC_CtrlData->KeyBoard_Data.v&0x0008)==0x0008;
-		RC_CtrlData->KeyBoard_Data.Key_Data.shift = (RC_CtrlData->KeyBoard_Data.v&0x0010)==0x0010;
-		RC_CtrlData->KeyBoard_Data.Key_Data.ctrl = (RC_CtrlData->KeyBoard_Data.v&0x0020)==0x0020;
-		RC_CtrlData->KeyBoard_Data.Key_Data.Q = (RC_CtrlData->KeyBoard_Data.v&0x0040)==0x0040;
-		RC_CtrlData->KeyBoard_Data.Key_Data.E = (RC_CtrlData->KeyBoard_Data.v&0x0080)==0x0080;
-		RC_CtrlData->KeyBoard_Data.Key_Data.R = (RC_CtrlData->KeyBoard_Data.v&0x0100)==0x0100;
-		RC_CtrlData->KeyBoard_Data.Key_Data.F = (RC_CtrlData->KeyBoard_Data.v&0x0200)==0x0200;
-		RC_CtrlData->KeyBoard_Data.Key_Data.G = (RC_CtrlData->KeyBoard_Data.v&0x0400)==0x0400;
-		RC_CtrlData->KeyBoard_Data.Key_Data.Z = (RC_CtrlData->KeyBoard_Data.v&0x0800)==0x0800;
-		RC_CtrlData->KeyBoard_Data.Key_Data.X = (RC_CtrlData->KeyBoard_Data.v&0x1000)==0x1000;
-		RC_CtrlData->KeyBoard_Data.Key_Data.C = (RC_CtrlData->KeyBoard_Data.v&0x2000)==0x2000;
-		RC_CtrlData->KeyBoard_Data.Key_Data.V = (RC_CtrlData->KeyBoard_Data.v&0x4000)==0x4000;
-		RC_CtrlData->KeyBoard_Data.Key_Data.B = (RC_CtrlData->KeyBoard_Data.v&0x8000)==0x8000;
+		RC_CtrlData->Key_Data.W = (RC_CtrlData->v&0x0001)==0x0001;
+		RC_CtrlData->Key_Data.S = (RC_CtrlData->v&0x0002)==0x0002;
+		RC_CtrlData->Key_Data.A = (RC_CtrlData->v&0x0004)==0x0004;
+		RC_CtrlData->Key_Data.D = (RC_CtrlData->v&0x0008)==0x0008;
+		RC_CtrlData->Key_Data.shift = (RC_CtrlData->v&0x0010)==0x0010;
+		RC_CtrlData->Key_Data.ctrl = (RC_CtrlData->v&0x0020)==0x0020;
+		RC_CtrlData->Key_Data.Q = (RC_CtrlData->v&0x0040)==0x0040;
+		RC_CtrlData->Key_Data.E = (RC_CtrlData->v&0x0080)==0x0080;
+		RC_CtrlData->Key_Data.R = (RC_CtrlData->v&0x0100)==0x0100;
+		RC_CtrlData->Key_Data.F = (RC_CtrlData->v&0x0200)==0x0200;
+		RC_CtrlData->Key_Data.G = (RC_CtrlData->v&0x0400)==0x0400;
+		RC_CtrlData->Key_Data.Z = (RC_CtrlData->v&0x0800)==0x0800;
+		RC_CtrlData->Key_Data.X = (RC_CtrlData->v&0x1000)==0x1000;
+		RC_CtrlData->Key_Data.C = (RC_CtrlData->v&0x2000)==0x2000;
+		RC_CtrlData->Key_Data.V = (RC_CtrlData->v&0x4000)==0x4000;
+		RC_CtrlData->Key_Data.B = (RC_CtrlData->v&0x8000)==0x8000;
 }
 void RemoteDataProcess(uint8_t *pData, RC_Ctrl_t *RC_CtrlData)
 {
@@ -67,7 +67,7 @@ void RemoteDataProcess(uint8_t *pData, RC_Ctrl_t *RC_CtrlData)
 					RC_CtrlData->Mouse_Data.z_speed=((int16_t)pData[10])|((int16_t)pData[11]<<8);
 					RC_CtrlData->Mouse_Data.press_l=pData[12];
 					RC_CtrlData->Mouse_Data.press_r=pData[13];
-					RC_CtrlData->KeyBoard_Data.v=((int16_t)pData[14])|((int16_t)pData[15]<<8);
+					RC_CtrlData->v=((int16_t)pData[14])|((int16_t)pData[15]<<8);
 				} 
 }
 #define SAMPLE_UART_NAME       "uart1"      /* 串口设备名称 */
@@ -105,7 +105,11 @@ static void serial_thread_entry(void *parameter)
     struct rx_msg msg;
     rt_err_t result;
     rt_uint32_t rx_length;
-
+	//初始化
+	RC_data.Remote_Data.ch0 = 1024;RC_data.Remote_Data.ch1 = 1024;RC_data.Remote_Data.ch2 = 1024;RC_data.Remote_Data.ch3 = 1024;
+	RC_data.Remote_Data.s1 = 3;RC_data.Remote_Data.s2 = 3;
+	RC_data_last.Remote_Data.ch0 = 1024;RC_data_last.Remote_Data.ch1 = 1024;RC_data_last.Remote_Data.ch2 = 1024;RC_data_last.Remote_Data.ch3 = 1024;
+	RC_data_last.Remote_Data.s1 = 3;RC_data_last.Remote_Data.s2 = 3;
     while (1)
     {
         rt_memset(&msg, 0, sizeof(msg));
