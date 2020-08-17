@@ -3,7 +3,7 @@
 //#include <arm_math.h>
 //#include "ahrs.h"
 
-IMU_t HERO_IMU;//IMU????,??m/s^2,rad/s
+IMU_t HERO_IMU;//IMU传回数据,unit:m/s^2,rad/s
 gimbal_atti_t HERO_IMU_atti;
 
 float invSqrt(float x);	//快速开平方
