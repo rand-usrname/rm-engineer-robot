@@ -17,10 +17,11 @@
 int main(void)
 {
 	remote_uart_init();
+	while(!HERO_IMU.atti_ready);
 	gimbal_init();
 	while(1)
 	{
 		
-		rt_thread_mdelay(10);
+		rt_thread_mdelay(1);
 	}
 }
