@@ -39,4 +39,5 @@ rt_size_t motor_current_send(rt_device_t dev, 																/*电机电流发送*/
 														rt_int16_t setcur4);
 void motor_angle_set(Motor_t *motor,float angle);
 void motor_init(Motor_t *motor,rt_uint32_t ID,float radio);
+
 #endif

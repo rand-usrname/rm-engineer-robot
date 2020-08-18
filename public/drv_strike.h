@@ -6,7 +6,14 @@
 #include "drv_remote.h"
 #include "drv_canthread.h"
 
+
 #define LOCAL_HEAT_ENABLE		0					            /*本地热量使能*/
+
+/***** 这些宏定义可能需要在robodata.h中定义  *****/
+#define snail   0
+#define fire_angle 130
+#define HERO
+
 
 
 #define HEAT_PERIOD		        100								/*热量检测周期，单位ms*/
@@ -45,10 +52,10 @@ typedef struct
 	rt_uint8_t	  status;										/*状态，如速度环卡弹，位置卡弹*/
 	Heatctrl_t 	  heat;										/*枪口热量控制块*/
 }Strike_t;
-
-extern Strike_t gun1;
 extern Motor_t m_rub[2];
 extern Motor_t m_launch;
+extern Strike_t gun1;
+extern rt_uint8_t bullet_set;
 /*热量控制函数，由用户根据实际编写*/
 void heat_control(Heatctrl_t *p_temp);
 /*热量参数设置*/
@@ -60,7 +67,6 @@ void Gun_speed_set(Strike_t *strike, rt_int16_t speed);
 void Gun_mode_set(Strike_t *strike, rt_base_t mode);
 /*发射机构初始化*/
 void strike_init(Strike_t *gun, rt_uint32_t max);
-void strike_start(void);
 /*对于多枪管，需要重新再定义一个相同作用函数，待修改*/
 /*卡弹判定*/
 void strike_stuck(Motor_t *motor, Strike_t *gun);
