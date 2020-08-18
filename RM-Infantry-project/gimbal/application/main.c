@@ -17,8 +17,10 @@
 int main(void)
 {
 	remote_uart_init();
+	gimbal_init();
 	while(1)
 	{
+		
 		rt_thread_mdelay(10);
 	}
 }

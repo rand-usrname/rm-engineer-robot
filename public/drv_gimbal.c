@@ -82,7 +82,7 @@ static void gimbal_contral_thread(void* parameter)
 {
 	struct rt_can_msg wheelc_message;
 	
-	wheelc_message.id	= GIMBAL_MCTL;  //设置ID
+	wheelc_message.id	= GIMBAL_CTL;  //设置ID
 	wheelc_message.ide	= RT_CAN_STDID;	//标准帧
 	wheelc_message.rtr	= RT_CAN_DTR;	//数据帧
 	wheelc_message.priv = 0;			//报文优先级最高
@@ -101,8 +101,8 @@ static void gimbal_contral_thread(void* parameter)
 		angle_time++;
 
 		//计算云台电机等
-		gimbalpid_cal(&yaw,Gryo_data.yaw,Gryo_data.yaw_speed,angle_time);
-		gimbalpid_cal(&pitch,Gryo_data.pitch,Gryo_data.pitch_speed,angle_time);
+		gimbalpid_cal(&yaw,gimbal_atti.yaw,gimbal_atti.yaw_speed,angle_time);
+		gimbalpid_cal(&pitch,gimbal_atti.pitch,gimbal_atti.pitch_speed,angle_time);
 
 		//发送数据
 		wheelc_message.data[0] = pitch.speedpid.out>>8;

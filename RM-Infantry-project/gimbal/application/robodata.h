@@ -8,10 +8,12 @@
 typedef enum
 {
     //发送
-    GIMBAL_MCTL = 0x200,
+    GIMBAL_CTL = 0x200,
 
     //接收
-    GYRO_ID     = 0x1315,
+    GYRO_ANGLE_ID = 0x101,  //陀螺仪数据结算ID
+    GYRO_SPEED_ID = 0x102,
+    
     YAW_ID      = 0x206,
     PITCH_ID    = 0x207
 

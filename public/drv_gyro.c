@@ -1,12 +1,14 @@
 #include "stm32f4xx.h"
 #include "drv_gyro.h"
+#include "math.h"
 //#include <arm_math.h>
 //#include "ahrs.h"
 
-IMU_t HERO_IMU;//IMU????,??m/s^2,rad/s
-gimbal_atti_t HERO_IMU_atti;
+IMU_t HERO_IMU;//IMU传回数据,unit:m/s^2,rad/s
+ATTI_t gimbal_atti;
 
-float invSqrt(float x);
+float invSqrt(float x);	//快速开平方
+void IMU_transfer2gm(void);
 
 /***
   * @Name     gyro_read_angle
@@ -44,36 +46,52 @@ void gyro_read_speed(struct rt_can_msg* rxmsg)
 	HERO_IMU.roll_speed 	= ((rt_int16_t)(rxmsg->data[2]<<8 | rxmsg->data[3])) / 100.0f;
 	HERO_IMU.yaw_speed 		= ((rt_int16_t)(rxmsg->data[4]<<8 | rxmsg->data[5])) / 100.0f;
 	
+	//如果云台控制线程存在
+	#ifdef THREAD_GIMBAL_CONTROL
+
+	IMU_transfer2gm();
+
+	#endif
+
 }
 
-//如果云台控制线程存在
-#ifdef THREAD_GIMBAL_CONTROL
+
 
 //大地系(IMU)转到云台电机系
-void IMU_transfer2_gimbal()
+void IMU_transfer2gm(void)
 {
-	gimbal_atti.pitch = HERO_IMU.pitch - ;
-	gimbal_atti.roll = HERO_IMU.roll - 
+	float pitch_ecd_offset;
+	int dir = 0;	//角速度方向
 
+	gimbal_atti.pitch = HERO_IMU.pitch - pitch_ecd_offset;
+	gimbal_atti.yaw = HERO_IMU.yaw;
+	gimbal_atti.roll = HERO_IMU.roll;
 
-	gimbal_atti.pitch_speed = 
-	
-	HERO_IMU.gx = Gryo_data.x_speed;
-	HERO_IMU.gy = Gryo_data.y_speed;
-	HERO_IMU.gz = Gryo_data.z_speed;
-	
-	Gryo_data.yaw_speed 	= -sqrtf(Gryo_data.y_speed*Gryo_data.y_speed + Gryo_data.z_speed*Gryo_data.z_speed);
-	Gryo_data.pitch_speed 	= Gryo_data.x_speed;
+	gimbal_atti.pitch_speed = HERO_IMU.pitch_speed;
 
-	if(Gryo_data.z_speed > Gryo_data.y_speed)//符号取决于较大值的符号
+	if(fabs(HERO_IMU.yaw_speed) > fabs(HERO_IMU.roll_speed))//符号取决于较大值的符号
 	{
-		if(Gryo_data.z_speed > 0)
-			Gryo_data.yaw_speed = -fabsf(Gryo_data.yaw_speed);
+		if(HERO_IMU.yaw_speed > 0)
+			dir = 1;
+		else
+			dir = -1;
 	}
+	else
+	{
+		if(HERO_IMU.roll_speed > 0)
+			dir = 1;
+		else
+			dir = -1;
+	}
+	
+	gimbal_atti.yaw_speed = dir * sqrtf(HERO_IMU.yaw_speed * HERO_IMU.yaw_speed + HERO_IMU.roll_speed * HERO_IMU.roll_speed);
+	//gimbal_atti.roll_speed = HERO_IMU.roll_speed;
+
+	
 
 }
 
-#endif
+
 
 
 
