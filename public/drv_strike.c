@@ -1,15 +1,13 @@
 #include "drv_strike.h"
 
-#define snail   0
-#define fire_angle 60
-Motor_t m_rub[2];
-Motor_t m_launch;
 
 #define PWM_DEV_NAME        "pwm3"  	  /* PWM设备名称 */
 #define PWM_DEV_CHANNEL_1     1       															/* PWM通道 摩擦轮 */
 #define PWM_DEV_CHANNEL_2     2       															/* PWM通道 摩擦轮*/
 #define PWM_DEV_CHANNEL_3     3																	/* PWM通道 弹仓电机*/
 static struct rt_device_pwm *pwm_dev;	
+Motor_t m_rub[2];
+Motor_t m_launch;
 
 /**
  * @brief  摩擦电机初始化（tim的pwm初始化）
@@ -178,36 +176,6 @@ void Gun_mode_set(Strike_t *strike, rt_base_t mode)
 {
 	strike->mode = mode;
 }
-/**
- * @brief  发射机构初始化
- * @param  gun：发射机构结构体指针
- */
-void strike_init(Strike_t *gun, rt_uint32_t max)
-{
-	gun->mode = STRICK_NOLIMITE | STRICK_LOWSPEED;				/*持续开火+低速高射频*/
-	gun->speed = 0;
-	gun->status = 0;
-	#if snail
-	motor_rub_init();
-	#else
-	motor_init(&m_rub[0],0x201,1);
-	motor_init(&m_rub[1],0x202,1);
-	motor_init(&m_launch,0x203,0.027973);
-	pid_init(&m_launch.ang, 
-					3.5,0,0,
-					500,5000,-5000);
-	pid_init(&m_launch.spe, 
-					8,0,0,
-					300,8000,-8000);
-	pid_init(&m_rub[0].spe, 
-					8,0.1,0,
-					1200,14000,-14000);
-	pid_init(&m_rub[1].spe, 
-					8,0.1,0,
-					1200,14000,-14000);
-	#endif
-	heatctrl_init(&gun->heat, max);												/*热量控制参数初始化*/
-}
 /*对于多枪管，需要重新再定义一个相同作用函数，待修改*/
 /**
  * @brief  卡弹判定
@@ -315,7 +283,10 @@ static void task_10ms_IRQHandler(void *parameter)
 {
 	rt_sem_release(&task_10ms_sem);
 }
-
+#ifdef HERO
+ rt_uint8_t bullet_state = 0;
+rt_uint8_t bullet_set = 0;
+#endif
 static void task_1ms_emtry(void *parameter)
 {
 	while(1)
@@ -324,9 +295,14 @@ static void task_1ms_emtry(void *parameter)
 		//pid速度环
 		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].dji.speed);
 		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);
+		if(bullet_set == 0)
+		{
 		pid_output_calculate(&m_launch.spe,m_launch.ang.out,m_launch.dji.speed);
+		}
+		else
+		{pid_output_calculate(&m_launch.spe,m_launch.spe.set,m_launch.dji.speed);}
 		//发送电流
-		motor_current_send(can2_dev,STDID_launch,m_rub[0].spe.out,m_rub[1].spe.out,m_launch.spe.out,0);
+		motor_current_send(can1_dev,STDID_launch,m_launch.spe.out,m_rub[0].spe.out,m_rub[1].spe.out,0);
 	}
 }
 static void task_10ms_emtry(void *parameter)
@@ -334,6 +310,9 @@ static void task_10ms_emtry(void *parameter)
 	while(1)
 	{
 		rt_sem_take(&task_10ms_sem, RT_WAITING_FOREVER);
+		#ifdef HERO
+		bullet_set = rt_pin_read(41);
+		#endif
 		pid_output_motor(&m_launch.ang,m_launch.ang.set,m_launch.dji.angle);
 	}
 }
@@ -341,7 +320,7 @@ static void task_10ms_emtry(void *parameter)
 /**
  * @brief  任务创建
  */
-void strike_start(void)
+static void strike_start(void)
 {
 	/*定时器处理线程*/
 	rt_thread_t thread;
@@ -373,4 +352,39 @@ void strike_start(void)
 	 /* 启动定时器 */
 	rt_timer_start(&task_1ms);
 	rt_timer_start(&task_10ms);
+}
+/**
+ * @brief  发射机构初始化
+ * @param  gun：发射机构结构体指针
+ */
+void strike_init(Strike_t *gun, rt_uint32_t max)
+{
+	gun->mode = STRICK_NOLIMITE | STRICK_LOWSPEED;				/*持续开火+低速高射频*/
+	gun->speed = 0;
+	gun->status = 0;
+	#if snail
+	motor_rub_init();
+	#else
+	motor_init(&m_rub[0],0x202,1);
+	motor_init(&m_rub[1],0x203,1);
+	motor_init(&m_launch,0x201,0.027973);
+	//pid 和电机初始化可以放在外面 原因 ：减速比问题 pid参数问题
+	pid_init(&m_launch.ang, 
+					3.5,0,0,
+					500,5000,-5000);
+	pid_init(&m_launch.spe, 
+					7.7,0,0,
+					350,8000,-8000);
+	pid_init(&m_rub[0].spe, 
+					8,0.1,0,
+					1200,14000,-14000);
+	pid_init(&m_rub[1].spe, 
+					8,0.1,0,
+					1200,14000,-14000);
+	#endif
+	heatctrl_init(&gun->heat, max);												/*热量控制参数初始化*/
+	strike_start();
+	#ifdef HERO
+	rt_pin_mode(41,PIN_MODE_INPUT_PULLUP);
+	#endif
 }
