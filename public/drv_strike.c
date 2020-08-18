@@ -193,6 +193,7 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	motor_init(&m_rub[0],0x201,1);
 	motor_init(&m_rub[1],0x202,1);
 	motor_init(&m_launch,0x203,0.027973);
+	//TODO:pid在外面初始化
 	pid_init(&m_launch.ang, 
 					3.5,0,0,
 					500,5000,-5000);
