@@ -1,6 +1,156 @@
 #include "drv_aimbot.h"
 #include "math.h"
 
+/**********与视觉的通信部份***********/
+
+//视觉控制信息结构体
+static visual_ctl_t visual_ctl;
+
+//视觉接收信息结构体
+static visual_rev_t visual_rev;
+
+//要发送的八字节数据结构体
+static rt_uint8_t data[8];
+
+/**
+* @brief：初始化视觉结构体
+* @param [in]	无
+* @return：		true:初始化成功
+							false:初始化失败
+* @author：mqy
+*/
+int vision_init(void)
+{
+	//接收信息置零
+	visual_rev.computime = 0;
+	visual_rev.aim_mode = BLANK;
+	visual_rev.forcester = COMPUTER;
+	visual_rev.pitchadd = 0;
+	visual_rev.yawadd = 0;
+	visual_rev.x = 0;
+	visual_rev.y = 0;
+	visual_rev.z = 0;
+	visual_rev.usetime = 0;
+
+	//控制信息置为默认值
+	visual_ctl.aim_mode = BLANK;
+	visual_ctl.forcester = COMPUTER;
+	visual_ctl.tracolor = RED;
+
+	return 1;
+}
+INIT_APP_EXPORT(vision_init);
+
+/**
+* @brief：接收并解析视觉识别信息
+* @param [in]	data:长度为8的数据指针
+* @return：		1:更新成功
+				0:更新失败
+* @author：mqy
+*/
+int refresh_visual_data(rt_int8_t* data)
+{
+	visual_rev.aim_mode = (aim_mode_e)((data[0]>>5) & 0X7);//取前三位
+	visual_rev.forcester = (forecast_e)((data[0]>>4) & 0X1);//取第四位
+	switch (visual_rev.aim_mode)
+	{
+	case RUNE:
+	case BIG_ARMOR:
+	case SMALL_ARMOR:
+	case BASE_ARMOR:
+	case ENG_ARMOE:
+		switch(visual_rev.forcester)
+		{
+		case COMPUTER:
+			visual_rev.yawadd = (rt_int16_t)((data[2]<<8) + data[3]);
+			visual_rev.pitchadd = (rt_int16_t)((data[4]<<8) + data[5]);
+			break;
+	
+		case SIGNALCHIP:
+			visual_rev.x = (rt_int16_t)((data[2]<<8) + data[3]);
+			visual_rev.y = (rt_int16_t)((data[4]<<8) + data[5]);
+			visual_rev.z = (rt_int16_t)((data[6]<<8) + data[7]);
+			break;
+
+		default:
+			break;
+		}
+		break;
+
+	case CAISSON:
+		//TODO:等待工程自己补充解析方式
+		break;
+	
+	case BLANK:	//若为空值默认返回
+	default:	//若为其他情况默认返回
+		break;
+	}
+}
+/**
+* @brief:获取八字节的数据帧
+* @param:data:留出八字节空间的数据指针
+		 pitch_ang:pitch轴角度，范围-32768 ~ 32767 
+		 yaw_ang:yaw轴角度，范围-32768 ~ 32767 
+		 bullet_vel:发射子弹速度，单位mm/s
+* @return：无
+* @author：mqy
+*/
+void ctldata_get(rt_uint8_t data[],int yaw_ang,int pitch_ang,int bullet_vel)
+{
+	data[0] = (visual_ctl.aim_mode << 5) | (visual_ctl.forcester << 4) | (visual_ctl.tracolor << 3);
+	data[1] = yaw_ang >> 8;
+	data[2] = yaw_ang;
+	data[3] = pitch_ang >> 8;
+	data[4] = pitch_ang;
+	data[5] = bullet_vel >> 8;
+	data[6] = bullet_vel;
+	data[7] = 0;
+}
+
+/**
+* @brief:通过CAN向视觉发送信息
+* @param:pitch_ang:pitch轴角度，范围-32768 ~ 32767 
+		 yaw_ang:yaw轴角度，范围-32768 ~ 32767 
+		 bullet_vel:发射子弹速度，单位mm/s
+* @return：		无
+* @author：mqy
+*/
+int visual_ctl_CANsend(int yaw_ang,int pitch_ang,int bullet_vel)
+{
+	struct rt_can_msg txmsg;
+	txmsg.id = VISUAL_CTLID;
+	txmsg.ide = RT_CAN_STDID;
+	txmsg.rtr = RT_CAN_DTR;
+	txmsg.len = 8;
+	ctldata_get(txmsg.data,yaw_ang,pitch_ang,bullet_vel);
+	rt_device_write(can2dev,0,&txmsg,sizeof(txmsg));
+}
+/**
+* @brief:通过UART向视觉发送信息
+* @param:dev:UART设备句柄
+		 pitch_ang:pitch轴角度，范围-32768 ~ 32767
+		 yaw_ang:yaw轴角度，范围-32768 ~ 32767
+		 bullet_vel:发射子弹速度，单位mm/s
+* @return：		无
+* @author：mqy
+*/
+int visual_ctl_UARTsend(rt_device_t dev,int yaw_ang,int pitch_ang,int bullet_vel)
+{
+	rt_uint8_t data[11];
+	data[0] = 0X3B;		//帧头
+	data[9] = 0;		//和校验位
+	data[10] = ~0X3B;	//帧尾
+	ctldata_get(&data[1],yaw_ang,pitch_ang,bullet_vel);
+	for(int a = 1; a<9; a++)
+	{
+		data[9] += data[a];
+	}
+	
+	rt_device_write(dev,0,data,11);//写入11个字节的数据
+}
+/**********与视觉的通信部份结束***********/
+
+
 #define G   9.7988f 
 #define t_transmit 3
 #define pi_operator 0.01745f
