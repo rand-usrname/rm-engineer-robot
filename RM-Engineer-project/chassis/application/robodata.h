@@ -24,7 +24,7 @@
 
 #endif
 
-#define YAE_ZERO_ANGLE          3360
+#define YAW_ZERO_ANGLE          3360
 #define PITCH_ZERO_ANGLE        0
 
 typedef enum

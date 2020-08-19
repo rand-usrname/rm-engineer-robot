@@ -16,6 +16,8 @@
 #include "robodata.h"
 #include "drv_remote.h"
 /* 主控制线程句柄 */
+
+
 rt_thread_t Main_Thread;
 
 static void main_thread_entry(void * parameter)
@@ -79,7 +81,7 @@ static void main_thread_entry(void * parameter)
 }
 rt_err_t main_thread_init(void)
 {
-	Main_Thread = rt_thread_create("trailer_task", main_thread_entry, RT_NULL, 1024, 8, 2);
+	Main_Thread = rt_thread_create("trailer_task", main_thread_entry, RT_NULL, 1024, 5, 2);
 	if (Main_Thread != RT_NULL)
 	{
 			return rt_thread_startup(Main_Thread);

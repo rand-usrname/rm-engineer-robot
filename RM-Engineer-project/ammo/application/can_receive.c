@@ -16,7 +16,7 @@ void can2_rec(struct rt_can_msg *msg)
 {
     switch(msg->id)
     {
-		case 0x101:
+		case GIMBAL_ID:
 			read_gimbal_data(msg);
 		    return;
 		default:

@@ -1,7 +1,7 @@
 #include "magazine.h"
 
 /* 这个电机的pid将在抬升及取弹机构中一起计算 */
-static Motor_t m_magazine;
+Motor_t m_magazine;
 
 
 void magazine_init(void)

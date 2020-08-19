@@ -16,7 +16,7 @@ void trailer_init(trailer_t *trailer,rt_uint32_t ID,rt_uint16_t Pin_num)
 	/* pid未初始化 */
 
 }
-
+rt_int16_t reset_angle = 0;
 void trailer_go(trailer_t *trailer)
 {
 	/* 读取限位开关状态 */
@@ -34,7 +34,6 @@ void trailer_go(trailer_t *trailer)
 		    trailer->state|= 0x40;
 		break;
 		case rescue_reset:                                                      /* 转回原位 */
-			rt_int16_t reset_angle = 0;
 			motor_angle_set(&trailer->trailer_motor,reset_angle);
 		    trailer->state = rescue_unable;
 		break;
@@ -60,9 +59,19 @@ static void trailer_tim_entry(void *parameter)
 	{
 		rt_sem_take(&trailer_sem, RT_WAITING_FOREVER);	
 		if(status<9)
-        {;}
+        {
+			/* 速度环计算 */
+			pid_output_calculate(&trailerl.trailer_motor.spe,trailerl.trailer_motor.ang.out,trailerl.trailer_motor.dji.speed);
+			pid_output_calculate(&trailerr.trailer_motor.spe,trailerr.trailer_motor.ang.out,trailerr.trailer_motor.dji.speed);
+			/* 电流发送 */
+			
+		}
 		else if(status==9)
-		{;}
+		{
+			/* 角度环计算 */
+			pid_output_motor(&trailerl.trailer_motor.ang,trailerl.trailer_motor.ang.set,trailerl.trailer_motor.dji.angle);
+			pid_output_motor(&trailerr.trailer_motor.ang,trailerr.trailer_motor.ang.set,trailerr.trailer_motor.dji.angle);
+		}
 		status++;
 		if(status>=9){status = 0;}
 	}

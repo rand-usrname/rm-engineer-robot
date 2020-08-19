@@ -311,7 +311,7 @@ static void task_10ms_emtry(void *parameter)
 	{
 		rt_sem_take(&task_10ms_sem, RT_WAITING_FOREVER);
 		#ifdef HERO
-		bullet_set = rt_pin_read(41);
+		bullet_set = 1;//rt_pin_read(41);
 		#endif
 		pid_output_motor(&m_launch.ang,m_launch.ang.set,m_launch.dji.angle);
 	}
@@ -373,7 +373,7 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 					3.5,0,0,
 					500,5000,-5000);
 	pid_init(&m_launch.spe, 
-					7.7,0,0,
+					7.5,0,0,
 					350,8000,-8000);
 	pid_init(&m_rub[0].spe, 
 					8,0.1,0,

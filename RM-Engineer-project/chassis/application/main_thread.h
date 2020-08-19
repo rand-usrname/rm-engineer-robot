@@ -3,8 +3,6 @@
 
 #include <rtthread.h>
 
-
-
 rt_err_t main_thread_init(void);
 
 

@@ -13,15 +13,20 @@
 #include <board.h>
 #include "drv_remote.h"
 #include "comm.h"
-int beginyaw;//记录初始yaw值
+#include "magazine.h"
+#include "ammo.h"
+
 
 int main(void)
 {
-	//remote_uart_init();
-	
 	/* 云台数据初始化 */
 	gimbal_ctrl_init();
-	
+	/* 弹仓电机初始化 */
+	magazine_init();
+	/* 抬升及机械爪初始化 */
+	Ammo_init();
+	/* 主控制线程初始化 */
+	main_thread_init();
 	return RT_EOK;
 }
 	
