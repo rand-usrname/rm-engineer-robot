@@ -6,11 +6,10 @@ Motor_t Grap[2];
 /*********************对于步进形式的抬升和机械爪的接口**********************/
 /**
   * @brief  设置抬升机构的角度
-  * @param  angle 抬升机构角度设置
   * @param  step  抬升每10ms的步进
   * @retval none
  **/
-void raise_angle_set(rt_int16_t angle,rt_uint8_t step)
+void raise_angle_set(rt_int8_t step)
 {
 	motor_angle_set(&Raise[0],step);
 	motor_angle_set(&Raise[1],-step);
@@ -18,11 +17,10 @@ void raise_angle_set(rt_int16_t angle,rt_uint8_t step)
 
 /**
   * @brief  设置取弹机构的角度
-  * @param  angle 取弹机械爪角度设置
   * @param  step  取弹每10ms的步进
   * @retval none
  **/
-void grap_angle_set(rt_int16_t angle,rt_uint8_t step)
+void grap_angle_set(rt_int8_t step)
 {
 	motor_angle_set(&Grap[0],step);
 	motor_angle_set(&Grap[1],-step);

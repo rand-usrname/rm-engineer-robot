@@ -15,7 +15,7 @@
 #include "comm.h"
 #include "magazine.h"
 #include "ammo.h"
-
+#include "main_thread.h"
 
 int main(void)
 {
@@ -26,7 +26,7 @@ int main(void)
 	/* 抬升及机械爪初始化 */
 	Ammo_init();
 	/* 主控制线程初始化 */
-	main_thread_init();
+	Main_Thread_init();
 	return RT_EOK;
 }
 	

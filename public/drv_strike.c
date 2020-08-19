@@ -376,10 +376,10 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 					7.5,0,0,
 					350,8000,-8000);
 	pid_init(&m_rub[0].spe, 
-					8,0.1,0,
+					8.2,0.05,0,
 					1200,14000,-14000);
 	pid_init(&m_rub[1].spe, 
-					8,0.1,0,
+					8.2,0.05,0,
 					1200,14000,-14000);
 	#endif
 	heatctrl_init(&gun->heat, max);												/*热量控制参数初始化*/
