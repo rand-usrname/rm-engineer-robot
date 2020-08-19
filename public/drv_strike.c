@@ -368,7 +368,7 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	motor_init(&m_rub[0],0x202,1);
 	motor_init(&m_rub[1],0x203,1);
 	motor_init(&m_launch,0x201,0.027973);
-	//pid 和电机初始化可以放在外面 原因 ：减速比问题 pid参数问题
+	//pid 和电机初始化放在外面 原因 ：减速比问题 pid参数问题
 	pid_init(&m_launch.ang, 
 					3.5,0,0,
 					500,5000,-5000);

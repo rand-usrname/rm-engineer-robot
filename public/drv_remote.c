@@ -5,7 +5,7 @@ RC_Ctrl_t RC_data_last;
 rt_int16_t remote_s1_data = 0;
 rt_int16_t remote_s2_data = 0;
 rt_uint16_t temp_s_data = 0;
-
+rt_uint16_t key_change = 0;
 void RCReadKeyBoard_Data(RC_Ctrl_t *RC_CtrlData)
 {
 		RC_CtrlData->Key_Data.W = (RC_CtrlData->v&0x0001)==0x0001;
@@ -140,6 +140,9 @@ static void serial_thread_entry(void *parameter)
 				remote_s2_data = 2;
 				temp_s_data = (RC_data_last.Remote_Data.s1<<8)|RC_data_last.Remote_Data.s2;
 			}
+			
+			if(RC_data_last.v!=RC_data.v)
+            {key_change = 1;}
 			rt_memcpy(&RC_data_last,&RC_data,sizeof(RC_data));
         }
     }
@@ -248,10 +251,110 @@ switch_action_e Change_to_middle(switch_action_e sx)
 	}
 	return no_action;
 }
-rt_uint8_t Keys_state_read(rt_uint8_t *targetdata)
+#if key_enum_enable
+switch_action_e key_read(rt_uint8_t key_value)
 {
-	rt_uint8_t length = (rt_uint8_t *)&RC_data - targetdata;
-	//按键待处理
-	return 0 ;
+	if(key_change)
+	{
+	switch(key_value)
+	{
+		case 0x09:
+			if((RC_data_last.Key_Data.Q==0)&&(RC_data.Key_Data.Q==1))
+			{return PRESS_ACTION;}
+			else if((RC_data_last.Key_Data.Q==1)&&(RC_data.Key_Data.Q==0))
+			{return LOOSEN_ACTION;}
+			else{return 0;}
+		case 0x0A:
+			if((RC_data_last.Key_Data.E==0)&&(RC_data.Key_Data.E==1))
+			{return PRESS_ACTION;}
+			else if((RC_data_last.Key_Data.E==1)&&(RC_data.Key_Data.E==0))
+			{return LOOSEN_ACTION;}
+			else{return 0;}
+		case 0x0B:
+			if((RC_data_last.Key_Data.shift==0)&&(RC_data.Key_Data.shift==1))
+			{return PRESS_ACTION;}
+			else if((RC_data_last.Key_Data.shift==1)&&(RC_data.Key_Data.shift==0))
+			{return LOOSEN_ACTION;}
+			else{return 0;}
+		case 0x0C:
+			if((RC_data_last.Key_Data.ctrl==0)&&(RC_data.Key_Data.ctrl==1))
+			{return PRESS_ACTION;}
+			else if((RC_data_last.Key_Data.ctrl==1)&&(RC_data.Key_Data.ctrl==0))
+			{return LOOSEN_ACTION;}
+			else{return 0;}
+		case 0x0D:
+			if((RC_data_last.Key_Data.R==0)&&(RC_data.Key_Data.R==1))
+			{return PRESS_ACTION;}
+			else if((RC_data_last.Key_Data.R==1)&&(RC_data.Key_Data.R==0))
+			{return LOOSEN_ACTION;}
+			else{return 0;}
+		case 0x0E:
+			if((RC_data_last.Key_Data.F==0)&&(RC_data.Key_Data.F==1))
+			{return PRESS_ACTION;}
+			else if((RC_data_last.Key_Data.F==1)&&(RC_data.Key_Data.F==0))
+			{return LOOSEN_ACTION;}
+			else{return 0;}
+		case 0x10:
+			if((RC_data_last.Key_Data.G==0)&&(RC_data.Key_Data.G==1))
+			{return PRESS_ACTION;}
+			else if((RC_data_last.Key_Data.G==1)&&(RC_data.Key_Data.G==0))
+			{return LOOSEN_ACTION;}
+			else{return 0;}
+		case 0x20:
+			if((RC_data_last.Key_Data.Z==0)&&(RC_data.Key_Data.Z==1))
+			{return PRESS_ACTION;}
+			else if((RC_data_last.Key_Data.Z==1)&&(RC_data.Key_Data.Z==0))
+			{return LOOSEN_ACTION;}
+			else{return 0;}
+		case 0x30:
+			if((RC_data_last.Key_Data.X==0)&&(RC_data.Key_Data.X==1))
+			{return PRESS_ACTION;}
+			else if((RC_data_last.Key_Data.X==1)&&(RC_data.Key_Data.X==0))
+			{return LOOSEN_ACTION;}
+			else{return 0;}
+		case 0x40:
+			if((RC_data_last.Key_Data.C==0)&&(RC_data.Key_Data.C==1))
+			{return PRESS_ACTION;}
+			else if((RC_data_last.Key_Data.C==1)&&(RC_data.Key_Data.C==0))
+			{return LOOSEN_ACTION;}
+			else{return 0;}
+		case 0x50:
+			if((RC_data_last.Key_Data.V==0)&&(RC_data.Key_Data.V==1))
+			{return PRESS_ACTION;}
+			else if((RC_data_last.Key_Data.V==1)&&(RC_data.Key_Data.V==0))
+			{return LOOSEN_ACTION;}
+			else{return 0;}
+		case 0x60:
+			if((RC_data_last.Key_Data.B==0)&&(RC_data.Key_Data.B==1))
+			{return PRESS_ACTION;}
+			else if((RC_data_last.Key_Data.B==1)&&(RC_data.Key_Data.B==0))
+			{return LOOSEN_ACTION;}
+			else{return 0;}
+		default:
+			return 0;
+	}
+    }
+	else
+	{
+		return 0;
+	}
 }
-
+#else
+/* 第一种是用指针 *//* 失败后可使用枚举嗯列 */
+switch_action_e Key_action_read(rt_uint8_t *targetdata)
+{
+    if(key_change)
+    {
+	rt_uint8_t length = targetdata - (rt_uint8_t *)&RC_data.Key_Data;
+	rt_uint8_t *temp_last =(rt_uint8_t*)&RC_data_last.Key_Data;
+	rt_uint8_t *temp_now = (rt_uint8_t*)&RC_data.Key_Data;
+	if((*(temp_last+length)==0)&&(*(temp_now+length)==1))
+	{return PRESS_ACTION;}
+	else if((*(temp_last+length)==1)&&(*(temp_now+length)==0))
+	{return LOOSEN_ACTION;}
+	else
+	{return 0;}
+    }
+    else{return 0;}
+}
+#endif

@@ -3,6 +3,7 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 #include <board.h>
+#define key_enum_enable 1
 typedef enum
 {
 	no_action          =  0x00,
@@ -16,6 +17,20 @@ typedef enum
 	
 	S1             =  0x07,
 	S2             =  0x08,
+	#if key_enum_enable
+	Q_ACTION       =  0x09,
+	E_ACTION       =  0x0A,
+	SHIFT_ACTION   =  0x0B,
+	CTRL_ACTION    =  0x0C,
+	R_ACTION       =  0x0D,
+	F_ACTION       =  0x0E,
+	G_ACTION       =  0x10,
+	Z_ACTION       =  0x20,
+	X_ACTION       =  0x30,
+	C_ACTION       =  0x40,
+	V_ACTION       =  0x50,
+	B_ACTION       =  0x60,
+	#endif
 	
 }switch_action_e;
 typedef struct  __Remote
@@ -37,8 +52,8 @@ typedef struct  __Mouse
 }Mouse_t;
 typedef	struct __Key_Data
 {
-	  uint8_t W;
-    uint8_t S;
+	    uint8_t W;
+        uint8_t S;
 		uint8_t A;
 		uint8_t D;
 		uint8_t Q;
@@ -69,5 +84,7 @@ extern int remote_uart_init(void);
 
 extern switch_action_e Change_from_middle(switch_action_e sx);
 extern switch_action_e Change_to_middle(switch_action_e sx);
+extern switch_action_e Key_action_read(rt_uint8_t *targetdata);
+extern switch_action_e key_read(rt_uint8_t key_value);
 #endif
 
