@@ -2,6 +2,7 @@
 #include "robodata.h"
 #include "drv_chassis.h"
 #include "drv_gyro.h"
+#include "drv_aimbot.h"
 
 void can1_rec(struct rt_can_msg *msg)
 {
@@ -31,7 +32,9 @@ void can2_rec(struct rt_can_msg *msg)
 {
     switch(msg->id)
     {
-
+		//视觉通信数据接收ID
+		case VISUAL_REVID:
+			refresh_visual_data(msg->data);
 
         default:
 

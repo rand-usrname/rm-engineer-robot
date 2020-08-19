@@ -175,7 +175,6 @@
 
 /* Onboard Peripheral Drivers */
 
-#define CORE_USING_MONITOR
 #define CORE_USING_BUZZER
 #define CORE_USING_RGB_LIGHT
 
@@ -196,15 +195,17 @@
 #define BSP_USING_CAN
 #define BSP_USING_CAN1
 #define BSP_USING_CAN2
-#define BSP_USING_WDT
 
 /* Board extended module Drivers */
 
 /* Thread Config */
 
 #define THREAD_GIMBAL_CONTROL
+#define THREAD_STRIKE_CONTRAL
+#define THREAD_AINBOT
 #define THREAD_CAN_RECEIVE
 #define THREAD_REMOTE
+#define MOTOR_CONTROL
 #define PID_CALCULATE
 #define USING_GYRO
 

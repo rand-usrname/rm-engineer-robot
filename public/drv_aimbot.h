@@ -6,6 +6,7 @@
 #include <board.h>
 
 #include "drv_canthread.h"
+#include "robodata.h"
 
 typedef struct _Point_t
 {
@@ -78,7 +79,7 @@ typedef struct
 //必须要在某处调用才可以使用的函数
 extern int vision_init(void);
 //默认 can2 设备，接收ID VISUAL_REVID = 0X302
-extern int refresh_visual_data(struct rt_can_msg* msg);
+extern int refresh_visual_data(rt_uint8_t* data);
 
 //模式设置
 extern void tarcolor_set(tarcolor_e tarcolor);
@@ -86,8 +87,8 @@ extern void forecast_set(forecast_e forecast);
 extern void aim_mode_set(aim_mode_e aim_mode);
 
 //向视觉发送控制信息，默认使用 CAN2 设备
-extern int visual_ctl_UARTsend(rt_device_t dev,int yaw_ang,int pitch_ang,int bullet_vel);
-extern int visual_ctl_CANsend(int yaw_ang,int pitch_ang,int bullet_vel);
+extern int visual_ctl_UARTsend(rt_device_t dev,rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet_vel);
+extern int visual_ctl_CANsend(rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet_vel);
 
 //使用视觉控制数据调用的函数
 extern rt_int16_t get_yaw_add(void);

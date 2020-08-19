@@ -9,9 +9,6 @@ static visual_ctl_t visual_ctl;
 //视觉接收信息结构体
 static visual_rev_t visual_rev;
 
-//要发送的八字节数据结构体
-static rt_uint8_t data[8];
-
 /**
 * @brief：初始化视觉结构体
 * @param [in]	无
@@ -48,10 +45,11 @@ INIT_APP_EXPORT(vision_init);
 				0:更新失败
 * @author：mqy
 */
-int refresh_visual_data(rt_int8_t* data)
+int refresh_visual_data(rt_uint8_t* data)
 {
 	visual_rev.aim_mode = (aim_mode_e)((data[0]>>5) & 0X7);//取前三位
 	visual_rev.forcester = (forecast_e)((data[0]>>4) & 0X1);//取第四位
+	visual_rev.computime = (rt_uint8_t)(data[1]);
 	switch (visual_rev.aim_mode)
 	{
 	case RUNE:
@@ -85,6 +83,7 @@ int refresh_visual_data(rt_int8_t* data)
 	default:	//若为其他情况默认返回
 		break;
 	}
+	return 1;
 }
 /**
 * @brief:获取八字节的数据帧
@@ -95,7 +94,7 @@ int refresh_visual_data(rt_int8_t* data)
 * @return：无
 * @author：mqy
 */
-void ctldata_get(rt_uint8_t data[],int yaw_ang,int pitch_ang,int bullet_vel)
+void ctldata_get(rt_uint8_t data[],rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet_vel)
 {
 	data[0] = (visual_ctl.aim_mode << 5) | (visual_ctl.forcester << 4) | (visual_ctl.tracolor << 3);
 	data[1] = yaw_ang >> 8;
@@ -115,7 +114,7 @@ void ctldata_get(rt_uint8_t data[],int yaw_ang,int pitch_ang,int bullet_vel)
 * @return：		无
 * @author：mqy
 */
-int visual_ctl_CANsend(int yaw_ang,int pitch_ang,int bullet_vel)
+int visual_ctl_CANsend(rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet_vel)
 {
 	struct rt_can_msg txmsg;
 	txmsg.id = VISUAL_CTLID;
@@ -123,7 +122,9 @@ int visual_ctl_CANsend(int yaw_ang,int pitch_ang,int bullet_vel)
 	txmsg.rtr = RT_CAN_DTR;
 	txmsg.len = 8;
 	ctldata_get(txmsg.data,yaw_ang,pitch_ang,bullet_vel);
-	rt_device_write(can2dev,0,&txmsg,sizeof(txmsg));
+	rt_device_write(can2_dev,0,&txmsg,sizeof(txmsg));
+	
+	return 1;
 }
 /**
 * @brief:通过UART向视觉发送信息
@@ -134,7 +135,7 @@ int visual_ctl_CANsend(int yaw_ang,int pitch_ang,int bullet_vel)
 * @return：		无
 * @author：mqy
 */
-int visual_ctl_UARTsend(rt_device_t dev,int yaw_ang,int pitch_ang,int bullet_vel)
+int visual_ctl_UARTsend(rt_device_t dev,rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet_vel)
 {
 	rt_uint8_t data[11];
 	data[0] = 0X3B;		//帧头
@@ -145,8 +146,9 @@ int visual_ctl_UARTsend(rt_device_t dev,int yaw_ang,int pitch_ang,int bullet_vel
 	{
 		data[9] += data[a];
 	}
-	
 	rt_device_write(dev,0,data,11);//写入11个字节的数据
+	
+	return 1;
 }
 /**********与视觉的通信部份结束***********/
 
