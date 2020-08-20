@@ -97,13 +97,15 @@ static void gimbal_contral_thread(void* parameter)
 		angle_time++;
 		
 		//进行数据转换
-		yawang = (int)((gimbal_atti.yaw + 180.0)*8192.0/360.0);
-		yawpal = (int)((gimbal_atti.yaw_speed)*8192.0/360.0);
-		pitchang = (int)((gimbal_atti.pitch + 180.0)*8192.0/360.0);
-		pitchpal = (int)((gimbal_atti.pitch_speed)*8192.0/360.0);
+		yawang = (int)((gimbal_atti.yaw + 180.0f)*8192.0f/360.0f);
+		yawpal = (int)((gimbal_atti.yaw_speed)*8192.0f/360.0f);
+		pitchang = (int)((gimbal_atti.pitch + 180.0f)*8192.0f/360.0f);
+		pitchpal = (int)((gimbal_atti.pitch_speed)*8192.0f/360.0f);
+		
 		//计算云台电机等
 		gimbalpid_cal(&yaw,yawang,yawpal,angle_time);
 		gimbalpid_cal(&pitch,pitchang,pitchpal,angle_time);
+		//TODO:pitch轴的限位
 
 		//发送数据
 		gimctl_msg.data[0] = pitch.palpid.out>>8;
@@ -306,6 +308,7 @@ int gimbal_palstance_set(rt_uint16_t yawset,rt_uint16_t pitchset)
 	{
 		pitch.palpid.set = pitchset;
 	}
+	return 1;
 }
 /**
 * @brief：设置云台数据元

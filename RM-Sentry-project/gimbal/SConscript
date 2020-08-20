@@ -1,0 +1,12 @@
+# for module compiling
+import os
+Import('RTT_ROOT')
+from building import *
+
+cwd = os.path.abspath('..')
+objs = []
+objs = objs + SConscript(os.path.join(cwd, 'application', 'SConscript'))
+cwd = os.path.dirname(os.path.dirname(cwd))
+objs = objs + SConscript(os.path.join(cwd, 'SConscript'))
+
+Return('objs')

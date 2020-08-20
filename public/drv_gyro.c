@@ -22,9 +22,9 @@ void gyro_read_angle(struct rt_can_msg* rxmsg)
 {
 	HERO_IMU.atti_ready = rxmsg->data[7];		//姿态数据正常标志
 
-	HERO_IMU.pitch  = ((rt_int16_t)(rxmsg->data[0]<<8 | rxmsg->data[1])) / 100.0f;// pitch    -180----180,上正下负,单位:°
-	HERO_IMU.yaw 	= ((rt_int16_t)(rxmsg->data[2]<<8 | rxmsg->data[3])) / 100.0f;// yaw      -180----180,右正左负
-	HERO_IMU.roll 	= ((rt_int16_t)(rxmsg->data[4]<<8 | rxmsg->data[5])) / 100.0f;// roll     -90----90,
+	HERO_IMU.pitch  = ((rt_int16_t)(rxmsg->data[0]<<8 | rxmsg->data[1])) / 100.0f;// pitch    -90----90,在"建议安装坐标系"下,面对枪口,上正下负,单位:°
+	HERO_IMU.yaw 	= ((rt_int16_t)(rxmsg->data[2]<<8 | rxmsg->data[3])) / 100.0f;// yaw      -180----180,在"建议安装坐标系"下,面对枪口,左负右正
+	HERO_IMU.roll 	= ((rt_int16_t)(rxmsg->data[4]<<8 | rxmsg->data[5])) / 100.0f;// roll     -180----180,在"建议安装坐标系"下,面对枪口,逆时针正,顺时针负
 
 }
 
@@ -42,9 +42,9 @@ void gyro_read_speed(struct rt_can_msg* rxmsg)
 {
 	HERO_IMU.speed_ready = rxmsg->data[7];		//角速度数据正常标志
 
-	HERO_IMU.pitch_speed	= ((rt_int16_t)(rxmsg->data[0]<<8 | rxmsg->data[1])) / 100.0f;//单位:°/s,1rpm=6°/s
-	HERO_IMU.roll_speed 	= ((rt_int16_t)(rxmsg->data[2]<<8 | rxmsg->data[3])) / 100.0f;
-	HERO_IMU.yaw_speed 		= ((rt_int16_t)(rxmsg->data[4]<<8 | rxmsg->data[5])) / 100.0f;
+	HERO_IMU.pitch_speed	= ((rt_int16_t)(rxmsg->data[0]<<8 | rxmsg->data[1])) / 100.0f;//建议安装坐标系下,面对枪口,上正下负,单位:°/s,1rpm=6°/s
+	HERO_IMU.yaw_speed 	= ((rt_int16_t)(rxmsg->data[2]<<8 | rxmsg->data[3])) / 100.0f;
+	HERO_IMU.roll_speed 		= ((rt_int16_t)(rxmsg->data[4]<<8 | rxmsg->data[5])) / 100.0f;
 	
 	//如果云台控制线程存在
 	#ifdef THREAD_GIMBAL_CONTROL

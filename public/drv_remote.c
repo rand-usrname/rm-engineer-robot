@@ -254,6 +254,7 @@ switch_action_e Change_to_middle(switch_action_e sx)
 #if key_enum_enable
 switch_action_e key_read(rt_uint8_t key_value)
 {
+<<<<<<< HEAD
 	if(key_change)
 	{
 	switch(key_value)
@@ -338,6 +339,11 @@ switch_action_e key_read(rt_uint8_t key_value)
 	{
 		return 0;
 	}
+=======
+	rt_uint8_t length = (rt_uint8_t *)&RC_data - targetdata;
+	//TODO:按键待处理
+	return 0 ;
+>>>>>>> 3f2e9ac627d6306a64b324b7f62f37eb08c172ba
 }
 #else
 /* 第一种是用指针 *//* 失败后可使用枚举嗯列 */

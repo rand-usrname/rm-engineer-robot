@@ -13,6 +13,7 @@
 #include <board.h>
 #include "drv_gimbal.h"
 #include "drv_remote.h"
+#include "drv_aimbot.h"
 
 int main(void)
 {
