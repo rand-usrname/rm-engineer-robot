@@ -10,7 +10,7 @@
 #define RT_ALIGN_SIZE 4
 #define RT_THREAD_PRIORITY_32
 #define RT_THREAD_PRIORITY_MAX 32
-#define RT_TICK_PER_SECOND 100
+#define RT_TICK_PER_SECOND 1000
 #define RT_USING_OVERFLOW_CHECK
 #define RT_USING_HOOK
 #define RT_USING_IDLE_HOOK
@@ -175,7 +175,6 @@
 
 /* Onboard Peripheral Drivers */
 
-#define CORE_USING_MONITOR
 #define CORE_USING_BUZZER
 #define CORE_USING_RGB_LIGHT
 
@@ -196,15 +195,17 @@
 #define BSP_USING_CAN
 #define BSP_USING_CAN1
 #define BSP_USING_CAN2
-#define BSP_USING_WDT
 
 /* Board extended module Drivers */
 
 /* Thread Config */
 
 #define THREAD_GIMBAL_CONTROL
+#define THREAD_STRIKE_CONTRAL
+#define THREAD_AINBOT
 #define THREAD_CAN_RECEIVE
 #define THREAD_REMOTE
+#define MOTOR_CONTROL
 #define PID_CALCULATE
 #define USING_GYRO
 

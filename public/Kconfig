@@ -33,6 +33,7 @@ menu "Thread Config"
         bool "Enable strike contral thread"
         select PID_CALCULATE        #PID
         select THREAD_CAN_RECEIVE   #CAN接收线程
+        select MOTOR_CONTROL        #电机驱动文件
         default n
     
     #视觉自动瞄准

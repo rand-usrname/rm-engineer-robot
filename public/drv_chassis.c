@@ -327,13 +327,13 @@ int refresh_gimbal_motor_data(struct rt_can_msg* message)
 		case YAW_ID:
 			assign_motor_data(&motion_data.yaw_data,message);
 			//转换角度数值的坐标系
-			if(motion_data.yaw_data.angle < YAE_ZERO_ANGLE)
+			if(motion_data.yaw_data.angle < YAW_ZERO_ANGLE)
 			{
-				motion_data.yaw_data.angle = 8191 - YAE_ZERO_ANGLE + motion_data.yaw_data.angle;
+				motion_data.yaw_data.angle = 8191 - YAW_ZERO_ANGLE + motion_data.yaw_data.angle;
 			}
 			else
 			{
-				motion_data.yaw_data.angle = motion_data.yaw_data.angle - YAE_ZERO_ANGLE;
+				motion_data.yaw_data.angle = motion_data.yaw_data.angle - YAW_ZERO_ANGLE;
 			}
 			return 1;
 			

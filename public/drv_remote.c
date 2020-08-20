@@ -251,7 +251,7 @@ switch_action_e Change_to_middle(switch_action_e sx)
 rt_uint8_t Keys_state_read(rt_uint8_t *targetdata)
 {
 	rt_uint8_t length = (rt_uint8_t *)&RC_data - targetdata;
-	//按键待处理
+	//TODO:按键待处理
 	return 0 ;
 }
 

@@ -14,7 +14,6 @@ typedef enum
 {
 	ANGLE,			//设置位置
 	PALSTANCE,		//角速度
-	CURRENT			//设置电流
 
 } control_mode_t;
 //控制模式枚举，可选的直接控制量
@@ -42,28 +41,29 @@ typedef struct
 	control_mode_t	control_mode;		//控制模式
 	drv_can1ID_e 	motorID;			//枚举定义电机ID
 	motordata_t		motordata;			//电机数据结构体
-	int				set;				//设定值
+	int				setang;				//角度设定值
 
-	pid_t		    speedpid;			//pid参数结构体
-	data_source_t	angledata_source;	
-	pid_t			anglepid_dji;		//数据源电机时pid
-	pid_t			anglepid_gyro;		//数据源陀螺仪时pid
+	pid_t		    palpid;				//加速度结构体
+	data_source_t	angdata_source;		//角度闭环数据源
+	pid_t			angpid_dji;			//数据源电机时pid
+	pid_t			angpid_gyro;		//数据源陀螺仪时pid
 
 } gimbalmotor_t;
 //该结构体用于四个麦轮的控制和数据存储
 
-//设置函数
-extern void gimbal_current_set(rt_uint16_t yawset,rt_uint16_t pitchset);
-extern void gimbal_absangle_set(rt_uint16_t yawset,rt_uint16_t pitchset);
-extern void gimbal_addangle_set(rt_uint16_t yawset,rt_uint16_t pitchset);
-extern void gimbal_palstance_set(rt_uint16_t yawset,rt_uint16_t pitchset);
-extern void angle_datasource_set(data_source_t yawset,data_source_t pitchset);
+//外部调用的控制函数
+extern int gimbal_absangle_set(rt_uint16_t yawset,rt_uint16_t pitchset);
+extern int gimbal_addangle_set(rt_uint16_t yawset,rt_uint16_t pitchset);
+extern int gimbal_palstance_set(rt_uint16_t yawset,rt_uint16_t pitchset);
+extern int gimbal_ctlmode_set(control_mode_t yawset,control_mode_t pitchset);
+extern int angle_datasource_set(data_source_t yawset,data_source_t pitchset);
 
 //必须调用的函数
+//默认CAN1设备，默认ID YAW_ID = 0X205 PITCH_ID = 0X206
 extern int refresh_gimbal_motor_data(struct rt_can_msg* message);
 extern int gimbal_init(void);
 
-//读取函数
+//读取云台数据函数
 extern int get_yawangle(void);
 extern int get_pitchangle(void);
 

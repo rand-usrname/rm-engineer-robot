@@ -60,7 +60,7 @@ void gyro_read_speed(struct rt_can_msg* rxmsg)
 //大地系(IMU)转到云台电机系
 void IMU_transfer2gm(void)
 {
-	float pitch_ecd_offset;
+	float pitch_ecd_offset = 0;
 	int dir = 0;	//角速度方向
 
 	gimbal_atti.pitch = HERO_IMU.pitch - pitch_ecd_offset;
@@ -68,23 +68,25 @@ void IMU_transfer2gm(void)
 	gimbal_atti.roll = HERO_IMU.roll;
 
 	gimbal_atti.pitch_speed = HERO_IMU.pitch_speed;
-
-	if(fabs(HERO_IMU.yaw_speed) > fabs(HERO_IMU.roll_speed))//符号取决于较大值的符号
-	{
-		if(HERO_IMU.yaw_speed > 0)
-			dir = 1;
-		else
-			dir = -1;
-	}
-	else
-	{
-		if(HERO_IMU.roll_speed > 0)
-			dir = 1;
-		else
-			dir = -1;
-	}
 	
-	gimbal_atti.yaw_speed = dir * sqrtf(HERO_IMU.yaw_speed * HERO_IMU.yaw_speed + HERO_IMU.roll_speed * HERO_IMU.roll_speed);
+	gimbal_atti.yaw_speed = HERO_IMU.yaw_speed;
+
+//	if(fabs(HERO_IMU.yaw_speed) > fabs(HERO_IMU.roll_speed))//符号取决于较大值的符号
+//	{
+//		if(HERO_IMU.yaw_speed > 0)
+//			dir = 1;
+//		else
+//			dir = -1;
+//	}
+//	else
+//	{
+//		if(HERO_IMU.roll_speed > 0)
+//			dir = 1;
+//		else
+//			dir = -1;
+//	}
+//	
+//	gimbal_atti.yaw_speed = dir * sqrtf(HERO_IMU.yaw_speed * HERO_IMU.yaw_speed + HERO_IMU.roll_speed * HERO_IMU.roll_speed);
 	//gimbal_atti.roll_speed = HERO_IMU.roll_speed;
 
 	
