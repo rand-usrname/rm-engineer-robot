@@ -164,7 +164,7 @@ void Gun_speed_set(Strike_t *strike, rt_int16_t speed)
 //		if(strike->speed>Refdata->heat_limit_42)
 //			strike->speed = Refdata->heat_limit_42;
 //	}
-	#if snail
+	#ifdef snail
 	motor_rub_set(strike->speed);
 	#else
 	//需要换算？
@@ -248,17 +248,17 @@ void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 			if(gun->mode & STRICK_NOLIMITE)															/*不停转动*/
 			{
 				tick_sleep=0;																							/*间隔时间*/
-				motor_angle_set(motor, 60);
+				motor_angle_set(motor, fire_angle);
 			}
 			else if(gun->mode & STRICK_SINGLE)													/*单发*/
 			{
 				tick_sleep=500;
-				motor_angle_set(motor, 60);
+				motor_angle_set(motor, fire_angle);
 			}
 			else if(gun->mode & STRICK_TRIPLE)													/*三连发*/
 			{
 				tick_sleep=1000;
-				motor_angle_set(motor, 175);
+				motor_angle_set(motor, fire_angle*3);
 			}
 			tick = rt_tick_get();
 		}
@@ -283,10 +283,6 @@ static void task_10ms_IRQHandler(void *parameter)
 {
 	rt_sem_release(&task_10ms_sem);
 }
-#ifdef HERO
- rt_uint8_t bullet_state = 0;
-rt_uint8_t bullet_set = 0;
-#endif
 static void task_1ms_emtry(void *parameter)
 {
 	while(1)
@@ -295,12 +291,7 @@ static void task_1ms_emtry(void *parameter)
 		//pid速度环
 		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].dji.speed);
 		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);
-		if(bullet_set == 0)
-		{
 		pid_output_calculate(&m_launch.spe,m_launch.ang.out,m_launch.dji.speed);
-		}
-		else
-		{pid_output_calculate(&m_launch.spe,m_launch.spe.set,m_launch.dji.speed);}
 		//发送电流
 		motor_current_send(can1_dev,STDID_launch,m_launch.spe.out,m_rub[0].spe.out,m_rub[1].spe.out,0);
 	}
@@ -310,9 +301,6 @@ static void task_10ms_emtry(void *parameter)
 	while(1)
 	{
 		rt_sem_take(&task_10ms_sem, RT_WAITING_FOREVER);
-		#ifdef HERO
-		bullet_set = rt_pin_read(41);
-		#endif
 		pid_output_motor(&m_launch.ang,m_launch.ang.set,m_launch.dji.angle);
 	}
 }
@@ -345,10 +333,10 @@ static void strike_start(void)
                    RT_NULL,
                    1, RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
 	rt_timer_init(&task_10ms,
-								 "10mstask",
-								 task_10ms_IRQHandler,
-								 RT_NULL,
-								 10, RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
+				  "10mstask",
+				   task_10ms_IRQHandler,
+				   RT_NULL,
+				   10, RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
 	 /* 启动定时器 */
 	rt_timer_start(&task_1ms);
 	rt_timer_start(&task_10ms);
@@ -362,7 +350,7 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	gun->mode = STRICK_NOLIMITE | STRICK_LOWSPEED;				/*持续开火+低速高射频*/
 	gun->speed = 0;
 	gun->status = 0;
-	#if snail
+	#ifdef snail
 	motor_rub_init();
 	#else
 	motor_init(&m_rub[0],0x202,1);
@@ -384,7 +372,4 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	#endif
 	heatctrl_init(&gun->heat, max);												/*热量控制参数初始化*/
 	strike_start();
-	#ifdef HERO
-	rt_pin_mode(41,PIN_MODE_INPUT_PULLUP);
-	#endif
 }
