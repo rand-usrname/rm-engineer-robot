@@ -40,8 +40,4 @@ RTE/
 settings/
 *.uvguix*
 cconfig.h
-*.uvoptx
-*.uvoptx
-*.uvprojx
-*.uvoptx
-*.uvprojx
+
