@@ -248,17 +248,17 @@ void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 			if(gun->mode & STRICK_NOLIMITE)															/*不停转动*/
 			{
 				tick_sleep=0;																							/*间隔时间*/
-				motor_angle_set(motor, fire_angle);
+				motor_angle_set(motor, FIRE_ANGLE);
 			}
 			else if(gun->mode & STRICK_SINGLE)													/*单发*/
 			{
 				tick_sleep=500;
-				motor_angle_set(motor, fire_angle);
+				motor_angle_set(motor, FIRE_ANGLE);
 			}
 			else if(gun->mode & STRICK_TRIPLE)													/*三连发*/
 			{
 				tick_sleep=1000;
-				motor_angle_set(motor, fire_angle*3);
+				motor_angle_set(motor, FIRE_ANGLE*3);
 			}
 			tick = rt_tick_get();
 		}
