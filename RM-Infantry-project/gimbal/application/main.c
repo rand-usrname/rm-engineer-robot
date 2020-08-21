@@ -22,7 +22,6 @@ int main(void)
 	gimbal_init();
 	while(1)
 	{
-		//hello
 		rt_thread_mdelay(1);
 	}
 }
