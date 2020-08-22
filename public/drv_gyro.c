@@ -71,7 +71,7 @@ void IMU_transfer2gm(void)
 	
 	//gimbal_atti.yaw_speed = HERO_IMU.yaw_speed;
 
-	if(HERO_IMU.yaw_speed > 0)
+	if(HERO_IMU.yaw_speed > 0)	//融合后角速度方向同原始yaw_speed
 		dir = 1;
 	else
 		dir = -1;
