@@ -9,7 +9,6 @@
 #include "drv_remote.h"
 #include "drv_aimbot.h"
 #include "drv_strike.h"
-#include "robocontrol.h"
 
 extern int remote_ctrl(RC_Ctrl_t *remote);
 

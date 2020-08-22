@@ -10,6 +10,10 @@
 #define PITCH_MIN_ANGLE			1000
 #define PITCH_MAX_ANGLE			1500
 
+#define SNALL   0
+#define FIRE_ANGLE 60
+#define HERO
+
 typedef enum
 {
     //·¢ËÍ
