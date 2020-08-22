@@ -40,4 +40,5 @@ RTE/
 settings/
 *.uvguix*
 cconfig.h
+*.orig
 
