@@ -94,7 +94,7 @@ void can_cali_send()
     rt_size_t  size;
 
 
-    tx_msg.id = ANGLE_ID;             /* ID 为 0x101 */
+    tx_msg.id = 0x103;             /* ID 为 0x101 */
     tx_msg.ide = RT_CAN_STDID;     /* 标准格式 */
     tx_msg.rtr = RT_CAN_DTR;       /* 数据帧 */
     tx_msg.len = 0x08;;                /* 数据长度为 8 */
