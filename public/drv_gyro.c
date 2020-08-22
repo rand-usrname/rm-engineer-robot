@@ -44,7 +44,7 @@ void gyro_read_speed(struct rt_can_msg* rxmsg)
 
 	HERO_IMU.pitch_speed	= ((rt_int16_t)(rxmsg->data[0]<<8 | rxmsg->data[1])) / 100.0f;//建议安装坐标系下,面对枪口,上正下负,单位:°/s,1rpm=6°/s
 	HERO_IMU.yaw_speed 	= ((rt_int16_t)(rxmsg->data[2]<<8 | rxmsg->data[3])) / 100.0f;
-	HERO_IMU.roll_speed 		= ((rt_int16_t)(rxmsg->data[4]<<8 | rxmsg->data[5])) / 100.0f;
+	HERO_IMU.roll_speed 	= ((rt_int16_t)(rxmsg->data[4]<<8 | rxmsg->data[5])) / 100.0f;
 	
 	//如果云台控制线程存在
 	#ifdef THREAD_GIMBAL_CONTROL
@@ -61,7 +61,7 @@ void gyro_read_speed(struct rt_can_msg* rxmsg)
 void IMU_transfer2gm(void)
 {
 	float pitch_ecd_offset = 0;
-	int dir = 0;	//角速度方向
+	int dir = 0;	//融合roll角速度后的方向
 
 	gimbal_atti.pitch = HERO_IMU.pitch - pitch_ecd_offset;
 	gimbal_atti.yaw = HERO_IMU.yaw;
@@ -69,24 +69,14 @@ void IMU_transfer2gm(void)
 
 	gimbal_atti.pitch_speed = HERO_IMU.pitch_speed;
 	
-	gimbal_atti.yaw_speed = HERO_IMU.yaw_speed;
+	//gimbal_atti.yaw_speed = HERO_IMU.yaw_speed;
 
-//	if(fabs(HERO_IMU.yaw_speed) > fabs(HERO_IMU.roll_speed))//符号取决于较大值的符号
-//	{
-//		if(HERO_IMU.yaw_speed > 0)
-//			dir = 1;
-//		else
-//			dir = -1;
-//	}
-//	else
-//	{
-//		if(HERO_IMU.roll_speed > 0)
-//			dir = 1;
-//		else
-//			dir = -1;
-//	}
-//	
-//	gimbal_atti.yaw_speed = dir * sqrtf(HERO_IMU.yaw_speed * HERO_IMU.yaw_speed + HERO_IMU.roll_speed * HERO_IMU.roll_speed);
+	if(HERO_IMU.yaw_speed > 0)
+		dir = 1;
+	else
+		dir = -1;
+
+	gimbal_atti.yaw_speed = dir * sqrtf(HERO_IMU.yaw_speed * HERO_IMU.yaw_speed + HERO_IMU.roll_speed * HERO_IMU.roll_speed);
 	//gimbal_atti.roll_speed = HERO_IMU.roll_speed;
 
 	
