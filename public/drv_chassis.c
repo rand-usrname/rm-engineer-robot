@@ -23,42 +23,42 @@ static chassis_data_t	motion_data;
 */
 static void motor_speed_set(rt_uint16_t angle,rt_int16_t angular_velocity,rt_int16_t xspeed,rt_int16_t yspeed)
 {
-	while(angle > 8191)
-	{
-		angle -= 8191;
-	}
-	angle = 8191 - angle;
-    
-	//储存角度变换之后的线速度
-	float y = yspeed*cos((double)(angle)/4096*3.1415926) + xspeed*cos((double)(angle - 6144)/4096*3.1415926);
-	float x = -yspeed*cos((double)(angle + 2048)/4096*3.1415926) + xspeed*cos((double)(angle)/4096*3.1415926);
+    while(angle > 8191)
+    {
+        angle -= 8191;
+    }
+    angle = 8191 - angle;
+
+    //储存角度变换之后的线速度
+    float y = yspeed*cos((double)(angle)/4096*3.1415926) + xspeed*cos((double)(angle - 6144)/4096*3.1415926);
+    float x = -yspeed*cos((double)(angle + 2048)/4096*3.1415926) + xspeed*cos((double)(angle)/4096*3.1415926);
 
     //麦轮运动解算
-	#ifdef MECANUM_WHEEL
-	    float v1 = (float)(y + x) + angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
-	    float v2 = (float)(y - x) - angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
-	    float v3 = (float)(y - x) + angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
-	    float v4 = (float)(y + x) - angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
-	
-	    //2.40946为单位转换的系数，v为期望的轮子线速度，期望速度使用rpm作为单位
-	    chassis_motor[(rt_uint8_t)(LEFT_FRONT- 0x201)].speedpid.set = (rt_int16_t)((float)2.40946*v1);
-	    chassis_motor[(rt_uint8_t)(RIGHT_FRONT- 0x201)].speedpid.set = -(rt_int16_t)((float)2.40946*v2);
-	    chassis_motor[(rt_uint8_t)(LEFT_BACK- 0x201)].speedpid.set = (rt_int16_t)((float)2.40946*v3);
-	    chassis_motor[(rt_uint8_t)(RIGHT_BACK- 0x201)].speedpid.set = -(rt_int16_t)((float)2.40946*v4);
-    #endif
+#ifdef MECANUM_WHEEL
+    float v1 = (float)(y + x) + angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
+    float v2 = (float)(y - x) - angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
+    float v3 = (float)(y - x) + angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
+    float v4 = (float)(y + x) - angular_velocity*((float)3.1415926/(float)1800.0*(VEHICLE_WIDTH + VEHICLE_LONG));
+
+    //2.40946为单位转换的系数，v为期望的轮子线速度，期望速度使用rpm作为单位
+    chassis_motor[(rt_uint8_t)(LEFT_FRONT- 0x201)].speedpid.set = (rt_int16_t)((float)2.40946*v1);
+    chassis_motor[(rt_uint8_t)(RIGHT_FRONT- 0x201)].speedpid.set = -(rt_int16_t)((float)2.40946*v2);
+    chassis_motor[(rt_uint8_t)(LEFT_BACK- 0x201)].speedpid.set = (rt_int16_t)((float)2.40946*v3);
+    chassis_motor[(rt_uint8_t)(RIGHT_BACK- 0x201)].speedpid.set = -(rt_int16_t)((float)2.40946*v4);
+#endif
     //全向轮运动解算
-    #ifdef OMNI_WHEEL
-	    float v1 = (float)x + (float)angular_velocity*((float)3.1415926/(float)1800.0*VEHICLE_DIAMETER);
-	    float v2 = (float)y - (float)angular_velocity*((float)3.1415926/(float)1800.0*VEHICLE_DIAMETER);
-	    float v3 = (float)y + (float)angular_velocity*((float)3.1415926/(float)1800.0*VEHICLE_DIAMETER);
-	    float v4 = (float)x - (float)angular_velocity*((float)3.1415926/(float)1800.0*VEHICLE_DIAMETER);
-	
-	    //2.40946为单位转换的系数，v为期望的轮子线速度，期望速度使用rpm作为单位
-	    chassis_motor[(rt_uint8_t)(LEFT_FRONT- 0x201)].speedpid.set = (rt_int16_t)((float)2.40946*v1);
-	    chassis_motor[(rt_uint8_t)(RIGHT_FRONT- 0x201)].speedpid.set = -(rt_int16_t)((float)2.40946*v2);
-	    chassis_motor[(rt_uint8_t)(LEFT_BACK- 0x201)].speedpid.set = (rt_int16_t)((float)2.40946*v3);
-	    chassis_motor[(rt_uint8_t)(RIGHT_BACK- 0x201)].speedpid.set = -(rt_int16_t)((float)2.40946*v4);
-    #endif
+#ifdef OMNI_WHEEL
+    float v1 = (float)x + (float)angular_velocity*((float)3.1415926/(float)1800.0*VEHICLE_DIAMETER);
+    float v2 = (float)y - (float)angular_velocity*((float)3.1415926/(float)1800.0*VEHICLE_DIAMETER);
+    float v3 = (float)y + (float)angular_velocity*((float)3.1415926/(float)1800.0*VEHICLE_DIAMETER);
+    float v4 = (float)x - (float)angular_velocity*((float)3.1415926/(float)1800.0*VEHICLE_DIAMETER);
+
+    //2.40946为单位转换的系数，v为期望的轮子线速度，期望速度使用rpm作为单位
+    chassis_motor[(rt_uint8_t)(LEFT_FRONT- 0x201)].speedpid.set = (rt_int16_t)((float)2.40946*v1);
+    chassis_motor[(rt_uint8_t)(RIGHT_FRONT- 0x201)].speedpid.set = -(rt_int16_t)((float)2.40946*v2);
+    chassis_motor[(rt_uint8_t)(LEFT_BACK- 0x201)].speedpid.set = (rt_int16_t)((float)2.40946*v3);
+    chassis_motor[(rt_uint8_t)(RIGHT_BACK- 0x201)].speedpid.set = -(rt_int16_t)((float)2.40946*v4);
+#endif
 }
 /**
 * @brief：该函数根据设定运动模式和设定线速度角速度调用函数motor_speed_set设定电机速度
@@ -69,43 +69,43 @@ static void motor_speed_set(rt_uint16_t angle,rt_int16_t angular_velocity,rt_int
 */
 static void chassis_contral(void)
 {
-	switch(motion_data.sport_mode)
-	{
-		case NO_FOLLOW:
-			motor_speed_set(
-			motion_data.yaw_data.angle,			//传入当前角度参数
-			motion_data.angular_velocity,		//不跟随时传入当前角速度
-			motion_data.xspeed,
-			motion_data.yspeed
-			);
-			//chassis_speed_set();
-			break;
+    switch(motion_data.sport_mode)
+    {
+    case NO_FOLLOW:
+        motor_speed_set(
+            motion_data.yaw_data.angle,			//传入当前角度参数
+            motion_data.angular_velocity,		//不跟随时传入当前角速度
+            motion_data.xspeed,
+            motion_data.yspeed
+        );
+        //chassis_speed_set();
+        break;
 
-		case FOLLOW_GIMBAL:
-			//在跟随模式下需要计算设定角速度
-			pid_output_motor(&motion_data.anglepid,motion_data.anglepid.set,motion_data.follow_angle);
-			
-			motor_speed_set(
-			motion_data.yaw_data.angle,//传入当前角度参数
-			motion_data.anglepid.out,//跟随时传入角度环闭环的参数
-			motion_data.xspeed,
-			motion_data.yspeed
-			);
-			break;
+    case FOLLOW_GIMBAL:
+        //在跟随模式下需要计算设定角速度
+        pid_output_motor(&motion_data.anglepid,motion_data.anglepid.set,motion_data.follow_angle);
 
-		case ONLY_CHASSIS:
-			motor_speed_set(
-			motion_data.follow_angle,//传入当前角度参数
-			motion_data.anglepid.out,//跟随时传入角度环闭环的参数
-			motion_data.xspeed,
-			motion_data.yspeed
-			);
-			break;
+        motor_speed_set(
+            motion_data.yaw_data.angle,//传入当前角度参数
+            motion_data.anglepid.out,//跟随时传入角度环闭环的参数
+            motion_data.xspeed,
+            motion_data.yspeed
+        );
+        break;
 
-		default:
-			motor_speed_set(0,0,0,0);//在没有模式的情况下，速度置零
-			break;
-	}
+    case ONLY_CHASSIS:
+        motor_speed_set(
+            motion_data.follow_angle,//传入当前角度参数
+            motion_data.anglepid.out,//跟随时传入角度环闭环的参数
+            motion_data.xspeed,
+            motion_data.yspeed
+        );
+        break;
+
+    default:
+        motor_speed_set(0,0,0,0);//在没有模式的情况下，速度置零
+        break;
+    }
 }
 /**
 * @brief：将地盘功率限制在期望范围内
@@ -116,25 +116,25 @@ static void chassis_contral(void)
 */
 static int power_limit(int powermax)
 {
-	//进行电流求和
-	int allcurrent = 0;
-	allcurrent += ABS(chassis_motor[0].motordata.current);
-	allcurrent += ABS(chassis_motor[1].motordata.current);
-	allcurrent += ABS(chassis_motor[2].motordata.current);
-	allcurrent += ABS(chassis_motor[3].motordata.current);
+    //进行电流求和
+    int allcurrent = 0;
+    allcurrent += ABS(chassis_motor[0].motordata.current);
+    allcurrent += ABS(chassis_motor[1].motordata.current);
+    allcurrent += ABS(chassis_motor[2].motordata.current);
+    allcurrent += ABS(chassis_motor[3].motordata.current);
 
-	//通过功率得出步兵当前可行的最大电流，量纲与allcurrent相同
-	int Imax = powermax/25;		//电流最大值，单位 mA，实际供电电压25.5
-	Imax = Imax*8192/10000;		//转换至电机发送数据的量纲
-	if(Imax < allcurrent)		//若电流超限
-	{
-		chassis_motor[0].speedpid.out = ((int)chassis_motor[0].speedpid.out)*Imax/allcurrent;
-		chassis_motor[1].speedpid.out = ((int)chassis_motor[1].speedpid.out)*Imax/allcurrent;
-		chassis_motor[2].speedpid.out = ((int)chassis_motor[2].speedpid.out)*Imax/allcurrent;
-		chassis_motor[3].speedpid.out = ((int)chassis_motor[3].speedpid.out)*Imax/allcurrent;
-		return 1;
-	}
-	return 0;					//不超限返回0
+    //通过功率得出步兵当前可行的最大电流，量纲与allcurrent相同
+    int Imax = powermax/25;		//电流最大值，单位 mA，实际供电电压25.5
+    Imax = Imax*8192/10000;		//转换至电机发送数据的量纲
+    if(Imax < allcurrent)		//若电流超限
+    {
+        chassis_motor[0].speedpid.out = ((int)chassis_motor[0].speedpid.out)*Imax/allcurrent;
+        chassis_motor[1].speedpid.out = ((int)chassis_motor[1].speedpid.out)*Imax/allcurrent;
+        chassis_motor[2].speedpid.out = ((int)chassis_motor[2].speedpid.out)*Imax/allcurrent;
+        chassis_motor[3].speedpid.out = ((int)chassis_motor[3].speedpid.out)*Imax/allcurrent;
+        return 1;
+    }
+    return 0;					//不超限返回0
 }
 /**
 * @brief：根据四个电机的设定参数分别计算出其输出并发送数据
@@ -148,50 +148,50 @@ static struct rt_timer task_2ms;
 static struct rt_semaphore chassis_2ms_sem;
 static void task_2ms_IRQHandler(void *parameter)
 {
-	rt_sem_release(&chassis_2ms_sem);
+    rt_sem_release(&chassis_2ms_sem);
 }
 static void chassis_contral_thread(void* parameter)
 {
-	struct rt_can_msg wheelc_message;
-	
-	wheelc_message.id	= CHASSIS_CTLID;//设置ID
-	wheelc_message.ide	= RT_CAN_STDID;	//标准帧
-	wheelc_message.rtr	= RT_CAN_DTR;	//数据帧
-	wheelc_message.priv = 0;			//报文优先级最高
-	wheelc_message.len = 8;				//长度8
-	
-	while(1)
-	{
-		rt_sem_take(&chassis_2ms_sem, RT_WAITING_FOREVER);
-		chassis_contral();
-		for(int a = 0;a<4;a++)
-		{
-			pid_output_calculate(&chassis_motor[a].speedpid,chassis_motor[a].speedpid.set,chassis_motor[a].motordata.speed);
-			//chassis_motor[a].motorpid.out = 200;
-		}
+    struct rt_can_msg wheelc_message;
 
-		//测试代码进行功率限制
-		//power_limit(2000);
-		
-		//发送数据
-		wheelc_message.data[0] = chassis_motor[0].speedpid.out>>8;
-		wheelc_message.data[1] = chassis_motor[0].speedpid.out;
-		wheelc_message.data[2] = chassis_motor[1].speedpid.out>>8;
-		wheelc_message.data[3] = chassis_motor[1].speedpid.out;
-		wheelc_message.data[4] = chassis_motor[2].speedpid.out>>8;
-		wheelc_message.data[5] = chassis_motor[2].speedpid.out;
-		wheelc_message.data[6] = chassis_motor[3].speedpid.out>>8;
-		wheelc_message.data[7] = chassis_motor[3].speedpid.out;
-		
-		if(!rt_device_write(can1_dev,0,&wheelc_message,sizeof(wheelc_message)))
-		{
-			//如果发送数据为0计数一次发送失败，失败次数过多发出警告
-		}
-		else
-		{
+    wheelc_message.id	= CHASSIS_CTLID;//设置ID
+    wheelc_message.ide	= RT_CAN_STDID;	//标准帧
+    wheelc_message.rtr	= RT_CAN_DTR;	//数据帧
+    wheelc_message.priv = 0;			//报文优先级最高
+    wheelc_message.len = 8;				//长度8
 
-		}
-	}
+    while(1)
+    {
+        rt_sem_take(&chassis_2ms_sem, RT_WAITING_FOREVER);
+        chassis_contral();
+        for(int a = 0; a<4; a++)
+        {
+            pid_output_calculate(&chassis_motor[a].speedpid,chassis_motor[a].speedpid.set,chassis_motor[a].motordata.speed);
+            //chassis_motor[a].motorpid.out = 200;
+        }
+
+        //测试代码进行功率限制
+        //power_limit(2000);
+
+        //发送数据
+        wheelc_message.data[0] = chassis_motor[0].speedpid.out>>8;
+        wheelc_message.data[1] = chassis_motor[0].speedpid.out;
+        wheelc_message.data[2] = chassis_motor[1].speedpid.out>>8;
+        wheelc_message.data[3] = chassis_motor[1].speedpid.out;
+        wheelc_message.data[4] = chassis_motor[2].speedpid.out>>8;
+        wheelc_message.data[5] = chassis_motor[2].speedpid.out;
+        wheelc_message.data[6] = chassis_motor[3].speedpid.out>>8;
+        wheelc_message.data[7] = chassis_motor[3].speedpid.out;
+
+        if(!rt_device_write(can1_dev,0,&wheelc_message,sizeof(wheelc_message)))
+        {
+            //如果发送数据为0计数一次发送失败，失败次数过多发出警告
+        }
+        else
+        {
+
+        }
+    }
 }
 /**
 * @brief：初始化底盘电机
@@ -203,56 +203,56 @@ static void chassis_contral_thread(void* parameter)
 int chassis_init(void)
 {
     rt_sem_init(&chassis_2ms_sem, "2ms_sem", 0, RT_IPC_FLAG_FIFO);
-	
-    //初始化底盘线程
-	chassis_control = rt_thread_create(
-	"chassis_control",		//线程名
-	chassis_contral_thread,	//线程入口
-	RT_NULL,				//入口参数无
-	2048,					//线程栈
-	1,	                    //线程优先级
-	2);						//线程时间片大小
 
-	//线程创建失败返回false
-	if(chassis_control == RT_NULL)
-	{
-		return 0;
-	}
+    //初始化底盘线程
+    chassis_control = rt_thread_create(
+                          "chassis_control",		//线程名
+                          chassis_contral_thread,	//线程入口
+                          RT_NULL,				//入口参数无
+                          2048,					//线程栈
+                          1,	                    //线程优先级
+                          2);						//线程时间片大小
+
+    //线程创建失败返回false
+    if(chassis_control == RT_NULL)
+    {
+        return 0;
+    }
 
     //线程启动失败返回false
-	if(rt_thread_startup(chassis_control) != RT_EOK)
-	{
-		return 0;
-	}
+    if(rt_thread_startup(chassis_control) != RT_EOK)
+    {
+        return 0;
+    }
 
     //创建线程定时器
-	rt_timer_init(&task_2ms,
-                "2ms_task",
-                task_2ms_IRQHandler,
-				RT_NULL,
-                2, 
-                RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
+    rt_timer_init(&task_2ms,
+                  "2ms_task",
+                  task_2ms_IRQHandler,
+                  RT_NULL,
+                  2,
+                  RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
 
     //启动定时器
-	rt_timer_start(&task_2ms);
+    rt_timer_start(&task_2ms);
 
     //若均成功则开始初始化数据
-	for(rt_uint8_t a = 0;a<4;a++)
-	{
-		chassis_motor[a].motorID = (drv_can1ID_e)(0x201 + a);//初始化ID数值
-	}
-	pid_init(&chassis_motor[0].speedpid,6,0.004,0.2,500,8000,-8000);
-	pid_init(&chassis_motor[1].speedpid,6,0.004,0.2,500,8000,-8000);
-	pid_init(&chassis_motor[2].speedpid,6,0.004,0.2,500,8000,-8000);
-	pid_init(&chassis_motor[3].speedpid,6,0.004,0.2,500,8000,-8000);
-	pid_init(&motion_data.anglepid,2,0,10,10,1000,-1000);
-	motion_data.follow_angle = 0;
-	motion_data.angular_velocity = 0;
-	motion_data.xspeed = 0;
-	motion_data.yspeed = 0;
-	motion_data.sport_mode = NO_FOLLOW;//默认不跟随
-	
-	return 1;
+    for(rt_uint8_t a = 0; a<4; a++)
+    {
+        chassis_motor[a].motorID = (drv_can1ID_e)(0x201 + a);//初始化ID数值
+    }
+    pid_init(&chassis_motor[0].speedpid,6,0.004,0.2,500,8000,-8000);
+    pid_init(&chassis_motor[1].speedpid,6,0.004,0.2,500,8000,-8000);
+    pid_init(&chassis_motor[2].speedpid,6,0.004,0.2,500,8000,-8000);
+    pid_init(&chassis_motor[3].speedpid,6,0.004,0.2,500,8000,-8000);
+    pid_init(&motion_data.anglepid,2,0,10,10,1000,-1000);
+    motion_data.follow_angle = 0;
+    motion_data.angular_velocity = 0;
+    motion_data.xspeed = 0;
+    motion_data.yspeed = 0;
+    motion_data.sport_mode = NO_FOLLOW;//默认不跟随
+
+    return 1;
 }
 /**
 * @brief：按照参数设定以云台为前方的速度
@@ -266,14 +266,14 @@ int chassis_init(void)
 */
 void chassis_speed_set(rt_uint16_t follow_angle,rt_int16_t angular_velocity,rt_int16_t xspeed,rt_int16_t yspeed)
 {
-	while(follow_angle > 8191)
-	{
-		follow_angle -= 8191;
-	}
-	motion_data.follow_angle = follow_angle;
-	motion_data.angular_velocity = angular_velocity;
-	motion_data.xspeed = xspeed;
-	motion_data.yspeed = yspeed;
+    while(follow_angle > 8191)
+    {
+        follow_angle -= 8191;
+    }
+    motion_data.follow_angle = follow_angle;
+    motion_data.angular_velocity = angular_velocity;
+    motion_data.xspeed = xspeed;
+    motion_data.yspeed = yspeed;
 }
 /**
 * @brief：设定运动模式
@@ -283,7 +283,7 @@ void chassis_speed_set(rt_uint16_t follow_angle,rt_int16_t angular_velocity,rt_i
 */
 void sport_mode_set(sport_mode_e sport_mode)
 {
-	motion_data.sport_mode = sport_mode;
+    motion_data.sport_mode = sport_mode;
 }
 /**
 * @brief：refresh_motor_data函数会使用该函数来更新数据
@@ -294,10 +294,10 @@ void sport_mode_set(sport_mode_e sport_mode)
 */
 static void assign_motor_data(motordata_t* motordata,struct rt_can_msg* message)
 {
-	motordata->angle = (message->data[0]<<8) + message->data[1];	//转子角度
-	motordata->speed = (message->data[2]<<8) + message->data[3];	//转子转速
-	motordata->current = (message->data[4]<<8) + message->data[5];  //实际电流
-	motordata->temperature = message->data[6];						//温度
+    motordata->angle = (message->data[0]<<8) + message->data[1];	//转子角度
+    motordata->speed = (message->data[2]<<8) + message->data[3];	//转子转速
+    motordata->current = (message->data[4]<<8) + message->data[5];  //实际电流
+    motordata->temperature = message->data[6];						//温度
 }
 /**
 * @brief：利用该函数更新底盘电机当前转速等数据
@@ -308,42 +308,42 @@ static void assign_motor_data(motordata_t* motordata,struct rt_can_msg* message)
 */
 int refresh_chassis_motor_data(struct rt_can_msg* message)
 {
-	rt_uint8_t coordinate = message->id - 0x201;
-	
-	//底盘四个电机数据
-	if(coordinate < 4)
-	{
-		assign_motor_data(&chassis_motor[coordinate].motordata,message);
-		return 1;//更新完数据就返回
-	}
+    rt_uint8_t coordinate = message->id - 0x201;
 
-	return 0;
+    //底盘四个电机数据
+    if(coordinate < 4)
+    {
+        assign_motor_data(&chassis_motor[coordinate].motordata,message);
+        return 1;//更新完数据就返回
+    }
+
+    return 0;
 }
 int refresh_gimbal_motor_data(struct rt_can_msg* message)
 {
-	//其他数据
-	switch(message->id)
-	{
-		case YAW_ID:
-			assign_motor_data(&motion_data.yaw_data,message);
-			//转换角度数值的坐标系
-			if(motion_data.yaw_data.angle < YAW_ZERO_ANGLE)
-			{
-				motion_data.yaw_data.angle = 8191 - YAW_ZERO_ANGLE + motion_data.yaw_data.angle;
-			}
-			else
-			{
-				motion_data.yaw_data.angle = motion_data.yaw_data.angle - YAW_ZERO_ANGLE;
-			}
-			return 1;
-			
-		case PITCH_ID:
-			assign_motor_data(&motion_data.pitch_data,message);
-			return 1;
-			
-		default:
-			
-			break;
-	}
-	return 0;
+    //其他数据
+    switch(message->id)
+    {
+    case YAW_ID:
+        assign_motor_data(&motion_data.yaw_data,message);
+        //转换角度数值的坐标系
+        if(motion_data.yaw_data.angle < YAW_ZERO_ANGLE)
+        {
+            motion_data.yaw_data.angle = 8191 - YAW_ZERO_ANGLE + motion_data.yaw_data.angle;
+        }
+        else
+        {
+            motion_data.yaw_data.angle = motion_data.yaw_data.angle - YAW_ZERO_ANGLE;
+        }
+        return 1;
+
+    case PITCH_ID:
+        assign_motor_data(&motion_data.pitch_data,message);
+        return 1;
+
+    default:
+
+        break;
+    }
+    return 0;
 }

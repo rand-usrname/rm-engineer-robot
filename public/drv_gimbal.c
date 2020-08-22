@@ -16,19 +16,19 @@ static gimbalmotor_t	pitch;
 */
 static int angpid_cal(gimbalmotor_t* motor,int gyroangle)
 {
-	switch (motor->angdata_source)
-	{
-	case GYRO:
-		motor->angpid_gyro.set = motor->setang;
-		return pid_output_motor(&motor->angpid_gyro,motor->angpid_gyro.set,gyroangle);
+    switch (motor->angdata_source)
+    {
+    case GYRO:
+        motor->angpid_gyro.set = motor->setang;
+        return pid_output_motor(&motor->angpid_gyro,motor->angpid_gyro.set,gyroangle);
 
-	case DJI_MOTOR:
-		motor->angpid_dji.set = motor->setang;
-		return pid_output_motor(&motor->angpid_dji,motor->angpid_dji.set,motor->motordata.angle);
+    case DJI_MOTOR:
+        motor->angpid_dji.set = motor->setang;
+        return pid_output_motor(&motor->angpid_dji,motor->angpid_dji.set,motor->motordata.angle);
 
-	default:
-		return 0;
-	}
+    default:
+        return 0;
+    }
 }
 /**
 * @brief：该函数计算云台电机pid并保存在pid的out中
@@ -39,24 +39,24 @@ static int angpid_cal(gimbalmotor_t* motor,int gyroangle)
 */
 static int gimbalpid_cal(gimbalmotor_t* motor,int gyroangle,int gyropal,rt_uint8_t angle_time)
 {
-	switch (motor->control_mode)
-	{
-	case ANGLE:
-		if(angle_time > 9)
-		{	
-			//次数达到10次再进行计算
-			motor->palpid.set = angpid_cal(motor,gyroangle);
-		}
-	case PALSTANCE:
-		//角速度环是一定会被计算的
-		pid_output_calculate(&(motor->palpid),motor->palpid.set,gyropal);
-		break;
-	
-	default://不存在则电流归零
-		motor->palpid.out = 0;
-		break;
-	}
-	return 0;
+    switch (motor->control_mode)
+    {
+    case ANGLE:
+        if(angle_time > 9)
+        {
+            //次数达到10次再进行计算
+            motor->palpid.set = angpid_cal(motor,gyroangle);
+        }
+    case PALSTANCE:
+        //角速度环是一定会被计算的
+        pid_output_calculate(&(motor->palpid),motor->palpid.set,gyropal);
+        break;
+
+    default://不存在则电流归零
+        motor->palpid.out = 0;
+        break;
+    }
+    return 0;
 }
 /**
 * @brief：根据云台电机的设定参数计算输出并发送数据
@@ -70,62 +70,62 @@ static struct rt_timer task_1ms;
 static struct rt_semaphore gimbal_1ms_sem;
 static void task_1ms_IRQHandler(void *parameter)
 {
-	rt_sem_release(&gimbal_1ms_sem);
+    rt_sem_release(&gimbal_1ms_sem);
 }
 static void gimbal_contral_thread(void* parameter)
 {
-	//初始化CAN控制帧
-	struct rt_can_msg gimctl_msg;
-	gimctl_msg.id	= GIMBAL_CTL;	//设置ID
-	gimctl_msg.ide	= RT_CAN_STDID;	//标准帧
-	gimctl_msg.rtr	= RT_CAN_DTR;	//数据帧
-	gimctl_msg.priv = 0;			//报文优先级最高
-	gimctl_msg.len = 8;				//长度8
-	
-	rt_uint8_t angle_time = 0;		//记录速度环次数以执行角度环
-	int yawang,yawpal,pitchang,pitchpal;
-	
-	while(1)
-	{
-		rt_sem_take(&gimbal_1ms_sem, RT_WAITING_FOREVER);
+    //初始化CAN控制帧
+    struct rt_can_msg gimctl_msg;
+    gimctl_msg.id	= GIMBAL_CTL;	//设置ID
+    gimctl_msg.ide	= RT_CAN_STDID;	//标准帧
+    gimctl_msg.rtr	= RT_CAN_DTR;	//数据帧
+    gimctl_msg.priv = 0;			//报文优先级最高
+    gimctl_msg.len = 8;				//长度8
 
-		//计数执行角度环，1-10共10个状态
-		if(angle_time > 9)
-		{
-			angle_time = 0;
-		}
-		angle_time++;
-		
-		//进行数据转换
-		yawang = (int)((gimbal_atti.yaw + 180.0f)*8192.0f/360.0f);
-		yawpal = (int)((gimbal_atti.yaw_speed)*8192.0f/360.0f);
-		pitchang = (int)((gimbal_atti.pitch + 180.0f)*8192.0f/360.0f);
-		pitchpal = (int)((gimbal_atti.pitch_speed)*8192.0f/360.0f);
-		
-		//计算云台电机等
-		gimbalpid_cal(&yaw,yawang,yawpal,angle_time);
-		gimbalpid_cal(&pitch,pitchang,pitchpal,angle_time);
-		//TODO:pitch轴的限位
+    rt_uint8_t angle_time = 0;		//记录速度环次数以执行角度环
+    int yawang,yawpal,pitchang,pitchpal;
 
-		//发送数据
-		gimctl_msg.data[0] = pitch.palpid.out>>8;
-		gimctl_msg.data[1] = pitch.palpid.out;
-		gimctl_msg.data[2] = 0;
-		gimctl_msg.data[3] = 0;
-		gimctl_msg.data[4] = 0;
-		gimctl_msg.data[5] = 0;
-		gimctl_msg.data[6] = yaw.palpid.out>>8;
-		gimctl_msg.data[7] = yaw.palpid.out;
+    while(1)
+    {
+        rt_sem_take(&gimbal_1ms_sem, RT_WAITING_FOREVER);
 
-		if(!rt_device_write(can1_dev,0,&gimctl_msg,sizeof(gimctl_msg)))
-		{
-			//如果发送数据为0计数一次发送失败，失败次数过多发出警告
-		}
-		else
-		{
+        //计数执行角度环，1-10共10个状态
+        if(angle_time > 9)
+        {
+            angle_time = 0;
+        }
+        angle_time++;
 
-		}
-	}
+        //进行数据转换
+        yawang = (int)((gimbal_atti.yaw + 180.0f)*8192.0f/360.0f);
+        yawpal = (int)((gimbal_atti.yaw_speed)*8192.0f/360.0f);
+        pitchang = (int)((gimbal_atti.pitch + 180.0f)*8192.0f/360.0f);
+        pitchpal = (int)((gimbal_atti.pitch_speed)*8192.0f/360.0f);
+
+        //计算云台电机等
+        gimbalpid_cal(&yaw,yawang,yawpal,angle_time);
+        gimbalpid_cal(&pitch,pitchang,pitchpal,angle_time);
+        //TODO:pitch轴的限位
+
+        //发送数据
+        gimctl_msg.data[0] = pitch.palpid.out>>8;
+        gimctl_msg.data[1] = pitch.palpid.out;
+        gimctl_msg.data[2] = 0;
+        gimctl_msg.data[3] = 0;
+        gimctl_msg.data[4] = 0;
+        gimctl_msg.data[5] = 0;
+        gimctl_msg.data[6] = yaw.palpid.out>>8;
+        gimctl_msg.data[7] = yaw.palpid.out;
+
+        if(!rt_device_write(can1_dev,0,&gimctl_msg,sizeof(gimctl_msg)))
+        {
+            //如果发送数据为0计数一次发送失败，失败次数过多发出警告
+        }
+        else
+        {
+
+        }
+    }
 }
 /**
 * @brief：初始化云台线程
@@ -136,70 +136,70 @@ static void gimbal_contral_thread(void* parameter)
 */
 int gimbal_init(void)
 {
-	//初始化结构体数据
-	yaw.control_mode = ANGLE;//默认设置位置控制
-	pitch.control_mode = ANGLE;
+    //初始化结构体数据
+    yaw.control_mode = ANGLE;//默认设置位置控制
+    pitch.control_mode = ANGLE;
 
-	yaw.motorID = YAW_ID;
-	yaw.angdata_source = GYRO;//默认数据源陀螺仪
-	yaw.setang = 0;//初始化默认角度
+    yaw.motorID = YAW_ID;
+    yaw.angdata_source = GYRO;//默认数据源陀螺仪
+    yaw.setang = 0;//初始化默认角度
 
-	pitch.motorID = PITCH_ID;
-	pitch.angdata_source = GYRO;//默认数据源陀螺仪
-	pitch.setang = 4095;//初始化默认角度
+    pitch.motorID = PITCH_ID;
+    pitch.angdata_source = GYRO;//默认数据源陀螺仪
+    pitch.setang = 4095;//初始化默认角度
 
-	//初始化PID
-	pid_init(&yaw.palpid,30,0.01,20,200,0X7FFF,-0X7FFF);
-	pid_init(&pitch.palpid,4,0,0,3000,0X7FFF,-0X7FFF);
+    //初始化PID
+    pid_init(&yaw.palpid,10,0.1,20,200,0X7FFF,-0X7FFF);
+    pid_init(&pitch.palpid,4,0,0,3000,0X7FFF,-0X7FFF);
 
-	pid_init(&yaw.angpid_gyro,2.55,0.1,20,3,20000,-20000);
-	pid_init(&yaw.angpid_dji,0.18,0.01,0,3,2000,-2000);
-	pid_init(&pitch.angpid_gyro,17,0.05,0,3,20000,-20000);
-	pid_init(&pitch.angpid_dji,8,0,0,5,2000,-2000);
-	
+    pid_init(&yaw.angpid_gyro,15,0.01,20,3,20000,-20000);
+    pid_init(&yaw.angpid_dji,0.18,0.01,0,3,2000,-2000);
+    pid_init(&pitch.angpid_gyro,17,0.05,0,3,20000,-20000);
+    pid_init(&pitch.angpid_dji,8,0,0,5,2000,-2000);
+
 //	pid_init(&yaw.palpid,100,0,0,0,0,0);
 //	pid_init(&pitch.palpid,100,0,0,0,0,0);
-	
-	//初始化中断释放的信号量
-	rt_sem_init(&gimbal_1ms_sem, "1ms_sem", 0, RT_IPC_FLAG_FIFO);
-	
-	//初始化云台线程
-	gimbal_control = rt_thread_create(
-	"gimbal_control",		//线程名
-	gimbal_contral_thread,	//线程入口
-	RT_NULL,				//入口参数无
-	2048,					//线程栈
-	1,	                    //线程优先级
-	1);						//线程时间片大小
+
+    //初始化中断释放的信号量
+    rt_sem_init(&gimbal_1ms_sem, "1ms_sem", 0, RT_IPC_FLAG_FIFO);
+
+    //初始化云台线程
+    gimbal_control = rt_thread_create(
+                         "gimbal_control",		//线程名
+                         gimbal_contral_thread,	//线程入口
+                         RT_NULL,				//入口参数无
+                         2048,					//线程栈
+                         1,	                    //线程优先级
+                         1);						//线程时间片大小
 
 
-	//线程创建失败返回false
-	if(gimbal_control == RT_NULL)
-	{
-		return 0;
-	}
+    //线程创建失败返回false
+    if(gimbal_control == RT_NULL)
+    {
+        return 0;
+    }
 
     //创建线程定时器
-	rt_timer_init(&task_1ms,
-                "1ms_task",
-                task_1ms_IRQHandler,
-				RT_NULL,
-                1,
-                RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
+    rt_timer_init(&task_1ms,
+                  "1ms_task",
+                  task_1ms_IRQHandler,
+                  RT_NULL,
+                  1,
+                  RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
 
-	//线程启动失败返回false
-	if(rt_thread_startup(gimbal_control) != RT_EOK)
-	{
-		return 0;
-	}
+    //线程启动失败返回false
+    if(rt_thread_startup(gimbal_control) != RT_EOK)
+    {
+        return 0;
+    }
 
     //启动定时器
-	if(rt_timer_start(&task_1ms) != RT_EOK)
-	{
-		return 0;
-	}
+    if(rt_timer_start(&task_1ms) != RT_EOK)
+    {
+        return 0;
+    }
 
-	return 1;
+    return 1;
 }
 /**
 * @brief：refresh_motor_data函数会使用该函数来更新数据
@@ -210,10 +210,10 @@ int gimbal_init(void)
 */
 static void assign_motor_data(motordata_t* motordata,struct rt_can_msg* message)
 {
-	motordata->angle = (message->data[0]<<8) + message->data[1];	//转子角度
-	motordata->speed = (message->data[2]<<8) + message->data[3];	//转子转速
-	motordata->current = (message->data[4]<<8) + message->data[5];  //实际电流
-	motordata->temperature = message->data[6];						//温度
+    motordata->angle = (message->data[0]<<8) + message->data[1];	//转子角度
+    motordata->speed = (message->data[2]<<8) + message->data[3];	//转子转速
+    motordata->current = (message->data[4]<<8) + message->data[5];  //实际电流
+    motordata->temperature = message->data[6];						//温度
 }
 /**
 * @brief：利用该函数更新云台电机相关数据
@@ -224,31 +224,31 @@ static void assign_motor_data(motordata_t* motordata,struct rt_can_msg* message)
 */
 int refresh_gimbal_motor_data(struct rt_can_msg* message)
 {
-	//其他数据
-	switch(message->id)
-	{
-		case YAW_ID:
-			assign_motor_data(&yaw.motordata,message);
-			//转换角度数值的坐标系
-			if(yaw.motordata.angle < YAW_ZERO_ANGLE)
-			{
-				yaw.motordata.angle = 8191 - YAW_ZERO_ANGLE + yaw.motordata.angle;
-			}
-			else
-			{
-				yaw.motordata.angle = yaw.motordata.angle - YAW_ZERO_ANGLE;
-			}
-			return 1;
-			
-		case PITCH_ID:
-			assign_motor_data(&pitch.motordata,message);
-			return 1;
-			
-		default:
-			
-			break;
-	}
-	return 0;
+    //其他数据
+    switch(message->id)
+    {
+    case YAW_ID:
+        assign_motor_data(&yaw.motordata,message);
+        //转换角度数值的坐标系
+        if(yaw.motordata.angle < YAW_ZERO_ANGLE)
+        {
+            yaw.motordata.angle = 8191 - YAW_ZERO_ANGLE + yaw.motordata.angle;
+        }
+        else
+        {
+            yaw.motordata.angle = yaw.motordata.angle - YAW_ZERO_ANGLE;
+        }
+        return 1;
+
+    case PITCH_ID:
+        assign_motor_data(&pitch.motordata,message);
+        return 1;
+
+    default:
+
+        break;
+    }
+    return 0;
 }
 
 /**
@@ -260,9 +260,10 @@ int refresh_gimbal_motor_data(struct rt_can_msg* message)
 */
 int gimbal_absangle_set(rt_uint16_t yawset,rt_uint16_t pitchset)
 {
-	yaw.setang = yawset;
-	pitch.setang = pitchset;
-	return 1;
+    yaw.setang = yawset;
+    pitch.setang = pitchset;
+
+    return 1;
 }
 /**
 * @brief：增量式设置云台角度
@@ -271,11 +272,15 @@ int gimbal_absangle_set(rt_uint16_t yawset,rt_uint16_t pitchset)
 * @return：		yaw轴角度，格式0-8191
 * @author：mqy
 */
-int gimbal_addangle_set(rt_uint16_t yawset,rt_uint16_t pitchset)
+int gimbal_addangle_set(rt_int16_t yawset,rt_int16_t pitchset)
 {
-	yaw.setang += yawset;
-	pitch.setang += pitchset;
-	return 1;
+    yaw.setang += yawset;
+    pitch.setang += pitchset;
+
+    yaw.setang %= 8192;
+    pitch.setang %= 8192;
+
+    return 1;
 }
 /**
 * @brief：云台控制模式设置
@@ -286,10 +291,10 @@ int gimbal_addangle_set(rt_uint16_t yawset,rt_uint16_t pitchset)
 */
 int gimbal_ctlmode_set(control_mode_t yawset,control_mode_t pitchset)
 {
-	yaw.control_mode = yawset;
-	pitch.control_mode = pitchset;
-	//TODO:保证在从一种模式切换为另一种模式时，云台不会突然转动一个角度
-	return 1;
+    yaw.control_mode = yawset;
+    pitch.control_mode = pitchset;
+    //TODO:保证在从一种模式切换为另一种模式时，云台不会突然转动一个角度
+    return 1;
 }
 /**
 * @brief：设置加速度
@@ -300,15 +305,15 @@ int gimbal_ctlmode_set(control_mode_t yawset,control_mode_t pitchset)
 */
 int gimbal_palstance_set(rt_uint16_t yawset,rt_uint16_t pitchset)
 {
-	if(yaw.control_mode == PALSTANCE)
-	{
-		yaw.palpid.set = yawset;
-	}
-	if(pitch.control_mode == PALSTANCE)
-	{
-		pitch.palpid.set = pitchset;
-	}
-	return 1;
+    if(yaw.control_mode == PALSTANCE)
+    {
+        yaw.palpid.set = yawset;
+    }
+    if(pitch.control_mode == PALSTANCE)
+    {
+        pitch.palpid.set = pitchset;
+    }
+    return 1;
 }
 /**
 * @brief：设置云台数据元
@@ -319,10 +324,10 @@ int gimbal_palstance_set(rt_uint16_t yawset,rt_uint16_t pitchset)
 */
 int angle_datasource_set(data_source_t yawset,data_source_t pitchset)
 {
-	yaw.angdata_source = yawset;
-	pitch.angdata_source = pitchset;
-	
-	return 1;
+    yaw.angdata_source = yawset;
+    pitch.angdata_source = pitchset;
+
+    return 1;
 }
 /**
 * @brief：获取yaw轴角度
@@ -332,7 +337,7 @@ int angle_datasource_set(data_source_t yawset,data_source_t pitchset)
 */
 int get_yawangle(void)
 {
-	return yaw.motordata.angle;
+    return yaw.motordata.angle;
 }
 /**
 * @brief：获取pitch轴角度
@@ -342,5 +347,5 @@ int get_yawangle(void)
 */
 int get_pitchangle(void)
 {
-	return pitch.motordata.angle;
+    return pitch.motordata.angle;
 }

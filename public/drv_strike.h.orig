@@ -26,27 +26,27 @@
 /*热量控制结构体*/
 typedef struct _Heatctrl_t
 {
-    rt_int32_t 					now;							/*现在剩余热量*/
-    rt_uint32_t 				max;							/*热量上限*/
-    rt_uint8_t 					rate;							/*当前剩余热量百分比*/
-    struct _Heatctrl_t *next;							        /*下个热量控制块*/
+	rt_int32_t 					now;							/*现在剩余热量*/
+	rt_uint32_t 				max;							/*热量上限*/
+	rt_uint8_t 					rate;							/*当前剩余热量百分比*/
+	struct _Heatctrl_t *next;							        /*下个热量控制块*/
 
-    /*如果使能本地热量计算*/
-#if LOCAL_HEAT_ENABLE
-    rt_uint8_t 				  cool;							    /*枪口冷却值*/
-    rt_uint8_t    			buff;							    /*枪口冷却buff，即枪口冷却翻几倍*/
-#endif
-} Heatctrl_t;
+	/*如果使能本地热量计算*/
+	#if LOCAL_HEAT_ENABLE
+	rt_uint8_t 				  cool;							    /*枪口冷却值*/
+	rt_uint8_t    			buff;							    /*枪口冷却buff，即枪口冷却翻几倍*/
+	#endif
+}Heatctrl_t;
 
 
 /*发射机构结构体*/
 typedef struct
 {
-    rt_int16_t    speed;										    /*摩擦轮速度*/
-    rt_uint8_t    mode;											/*射击模式，如点射，3弹连发（之后需要改成枚举）*/
-    rt_uint8_t	  status;										/*状态，如速度环卡弹，位置卡弹*/
-    Heatctrl_t 	  heat;										/*枪口热量控制块*/
-} Strike_t;
+	rt_int16_t    speed;										    /*摩擦轮速度*/
+	rt_uint8_t    mode;											/*射击模式，如点射，3弹连发（之后需要改成枚举）*/
+	rt_uint8_t	  status;										/*状态，如速度环卡弹，位置卡弹*/
+	Heatctrl_t 	  heat;										/*枪口热量控制块*/
+}Strike_t;
 extern Motor_t m_rub[2];
 extern Motor_t m_launch;
 extern Strike_t gun1;
