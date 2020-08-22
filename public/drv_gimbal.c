@@ -149,10 +149,10 @@ int gimbal_init(void)
 	pitch.setang = 4095;//初始化默认角度
 
 	//初始化PID
-	pid_init(&yaw.palpid,30,0.01,20,200,0X7FFF,-0X7FFF);
+	pid_init(&yaw.palpid,10,0.1,20,200,0X7FFF,-0X7FFF);
 	pid_init(&pitch.palpid,4,0,0,3000,0X7FFF,-0X7FFF);
 
-	pid_init(&yaw.angpid_gyro,2.55,0.1,20,3,20000,-20000);
+	pid_init(&yaw.angpid_gyro,15,0.01,20,3,20000,-20000);
 	pid_init(&yaw.angpid_dji,0.18,0.01,0,3,2000,-2000);
 	pid_init(&pitch.angpid_gyro,17,0.05,0,3,20000,-20000);
 	pid_init(&pitch.angpid_dji,8,0,0,5,2000,-2000);
@@ -262,6 +262,7 @@ int gimbal_absangle_set(rt_uint16_t yawset,rt_uint16_t pitchset)
 {
 	yaw.setang = yawset;
 	pitch.setang = pitchset;
+	
 	return 1;
 }
 /**
@@ -271,10 +272,14 @@ int gimbal_absangle_set(rt_uint16_t yawset,rt_uint16_t pitchset)
 * @return：		yaw轴角度，格式0-8191
 * @author：mqy
 */
-int gimbal_addangle_set(rt_uint16_t yawset,rt_uint16_t pitchset)
+int gimbal_addangle_set(rt_int16_t yawset,rt_int16_t pitchset)
 {
 	yaw.setang += yawset;
 	pitch.setang += pitchset;
+	
+	yaw.setang %= 8192;
+	pitch.setang %= 8192;
+	
 	return 1;
 }
 /**

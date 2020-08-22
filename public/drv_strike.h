@@ -11,7 +11,7 @@
 
 /***** 这些宏定义可能需要在robodata.h中定义  *****/
 #define snail   0
-#define fire_angle 130
+#define fire_angle 60
 #define HERO
 
 

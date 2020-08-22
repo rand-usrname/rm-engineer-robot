@@ -11,18 +11,25 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 #include <board.h>
+
 #include "drv_gimbal.h"
 #include "drv_remote.h"
 #include "drv_aimbot.h"
+#include "drv_strike.h"
+#include "robocontrol.h"
 
 int main(void)
 {
 	remote_uart_init();
 	while(!HERO_IMU.atti_ready);
 	gimbal_init();
+	strike_init(&gun1,1000);
+	gimbal_addangle_set(gimbal_atti.yaw,gimbal_atti.pitch);
 	while(1)
 	{
 		
-		rt_thread_mdelay(1);
+		remote_ctrl(&RC_data);
+		visual_ctl_CANsend((gimbal_atti.pitch + 180)*65535/360,gimbal_atti.pitch*65535/360,20000);
+		rt_thread_mdelay(10);
 	}
 }

@@ -27,7 +27,8 @@ int vision_init(void)
 	visual_rev.x = 0;
 	visual_rev.y = 0;
 	visual_rev.z = 0;
-	visual_rev.usetime = 0;
+	visual_rev.yaw_usetime = 0;
+	visual_rev.pitch_usetime = 0;
 
 	//控制信息置为默认值
 	visual_ctl.aim_mode = BLANK;
@@ -47,6 +48,8 @@ INIT_APP_EXPORT(vision_init);
 */
 int refresh_visual_data(rt_uint8_t* data)
 {
+	visual_rev.yaw_usetime = 0;
+	visual_rev.pitch_usetime = 0;
 	visual_rev.aim_mode = (aim_mode_e)((data[0]>>5) & 0X7);//取前三位
 	visual_rev.forcester = (forecast_e)((data[0]>>4) & 0X1);//取第四位
 	visual_rev.computime = (rt_uint8_t)(data[1]);
@@ -149,6 +152,31 @@ int visual_ctl_UARTsend(rt_device_t dev,rt_int16_t yaw_ang,rt_int16_t pitch_ang,
 	rt_device_write(dev,0,data,11);//写入11个字节的数据
 	
 	return 1;
+}
+
+/**
+* @brief:获取视觉数据
+* @param:无
+* @return：返回函数名对应的含义
+* @author：mqy
+*/
+rt_int16_t get_yaw_add(void)
+{
+	visual_rev.yaw_usetime++;
+	return visual_rev.yawadd;
+}
+rt_int16_t get_pitch_add(void)
+{
+	visual_rev.pitch_usetime++;
+	return visual_rev.pitchadd;
+}
+rt_int16_t get_yawusetime(void)
+{
+	return visual_rev.yaw_usetime;
+}
+rt_int16_t get_pitchusetime(void)
+{
+	return visual_rev.pitch_usetime;
 }
 /**********与视觉的通信部份结束***********/
 

@@ -14,7 +14,8 @@ typedef enum
 {
     //发送
     GIMBAL_CTL = 0x1FF,
-
+	CHASSIS_CTL = 0x100,
+	
     //接收
     GYRO_ANGLE_ID = 0x101,  //陀螺仪数据结算ID
     GYRO_SPEED_ID = 0x102,
@@ -28,7 +29,6 @@ typedef enum
 typedef enum
 {
     //发送
-    CHASSIS_CTL = 0x100,
     VISUAL_CTLID = 0X301,	//视觉通信发送
 	
     //接收

@@ -295,14 +295,9 @@ static void task_1ms_emtry(void *parameter)
 		//pid速度环
 		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].dji.speed);
 		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);
-		if(bullet_set == 0)
-		{
 		pid_output_calculate(&m_launch.spe,m_launch.ang.out,m_launch.dji.speed);
-		}
-		else
-		{pid_output_calculate(&m_launch.spe,m_launch.spe.set,m_launch.dji.speed);}
 		//发送电流
-		motor_current_send(can1_dev,STDID_launch,m_launch.spe.out,m_rub[0].spe.out,m_rub[1].spe.out,0);
+		motor_current_send(can2_dev,STDID_launch,m_rub[0].spe.out,m_rub[1].spe.out,m_launch.spe.out,0);
 	}
 }
 static void task_10ms_emtry(void *parameter)
@@ -310,9 +305,6 @@ static void task_10ms_emtry(void *parameter)
 	while(1)
 	{
 		rt_sem_take(&task_10ms_sem, RT_WAITING_FOREVER);
-		#ifdef HERO
-		bullet_set = rt_pin_read(41);
-		#endif
 		pid_output_motor(&m_launch.ang,m_launch.ang.set,m_launch.dji.angle);
 	}
 }
@@ -365,9 +357,9 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	#if snail
 	motor_rub_init();
 	#else
-	motor_init(&m_rub[0],0x202,1);
-	motor_init(&m_rub[1],0x203,1);
-	motor_init(&m_launch,0x201,0.027973);
+	motor_init(&m_rub[0],0x201,1);
+	motor_init(&m_rub[1],0x202,1);
+	motor_init(&m_launch,0x203,0.027973);
 	//pid 和电机初始化可以放在外面 原因 ：减速比问题 pid参数问题
 	pid_init(&m_launch.ang, 
 					3.5,0,0,
