@@ -18,27 +18,27 @@ typedef enum
 {
     //发送
     GIMBAL_CTL = 0x1FF,
-    CHASSIS_CTL = 0x100,
-
+	CHASSIS_CTL = 0x100,
+	
     //接收
     GYRO_ANGLE_ID = 0x101,  //陀螺仪数据结算ID
     GYRO_SPEED_ID = 0x102,
-
+    
     YAW_ID      = 0x208,	//云台两电机数据更新ID
     PITCH_ID    = 0x205
 
-} drv_can1ID_e;
+}drv_can1ID_e;
 //底盘CAN1设备ID
 
 typedef enum
 {
     //发送
     VISUAL_CTLID = 0X301,	//视觉通信发送
-
+	
     //接收
-    VISUAL_REVID = 0X302	//视觉通信接收
-
-} drv_can2ID_e;
+	VISUAL_REVID = 0X302	//视觉通信接收
+	
+}drv_can2ID_e;
 //底盘CAN2设备ID
 
 #endif

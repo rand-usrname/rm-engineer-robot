@@ -41,7 +41,7 @@ static void can1_rx_thread(void *parameter)
         rt_sem_take(&can1_rx_sem, RT_WAITING_FOREVER);
         //从 CAN 读取一帧数据
         rt_device_read(can1_dev, 0, &rxmsg, sizeof(rxmsg));
-        can1_rec(&rxmsg);
+		can1_rec(&rxmsg);
     }
 }
 /**
@@ -64,12 +64,12 @@ static void can2_rx_thread(void *parameter)
     while (1)
     {
         //hdr 值为 - 1，表示直接从 uselist 链表读取数据
-        rxmsg.hdr = -1;
+		rxmsg.hdr = -1;
         //阻塞等待接收信号量
-        rt_sem_take(&can2_rx_sem, RT_WAITING_FOREVER);
-        //从 CAN 读取一帧数据
-        rt_device_read(can2_dev, 0, &rxmsg, sizeof(rxmsg));
-        can2_rec(&rxmsg);
+		rt_sem_take(&can2_rx_sem, RT_WAITING_FOREVER);
+		//从 CAN 读取一帧数据
+		rt_device_read(can2_dev, 0, &rxmsg, sizeof(rxmsg));
+		can2_rec(&rxmsg);
     }
 }
 
@@ -81,28 +81,28 @@ static void can2_rx_thread(void *parameter)
  */
 int can1_init(void)
 {
-    rt_err_t res=0;
-    rt_thread_t thread;
-    can1_dev = rt_device_find(CAN1_DEV_NAME);
-    if (!can1_dev)
-    {
-        return RT_ERROR;
-    }
-    //配置can驱动
-    res = rt_device_open(can1_dev, RT_DEVICE_FLAG_INT_TX | RT_DEVICE_FLAG_INT_RX);
-    RT_ASSERT(res == RT_EOK);
-    res = rt_device_control(can1_dev, RT_CAN_CMD_SET_MODE, (void *)RT_CAN_MODE_NORMAL);
-    res = rt_device_control(can1_dev, RT_CAN_CMD_SET_BAUD, (void *)CAN1MBaud);
-    //设置接收回调函数
-    rt_device_set_rx_indicate(can1_dev, can1_rx_call);
-    //can接收中断信号量
-    rt_sem_init(&can1_rx_sem, "can1_sem", 0, RT_IPC_FLAG_FIFO);
-    thread = rt_thread_create("can1_rx", can1_rx_thread, RT_NULL, 512, 2, 1);
-    if (thread != RT_NULL)
-    {
-        rt_thread_startup(thread);
-    }
-    return res;
+	rt_err_t res=0;
+	rt_thread_t thread;
+	can1_dev = rt_device_find(CAN1_DEV_NAME);
+	if (!can1_dev)
+	{
+		return RT_ERROR;
+	}
+	//配置can驱动
+	res = rt_device_open(can1_dev, RT_DEVICE_FLAG_INT_TX | RT_DEVICE_FLAG_INT_RX);
+	RT_ASSERT(res == RT_EOK);
+	res = rt_device_control(can1_dev, RT_CAN_CMD_SET_MODE, (void *)RT_CAN_MODE_NORMAL);
+	res = rt_device_control(can1_dev, RT_CAN_CMD_SET_BAUD, (void *)CAN1MBaud);
+	//设置接收回调函数
+	rt_device_set_rx_indicate(can1_dev, can1_rx_call);
+	//can接收中断信号量
+	rt_sem_init(&can1_rx_sem, "can1_sem", 0, RT_IPC_FLAG_FIFO);
+	thread = rt_thread_create("can1_rx", can1_rx_thread, RT_NULL, 512, 2, 1);
+	if (thread != RT_NULL)
+	{
+		rt_thread_startup(thread);
+	}
+	return res; 
 }
 INIT_APP_EXPORT(can1_init);
 /**
@@ -112,27 +112,27 @@ INIT_APP_EXPORT(can1_init);
  */
 int can2_init(void)
 {
-    rt_err_t res=0;
-    rt_thread_t thread;
-    can2_dev = rt_device_find(CAN2_DEV_NAME);
-    if (!can2_dev)
-    {
-        return RT_ERROR;
-    }
-    //配置can驱动
-    res = rt_device_open(can2_dev, RT_DEVICE_FLAG_INT_TX | RT_DEVICE_FLAG_INT_RX);
-    RT_ASSERT(res == RT_EOK);
-    res = rt_device_control(can2_dev, RT_CAN_CMD_SET_MODE, (void *)RT_CAN_MODE_NORMAL);
-    res = rt_device_control(can2_dev, RT_CAN_CMD_SET_BAUD, (void *)CAN1MBaud);
-    //设置接收回调函数
-    rt_device_set_rx_indicate(can2_dev, can2_rx_call);
-    //can接收中断信号量
-    rt_sem_init(&can2_rx_sem, "can2_sem", 0, RT_IPC_FLAG_FIFO);
-    thread = rt_thread_create("can2_rx", can2_rx_thread, RT_NULL, 512, 2, 1);
-    if (thread != RT_NULL)
-    {
-        rt_thread_startup(thread);
-    }
-    return res;
+	rt_err_t res=0;
+	rt_thread_t thread;
+	can2_dev = rt_device_find(CAN2_DEV_NAME);
+	if (!can2_dev)
+	{
+		return RT_ERROR;
+	}
+	//配置can驱动
+	res = rt_device_open(can2_dev, RT_DEVICE_FLAG_INT_TX | RT_DEVICE_FLAG_INT_RX);
+	RT_ASSERT(res == RT_EOK);
+	res = rt_device_control(can2_dev, RT_CAN_CMD_SET_MODE, (void *)RT_CAN_MODE_NORMAL);
+	res = rt_device_control(can2_dev, RT_CAN_CMD_SET_BAUD, (void *)CAN1MBaud);
+	//设置接收回调函数
+	rt_device_set_rx_indicate(can2_dev, can2_rx_call);
+	//can接收中断信号量
+	rt_sem_init(&can2_rx_sem, "can2_sem", 0, RT_IPC_FLAG_FIFO);
+	thread = rt_thread_create("can2_rx", can2_rx_thread, RT_NULL, 512, 2, 1);
+	if (thread != RT_NULL)
+	{
+		rt_thread_startup(thread);
+	}
+	return res; 
 }
 INIT_APP_EXPORT(can2_init);
