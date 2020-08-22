@@ -257,6 +257,7 @@ int gimbal_absangle_set(rt_uint16_t yawset,rt_uint16_t pitchset)
 {
 	yaw.setang = yawset;
 	pitch.setang = pitchset;
+	
 	return 1;
 }
 /**
@@ -266,15 +267,13 @@ int gimbal_absangle_set(rt_uint16_t yawset,rt_uint16_t pitchset)
 * @return£º		yawÖá½Ç¶È£¬¸ñÊ½0-8191
 * @author£ºmqy
 */
-int gimbal_addangle_set(rt_uint16_t yawset,rt_uint16_t pitchset)
+int gimbal_addangle_set(rt_int16_t yawset,rt_int16_t pitchset)
 {
 	yaw.setang += yawset;
 	pitch.setang += pitchset;
 	
-	if(yaw.setang > 8191){yaw.setang = 8191;}
-	if(yaw.setang < 0){yaw.setang = 0;}
-	if(pitch.setang > 4000){pitch.setang = 4000;}
-	if(pitch.setang <3000){pitch.setang = 3000;}
+	yaw.setang %= 8192;
+	pitch.setang %= 8192;
 	
 	return 1;
 }

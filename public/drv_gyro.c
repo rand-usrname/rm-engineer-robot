@@ -4,6 +4,9 @@
 //#include <arm_math.h>
 //#include "ahrs.h"
 
+#define CAN1_DEV_NAME       "can1"      /* CAN 设备名称 */
+rt_device_t can1_dev;            /* CAN 设备句柄 */
+
 IMU_t HERO_IMU;//IMU传回数据,unit:m/s^2,rad/s
 ATTI_t gimbal_atti;
 
@@ -44,7 +47,7 @@ void gyro_read_speed(struct rt_can_msg* rxmsg)
 
 	HERO_IMU.pitch_speed	= ((rt_int16_t)(rxmsg->data[0]<<8 | rxmsg->data[1])) / 100.0f;//建议安装坐标系下,面对枪口,上正下负,单位:°/s,1rpm=6°/s
 	HERO_IMU.yaw_speed 	= ((rt_int16_t)(rxmsg->data[2]<<8 | rxmsg->data[3])) / 100.0f;
-	HERO_IMU.roll_speed 		= ((rt_int16_t)(rxmsg->data[4]<<8 | rxmsg->data[5])) / 100.0f;
+	HERO_IMU.roll_speed 	= ((rt_int16_t)(rxmsg->data[4]<<8 | rxmsg->data[5])) / 100.0f;
 	
 	//如果云台控制线程存在
 	#ifdef THREAD_GIMBAL_CONTROL
@@ -61,7 +64,7 @@ void gyro_read_speed(struct rt_can_msg* rxmsg)
 void IMU_transfer2gm(void)
 {
 	float pitch_ecd_offset = 0;
-	int dir = 0;	//角速度方向
+	int dir = 0;	//融合roll角速度后的方向
 
 	gimbal_atti.pitch = HERO_IMU.pitch - pitch_ecd_offset;
 	gimbal_atti.yaw = HERO_IMU.yaw;
@@ -69,31 +72,50 @@ void IMU_transfer2gm(void)
 
 	gimbal_atti.pitch_speed = HERO_IMU.pitch_speed;
 	
-	gimbal_atti.yaw_speed = HERO_IMU.yaw_speed;
+	//gimbal_atti.yaw_speed = HERO_IMU.yaw_speed;
 
-//	if(fabs(HERO_IMU.yaw_speed) > fabs(HERO_IMU.roll_speed))//符号取决于较大值的符号
-//	{
-//		if(HERO_IMU.yaw_speed > 0)
-//			dir = 1;
-//		else
-//			dir = -1;
-//	}
-//	else
-//	{
-//		if(HERO_IMU.roll_speed > 0)
-//			dir = 1;
-//		else
-//			dir = -1;
-//	}
-//	
-//	gimbal_atti.yaw_speed = dir * sqrtf(HERO_IMU.yaw_speed * HERO_IMU.yaw_speed + HERO_IMU.roll_speed * HERO_IMU.roll_speed);
+	if(HERO_IMU.yaw_speed > 0)	//融合后角速度方向同原始yaw_speed
+		dir = 1;
+	else
+		dir = -1;
+
+	gimbal_atti.yaw_speed = dir * sqrtf(HERO_IMU.yaw_speed * HERO_IMU.yaw_speed + HERO_IMU.roll_speed * HERO_IMU.roll_speed);
 	//gimbal_atti.roll_speed = HERO_IMU.roll_speed;
 
 	
 
 }
 
+void can_cali_send()
+{
 
+    struct rt_can_msg tx_msg = {0};
+	
+	
+    rt_size_t  size;
+
+
+    tx_msg.id = 0x103;             /* ID 为 0x101 */
+    tx_msg.ide = RT_CAN_STDID;     /* 标准格式 */
+    tx_msg.rtr = RT_CAN_DTR;       /* 数据帧 */
+    tx_msg.len = 0x08;;                /* 数据长度为 8 */
+
+    /* 待发送的 8 字节数据 */
+	tx_msg.data[0] = 0x00;
+    tx_msg.data[1] = 0x00;
+    tx_msg.data[2] = 0x00;
+    tx_msg.data[3] = 0x00;
+    tx_msg.data[4] = 0x00;
+    tx_msg.data[5] = 0x00;
+	tx_msg.data[6] = 0x00;
+    tx_msg.data[7] = 0x00;
+
+
+	can1_dev = rt_device_find(CAN1_DEV_NAME);
+    /* 发送一帧 CAN 数据 */
+    size = rt_device_write(can1_dev, 0, &tx_msg, sizeof(tx_msg)); 
+	
+}
 
 
 
