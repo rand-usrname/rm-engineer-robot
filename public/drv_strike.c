@@ -1,28 +1,26 @@
 #include "drv_strike.h"
 
 
-#define PWM_DEV_NAME        "pwm3"  	  /* PWM设备名称 */
-#define PWM_DEV_CHANNEL_1     1       															/* PWM通道 摩擦轮 */
-#define PWM_DEV_CHANNEL_2     2       															/* PWM通道 摩擦轮*/
-#define PWM_DEV_CHANNEL_3     3																	/* PWM通道 弹仓电机*/
+#define PWM_DEV_NAME        "pwm8"  	  /* PWM设备名称 */
 static struct rt_device_pwm *pwm_dev;	
+static struct rt_device_pwm *servo_dev;
 Motor_t m_rub[2];
 Motor_t m_launch;
-
 /**
  * @brief  摩擦电机初始化（tim的pwm初始化）
  * @retval RT_EOK or RT_ERROR(成功或失败)
+ * @note   设置频率为50hz，实际输出100hz。(RT-THread高级定时器BUG)
  */
 int motor_rub_init(void)
 {
-	pwm_dev = (struct rt_device_pwm *)rt_device_find("pwm1");
+	pwm_dev = (struct rt_device_pwm *)rt_device_find(PWM_DEV_NAME);
 	if(!pwm_dev){return RT_ERROR;}
 	/*设置周期和脉冲宽度*/
-	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_2, 20000000,1000000);
-	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_1, 20000000,1000000);
+	rt_pwm_set(pwm_dev, 3, 20000000,1000000);
+	rt_pwm_set(pwm_dev, 4, 20000000,1000000);
 	/* 使能设备 */
-	rt_pwm_enable(pwm_dev, PWM_DEV_CHANNEL_2);
-	rt_pwm_enable(pwm_dev, PWM_DEV_CHANNEL_1);
+	rt_pwm_enable(pwm_dev, 3);
+	rt_pwm_enable(pwm_dev, 4);
 	return RT_EOK;
 }
 /**
@@ -32,12 +30,12 @@ int motor_rub_init(void)
  */
 int motor_servo_init(void)
 {
-	pwm_dev = (struct rt_device_pwm *)rt_device_find("pwm1");
-	if(!pwm_dev){return RT_ERROR;}
+	servo_dev = (struct rt_device_pwm *)rt_device_find("pwm1");
+	if(!servo_dev){return RT_ERROR;}
 	/*设置周期和脉冲宽度*/
-	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_3, 10000,5000);
+	rt_pwm_set(servo_dev, 2, 10000000,5000000);
 	/* 使能设备 */
-	rt_pwm_enable(pwm_dev, PWM_DEV_CHANNEL_3);
+	rt_pwm_enable(servo_dev, 2);
 	return RT_EOK;
 }
 
@@ -46,8 +44,8 @@ void motor_rub_set(uint16_t duty)
 	RT_ASSERT(duty<=1000);
 	
 	/*设置周期和脉冲宽度*/
-	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_1, 20000000,20000000*duty/1000);
-	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_2, 20000000,20000000*duty/1000);
+	rt_pwm_set(pwm_dev, 3, 20000000,20000*duty);
+	rt_pwm_set(pwm_dev, 4, 20000000,20000*duty);
 }
 
 /**
@@ -60,7 +58,7 @@ void motor_servo_set(uint16_t duty)
 	RT_ASSERT(duty<=1000);
 	
 	/*设置周期和脉冲宽度*/
-	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_3, 10000,10000*duty/1000);
+	rt_pwm_set(servo_dev, 2, 10000000,10000*duty);
 }
 
 Strike_t gun1;
@@ -288,12 +286,15 @@ static void task_1ms_emtry(void *parameter)
 	while(1)
 	{
 		rt_sem_take(&task_1ms_sem, RT_WAITING_FOREVER);
-		//pid速度环
-		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].dji.speed);
-		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);
 		pid_output_calculate(&m_launch.spe,m_launch.ang.out,m_launch.dji.speed);
 		//发送电流
+		#ifndef snail
+		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].dji.speed);
+		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);
 		motor_current_send(can1_dev,STDID_launch,m_launch.spe.out,m_rub[0].spe.out,m_rub[1].spe.out,0);
+		#else
+		motor_current_send(can2_dev,STDID_launch,m_launch.spe.out,0,0,0);
+		#endif
 	}
 }
 static void task_10ms_emtry(void *parameter)
@@ -352,6 +353,14 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	gun->status = 0;
 	#ifdef snail
 	motor_rub_init();
+//	motor_servo_init();
+	motor_init(&m_launch,0x201,0.027973);
+	pid_init(&m_launch.ang, 
+					3.5,0,0,
+					500,5000,-5000);
+	pid_init(&m_launch.spe, 
+					7.5,0,0,
+					350,8000,-8000);
 	#else
 	motor_init(&m_rub[0],0x202,1);
 	motor_init(&m_rub[1],0x203,1);

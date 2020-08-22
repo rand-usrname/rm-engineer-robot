@@ -5,7 +5,7 @@
 #include "drv_refsystem.h"
 #include "drv_remote.h"
 #include "drv_canthread.h"
-
+#include "robodata.h"
 
 #define LOCAL_HEAT_ENABLE		0					            /*本地热量使能*/
 
@@ -59,6 +59,7 @@ void heatctrl_init(Heatctrl_t *heat, rt_uint32_t max);
 void heatctrl_start(void);
 void motor_servo_set(uint16_t duty);
 void Gun_speed_set(Strike_t *strike, rt_int16_t speed);
+void motor_rub_set(uint16_t duty);
 void Gun_mode_set(Strike_t *strike, rt_base_t mode);
 /*发射机构初始化*/
 void strike_init(Strike_t *gun, rt_uint32_t max);

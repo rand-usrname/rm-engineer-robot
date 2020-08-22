@@ -49,7 +49,6 @@ typedef struct
 	pid_t			angpid_gyro;		//数据源陀螺仪时pid
 
 } gimbalmotor_t;
-//该结构体用于四个麦轮的控制和数据存储
 
 //外部调用的控制函数
 extern int gimbal_absangle_set(rt_uint16_t yawset,rt_uint16_t pitchset);

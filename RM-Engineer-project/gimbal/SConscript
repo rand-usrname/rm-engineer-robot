@@ -1,19 +1,12 @@
-import rtconfig
+# for module compiling
+import os
+Import('RTT_ROOT')
 from building import *
 
-cwd = GetCurrentDir()
+cwd = os.path.abspath('..')
 objs = []
-group = []
-list = os.listdir(cwd)
+objs = objs + SConscript(os.path.join(cwd, 'application', 'SConscript'))
+cwd = os.path.dirname(os.path.dirname(cwd))
+objs = objs + SConscript(os.path.join(cwd, 'SConscript'))
 
-src = Glob(str(cwd)+'/*.c')
-path = [cwd, str(Dir('#'))]
-group = group + DefineGroup('Application', src, depend = [''], CPPPATH = path)
-
-for d in list:
-    path = os.path.join(cwd, d)
-    if os.path.isdir(path):
-        src = Glob(str(path)+'/*.c')
-        group = group + DefineGroup('Usr/' + str(d), src, depend = [''], CPPPATH = [path])
-
-Return('group')
+Return('objs')

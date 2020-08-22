@@ -4,8 +4,8 @@
 static rt_thread_t 		gimbal_control 	= RT_NULL;
 
 //yaw pitch电机数据结构体
-static gimbalmotor_t	yaw;
-static gimbalmotor_t	pitch;
+ gimbalmotor_t	yaw;
+ gimbalmotor_t	pitch;
 
 /**
 * @brief：该函数计算角度环并输出
@@ -72,6 +72,7 @@ static void task_1ms_IRQHandler(void *parameter)
 {
 	rt_sem_release(&gimbal_1ms_sem);
 }
+	int yawang,yawpal,pitchang,pitchpal;
 static void gimbal_contral_thread(void* parameter)
 {
 	//初始化CAN控制帧
@@ -83,7 +84,6 @@ static void gimbal_contral_thread(void* parameter)
 	gimctl_msg.len = 8;				//长度8
 	
 	rt_uint8_t angle_time = 0;		//记录速度环次数以执行角度环
-	int yawang,yawpal,pitchang,pitchpal;
 	
 	while(1)
 	{
@@ -108,23 +108,22 @@ static void gimbal_contral_thread(void* parameter)
 		//TODO:pitch轴的限位
 
 		//发送数据
-		gimctl_msg.data[0] = pitch.palpid.out>>8;
-		gimctl_msg.data[1] = pitch.palpid.out;
+		gimctl_msg.data[0] = yaw.palpid.out>>8;
+		gimctl_msg.data[1] = yaw.palpid.out;
 		gimctl_msg.data[2] = 0;
 		gimctl_msg.data[3] = 0;
 		gimctl_msg.data[4] = 0;
 		gimctl_msg.data[5] = 0;
-		gimctl_msg.data[6] = yaw.palpid.out>>8;
-		gimctl_msg.data[7] = yaw.palpid.out;
+		gimctl_msg.data[6] = pitch.palpid.out>>8;
+		gimctl_msg.data[7] = pitch.palpid.out;
 
-		if(!rt_device_write(can1_dev,0,&gimctl_msg,sizeof(gimctl_msg)))
-		{
-			//如果发送数据为0计数一次发送失败，失败次数过多发出警告
-		}
-		else
-		{
-
-		}
+//		if(!rt_device_write(can2_dev,0,&gimctl_msg,sizeof(gimctl_msg)))
+//		{
+//			//如果发送数据为0计数一次发送失败，失败次数过多发出警告
+//		}
+//		else
+//		{
+//		}
 	}
 }
 /**
@@ -147,18 +146,14 @@ int gimbal_init(void)
 	pitch.motorID = PITCH_ID;
 	pitch.angdata_source = GYRO;//默认数据源陀螺仪
 	pitch.setang = 4095;//初始化默认角度
-
 	//初始化PID
-	pid_init(&yaw.palpid,30,0.01,20,200,0X7FFF,-0X7FFF);
-	pid_init(&pitch.palpid,4,0,0,3000,0X7FFF,-0X7FFF);
+	pid_init(&yaw.palpid,2,0,0,200,0X7FFF,-0X7FFF);
+	pid_init(&pitch.palpid,1,0,0,3000,0X7FFF,-0X7FFF);
 
-	pid_init(&yaw.angpid_gyro,2.55,0.1,20,3,20000,-20000);
-	pid_init(&yaw.angpid_dji,0.18,0.01,0,3,2000,-2000);
-	pid_init(&pitch.angpid_gyro,17,0.05,0,3,20000,-20000);
-	pid_init(&pitch.angpid_dji,8,0,0,5,2000,-2000);
-	
-//	pid_init(&yaw.palpid,100,0,0,0,0,0);
-//	pid_init(&pitch.palpid,100,0,0,0,0,0);
+	pid_init(&yaw.angpid_gyro,0.5,0,0,3,20000,-20000);
+	pid_init(&yaw.angpid_dji,0.1,0,0,3,2000,-2000);
+	pid_init(&pitch.angpid_gyro,2,0,0,3,20000,-20000);
+	pid_init(&pitch.angpid_dji,4,0,0,5,2000,-2000);
 	
 	//初始化中断释放的信号量
 	rt_sem_init(&gimbal_1ms_sem, "1ms_sem", 0, RT_IPC_FLAG_FIFO);
@@ -275,6 +270,12 @@ int gimbal_addangle_set(rt_uint16_t yawset,rt_uint16_t pitchset)
 {
 	yaw.setang += yawset;
 	pitch.setang += pitchset;
+	
+	if(yaw.setang > 8191){yaw.setang = 8191;}
+	if(yaw.setang < 0){yaw.setang = 0;}
+	if(pitch.setang > 4000){pitch.setang = 4000;}
+	if(pitch.setang <3000){pitch.setang = 3000;}
+	
 	return 1;
 }
 /**
