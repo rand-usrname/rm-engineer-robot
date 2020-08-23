@@ -108,14 +108,14 @@ static void gimbal_contral_thread(void* parameter)
 		pitchang = (rt_uint16_t)((gimbal_atti.pitch + 180.0f)*8192.0f/360.0f);
 		pitchpal = (int)((gimbal_atti.pitch_speed)*8192.0f/360.0f);
 		
-		//pitch轴限位
-		if(pitch.setang < ((rt_uint16_t)PITCH_MIN_ANGLE + PITCH_ZERO_ANGLE) % 8192)
+//		//pitch轴限位
+		if(pitch.setang < ((rt_uint16_t)PITCH_MIN_ANGLE + 4096) % 8192)
 		{
-			pitch.setang = ((rt_uint16_t)PITCH_MIN_ANGLE + PITCH_ZERO_ANGLE) % 8192;
+			pitch.setang = ((rt_uint16_t)PITCH_MIN_ANGLE + 4096) % 8192;
 		}
-		else if(pitch.setang > ((rt_uint16_t)PITCH_MAX_ANGLE + PITCH_ZERO_ANGLE) % 8192)
+		else if(pitch.setang > ((rt_uint16_t)PITCH_MAX_ANGLE + 4096) % 8192)
 		{
-			pitch.setang = ((rt_uint16_t)PITCH_MAX_ANGLE + PITCH_ZERO_ANGLE) % 8192;
+			pitch.setang = ((rt_uint16_t)PITCH_MAX_ANGLE + 4096) % 8192;
 		}
 		//计算云台两轴PID
 		gimbalpid_cal(&yaw,yawang,yawpal,angle_time);
@@ -169,7 +169,7 @@ int gimbal_init(void)
 	pid_init(&pitch.palpid,4,0,0,3000,0X7FFF,-0X7FFF);
 
 	pid_init(&yaw.angpid_gyro,15,0.01,20,3,20000,-20000);
-	pid_init(&yaw.angpid_dji,0.18,0.01,0,3,2000,-2000);
+	pid_init(&yaw.angpid_dji,8,0.01,0,3,2000,-2000);
 	pid_init(&pitch.angpid_gyro,17,0.05,0,3,20000,-20000);
 	pid_init(&pitch.angpid_dji,8,0,0,5,2000,-2000);
 	
@@ -237,34 +237,35 @@ static void assign_motor_data(motordata_t* motordata,struct rt_can_msg* message)
 */
 int refresh_gimbal_motor_data(struct rt_can_msg* message)
 {
+	rt_uint16_t temang;
 	//其他数据
 	switch(message->id)
 	{
 		case YAW_ID:
 			assign_motor_data(&yaw.motordata,message);
 			//转换角度数值的坐标系
-			int temyaw = (PITCH_ZERO_ANGLE + 4096) % 8192;
-			if(yaw.motordata.angle < temyaw)
+			temang = (PITCH_ZERO_ANGLE + 4096) % 8192;
+			if(yaw.motordata.angle < temang)
 			{
-				yaw.motordata.angle = 8191 - temyaw + yaw.motordata.angle;
+				yaw.motordata.angle = 8191 - temang + yaw.motordata.angle;
 			}
 			else
 			{
-				yaw.motordata.angle = yaw.motordata.angle - temyaw;
+				yaw.motordata.angle = yaw.motordata.angle - temang;
 			}
 			return 1;
 			
 		case PITCH_ID:
 			assign_motor_data(&pitch.motordata,message);
 			//转换角度数值的坐标系
-			int tempitch = (PITCH_ZERO_ANGLE + 4096) % 8192;
-			if(pitch.motordata.angle < tempitch)
+			temang = (PITCH_ZERO_ANGLE + 4096) % 8192;
+			if(pitch.motordata.angle < temang)
 			{
-				pitch.motordata.angle = 8191 - tempitch + pitch.motordata.angle;
+				pitch.motordata.angle = 8191 - temang + pitch.motordata.angle;
 			}
 			else
 			{
-				pitch.motordata.angle = pitch.motordata.angle - tempitch;
+				pitch.motordata.angle = pitch.motordata.angle - temang;
 			}
 			return 1;
 			
@@ -353,7 +354,6 @@ int gimbal_palstance_set(rt_uint16_t yawset,rt_uint16_t pitchset)
 */
 int angle_datasource_set(data_source_t yawset,data_source_t pitchset)
 {
-	rt_uint16_t yawang,pitchang;
 	//不同时进行赋值
 	if(yaw.angdata_source != yawset)
 	{

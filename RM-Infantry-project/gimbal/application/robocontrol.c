@@ -26,7 +26,7 @@ static int chassis_ctl(rt_int16_t xspeed, rt_int16_t yspeed, rt_uint8_t mode,rt_
 	rt_device_write(can1_dev, 0, &txmsg, sizeof(txmsg));
 }
 int gun1speed = 0;
-
+data_source_t datasource = DJI_MOTOR;
 int remote_ctrl(RC_Ctrl_t *remote)
 {
 	rt_int16_t pitchadd = 0;
@@ -41,7 +41,7 @@ int remote_ctrl(RC_Ctrl_t *remote)
 	}
 	else if(remote->Remote_Data.s2 == 2)//右侧按键在下
 	{
-		return 1;//TODO:填充电脑控制函数
+		//return 1;//TODO:填充电脑控制函数
 	}
 	else if(remote->Remote_Data.s2 == 1)//右侧案件在上
 	{
@@ -102,7 +102,16 @@ int remote_ctrl(RC_Ctrl_t *remote)
 	}
 	else if(s_action == middle_to_down)//向下拨动
 	{
+		if(datasource == DJI_MOTOR)
+		{
+			datasource = GYRO;
+		}
+		else
+		{
+			datasource = DJI_MOTOR;
+		}
 		
+		angle_datasource_set(datasource,datasource);
 	}
 
 	gimbal_addangle_set(yawadd,pitchadd);
