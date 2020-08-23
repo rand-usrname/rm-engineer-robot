@@ -6,6 +6,7 @@
 
 #define CAN1_DEV_NAME       "can1"      /* CAN 设备名称 */
 
+
 IMU_t HERO_IMU;//IMU传回数据,unit:m/s^2,rad/s
 ATTI_t gimbal_atti;
 
@@ -89,7 +90,7 @@ void can_cali_send()
 {
 
     struct rt_can_msg tx_msg = {0};
-	
+	rt_device_t can1_dev;            /* CAN 设备句柄 */
 	
     rt_size_t  size;
 
