@@ -87,7 +87,7 @@ void can_cali_send()
 {
      rt_device_t can1_dev;            /* CAN 设备句柄 */
     struct rt_can_msg tx_msg = {0};
-	
+	rt_device_t can1_dev;            /* CAN 设备句柄 */
 	
     rt_size_t  size;
 
