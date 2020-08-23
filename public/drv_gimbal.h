@@ -41,7 +41,7 @@ typedef struct
 	control_mode_t	control_mode;		//控制模式
 	drv_can1ID_e 	motorID;			//枚举定义电机ID
 	motordata_t		motordata;			//电机数据结构体
-	int				setang;				//角度设定值
+	rt_uint16_t		setang;				//角度设定值
 
 	pid_t		    palpid;				//加速度结构体
 	data_source_t	angdata_source;		//角度闭环数据源
@@ -59,12 +59,12 @@ extern int gimbal_ctlmode_set(control_mode_t yawset,control_mode_t pitchset);
 extern int angle_datasource_set(data_source_t yawset,data_source_t pitchset);
 
 //必须调用的函数
-//默认CAN1设备，默认ID YAW_ID = 0X205 PITCH_ID = 0X206
+//默认 CAN1 设备，默认ID YAW_ID = 0X205 PITCH_ID = 0X206
 extern int refresh_gimbal_motor_data(struct rt_can_msg* message);
 extern int gimbal_init(void);
 
 //读取云台数据函数
-extern int get_yawangle(void);
-extern int get_pitchangle(void);
+extern rt_uint16_t get_yawangle(void);
+extern rt_uint16_t get_pitchangle(void);
 
 #endif

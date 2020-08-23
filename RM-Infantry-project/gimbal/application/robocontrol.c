@@ -41,7 +41,7 @@ int remote_ctrl(RC_Ctrl_t *remote)
 	}
 	else if(remote->Remote_Data.s2 == 2)//右侧按键在下
 	{
-		return 1;//填充电脑控制函数
+		return 1;//TODO:填充电脑控制函数
 	}
 	else if(remote->Remote_Data.s2 == 1)//右侧案件在上
 	{
