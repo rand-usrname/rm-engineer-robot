@@ -162,7 +162,7 @@ void Gun_speed_set(Strike_t *strike, rt_int16_t speed)
 //		if(strike->speed>Refdata->heat_limit_42)
 //			strike->speed = Refdata->heat_limit_42;
 //	}
-	#ifdef SNALL
+	#ifdef SNAIL
 	motor_rub_set(strike->speed);
 	#else
 	//需要换算？
@@ -288,17 +288,13 @@ static void task_1ms_emtry(void *parameter)
 		rt_sem_take(&task_1ms_sem, RT_WAITING_FOREVER);
 		pid_output_calculate(&m_launch.spe,m_launch.ang.out,m_launch.dji.speed);
 		//发送电流
-<<<<<<< HEAD
-		#ifndef snail
+		#ifndef SNAIL
 		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].dji.speed);
 		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);
 		motor_current_send(can1_dev,STDID_launch,m_launch.spe.out,m_rub[0].spe.out,m_rub[1].spe.out,0);
 		#else
 		motor_current_send(can2_dev,STDID_launch,m_launch.spe.out,0,0,0);
 		#endif
-=======
-		motor_current_send(can2_dev,STDID_launch,m_rub[0].spe.out,m_rub[1].spe.out,m_launch.spe.out,0);
->>>>>>> 3fdbce38946b4cced8285cacfd2f88b39e27539e
 	}
 }
 static void task_10ms_emtry(void *parameter)
@@ -355,7 +351,7 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	gun->mode = STRICK_NOLIMITE | STRICK_LOWSPEED;				/*持续开火+低速高射频*/
 	gun->speed = 0;
 	gun->status = 0;
-	#ifdef SNALL
+	#ifdef SNAIL
 	motor_rub_init();
 //	motor_servo_init();
 	motor_init(&m_launch,0x201,0.027973);
@@ -366,17 +362,10 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 					7.5,0,0,
 					350,8000,-8000);
 	#else
-<<<<<<< HEAD
-	motor_init(&m_rub[0],0x202,1);
-	motor_init(&m_rub[1],0x203,1);
-	motor_init(&m_launch,0x201,0.027973);
-	//pid 和电机初始化放在外面 原因 ：减速比问题 pid参数问题
-=======
 	motor_init(&m_rub[0],0x201,1);
 	motor_init(&m_rub[1],0x202,1);
 	motor_init(&m_launch,0x203,0.027973);
 	//pid 和电机初始化可以放在外面 原因 ：减速比问题 pid参数问题
->>>>>>> 3fdbce38946b4cced8285cacfd2f88b39e27539e
 	pid_init(&m_launch.ang, 
 					3.5,0,0,
 					500,5000,-5000);

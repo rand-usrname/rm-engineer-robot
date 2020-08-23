@@ -4,9 +4,6 @@
 //#include <arm_math.h>
 //#include "ahrs.h"
 
-#define CAN1_DEV_NAME       "can1"      /* CAN 设备名称 */
-rt_device_t can1_dev;            /* CAN 设备句柄 */
-
 IMU_t HERO_IMU;//IMU传回数据,unit:m/s^2,rad/s
 ATTI_t gimbal_atti;
 
@@ -88,7 +85,7 @@ void IMU_transfer2gm(void)
 
 void can_cali_send()
 {
-
+     rt_device_t can1_dev;            /* CAN 设备句柄 */
     struct rt_can_msg tx_msg = {0};
 	
 	
@@ -111,7 +108,7 @@ void can_cali_send()
     tx_msg.data[7] = 0x00;
 
 
-	can1_dev = rt_device_find(CAN1_DEV_NAME);
+	can1_dev = rt_device_find("can1");
     /* 发送一帧 CAN 数据 */
     size = rt_device_write(can1_dev, 0, &tx_msg, sizeof(tx_msg)); 
 	

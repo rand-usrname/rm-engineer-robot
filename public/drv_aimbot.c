@@ -79,7 +79,6 @@ int refresh_visual_data(rt_uint8_t* data)
 		break;
 
 	case CAISSON:
-		//TODO:等待工程自己补充解析方式
 		break;
 	
 	case BLANK:	//若为空值默认返回
