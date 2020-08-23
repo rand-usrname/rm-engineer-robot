@@ -3,7 +3,7 @@
 
 #define PWM_DEV_NAME        "pwm8"  	  /* PWM设备名称 */
 static struct rt_device_pwm *pwm_dev;	
-static struct rt_device_pwm *servo_dev;
+static struct rt_device_pwm *servo_dev;   /* 弹仓PWM设备名称 */
 Motor_t m_rub[2];
 Motor_t m_launch;
 /**
@@ -100,7 +100,7 @@ static void heatctrl_thread(void *parameter)
 		 p_temp->rate = (100 * p_temp->now) / p_temp->max;
 		 heat_control(p_temp);															/*热量控制*/
 		 #if LOCAL_HEAT_ENABLE
-		 heatctrl_cool(p_temp);																		/*冷却*/
+		 heatctrl_cool(p_temp);															/*冷却*/
 		 #endif
 		 p_temp = p_temp->next;
 	 }
@@ -182,14 +182,14 @@ void Gun_mode_set(Strike_t *strike, rt_base_t mode)
 void strike_stuck(Motor_t *motor, Strike_t *gun)
 {
 	static rt_uint16_t stuck_time = 0;
-	static rt_tick_t tick = 0;																			/*记录系统时间*/
+	static rt_tick_t tick = 0;								/*记录系统时间*/
 	static rt_uint8_t temp = 0;
 	/*如果卡弹*/
 	if(gun->status & STRICK_STUCK)
 	{	
 		if(temp == 1)
 		{
-			if(rt_tick_get() > tick)																	/*倒转1000ms*/
+			if(rt_tick_get() > tick)						/*倒转1000ms*/
 			{
 				gun->status &= ~STRICK_STUCK;
 				stuck_time = 0;
@@ -198,13 +198,13 @@ void strike_stuck(Motor_t *motor, Strike_t *gun)
 		}
 		else
 		{
-			motor->ang.set = motor->dji.angle + 3000;									/**/
+			motor->ang.set = motor->dji.angle + 3000;	
 			tick = rt_tick_get()+1000;
 			temp=1;
 		}
 		
 	}
-	else if(~(gun->status & STRICK_STOP))														/*如果没有禁止转动*/
+	else if(~(gun->status & STRICK_STOP))					/*如果没有禁止转动*/
 	{
 		/*速度环输出过大*/
 		if(ABS(motor->spe.out) > 7777)
@@ -229,10 +229,15 @@ void strike_stuck(Motor_t *motor, Strike_t *gun)
  */
 void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 {
-	static rt_tick_t tick = 0;																			/*记录系统时间*/
-	static rt_tick_t tick_sleep = 0;																/*拨弹电机间隔时间*/
+	static rt_tick_t tick = 0;										/*记录系统时间*/
+	static rt_tick_t tick_sleep = 0;								/*拨弹电机间隔时间*/
+	/* 如果摩擦轮速度小于一定值 */
+	if(gun->speed <= 10)
+	{
+		gun->status = STRICK_STOP;
+	}
 	/*如果停止开火，使位置环不动*/
-	if(gun->status & STRICK_STOP)																		/*不允许开火，直接返回*/
+	if(gun->status & STRICK_STOP)									/*不允许开火，直接返回*/
 	{
 		motor->ang.set = motor->dji.angle;
 		return;
@@ -243,17 +248,17 @@ void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 		if(if_fire==1)
 		{
 			/*一次发弹数量*/
-			if(gun->mode & STRICK_NOLIMITE)															/*不停转动*/
+			if(gun->mode & STRICK_NOLIMITE)							/*不停转动*/
 			{
-				tick_sleep=0;																							/*间隔时间*/
+				tick_sleep=0;										/*间隔时间*/
 				motor_angle_set(motor, FIRE_ANGLE);
 			}
-			else if(gun->mode & STRICK_SINGLE)													/*单发*/
+			else if(gun->mode & STRICK_SINGLE)						/*单发*/
 			{
 				tick_sleep=500;
 				motor_angle_set(motor, FIRE_ANGLE);
 			}
-			else if(gun->mode & STRICK_TRIPLE)													/*三连发*/
+			else if(gun->mode & STRICK_TRIPLE)						/*三连发*/
 			{
 				tick_sleep=1000;
 				motor_angle_set(motor, FIRE_ANGLE*3);
@@ -264,8 +269,8 @@ void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 }
 /************************************ End **************************************************/
 /************************************发射机构线程*******************************************/
-static struct rt_semaphore task_1ms_sem;     													/* 用于接收消息的信号量 */
-static struct rt_semaphore task_10ms_sem;     													/* 用于接收消息的信号量 */
+static struct rt_semaphore task_1ms_sem;     						/* 用于接收消息的信号量 */
+static struct rt_semaphore task_10ms_sem;     						/* 用于接收消息的信号量 */
 /*1ms任务*/
 static struct rt_timer task_1ms;
 /*10ms任务*/
@@ -379,6 +384,6 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 					8.2,0.05,0,
 					1200,14000,-14000);
 	#endif
-	heatctrl_init(&gun->heat, max);												/*热量控制参数初始化*/
+	heatctrl_init(&gun->heat, max);						/*热量控制参数初始化*/
 	strike_start();
 }
