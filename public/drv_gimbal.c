@@ -83,6 +83,12 @@ static void gimbal_contral_thread(void* parameter)
 	gimctl_msg.priv = 0;			//报文优先级最高
 	gimctl_msg.len = 8;				//长度8
 	
+	//控制数据清零
+	for(int a = 0;a<8;a++)
+	{
+		gimctl_msg.data[a] = 0;
+	}
+
 	rt_uint8_t angle_time = 0;		//记录速度环次数以执行角度环
 	
 	while(1)
@@ -107,15 +113,17 @@ static void gimbal_contral_thread(void* parameter)
 		gimbalpid_cal(&pitch,pitchang,pitchpal,angle_time);
 		//TODO:pitch轴的限位
 
-		//发送数据
-		gimctl_msg.data[0] = yaw.palpid.out>>8;
-		gimctl_msg.data[1] = yaw.palpid.out;
-		gimctl_msg.data[2] = 0;
-		gimctl_msg.data[3] = 0;
-		gimctl_msg.data[4] = 0;
-		gimctl_msg.data[5] = 0;
-		gimctl_msg.data[6] = pitch.palpid.out>>8;
-		gimctl_msg.data[7] = pitch.palpid.out;
+		//在对应位置写电流并发送
+		gimctl_msg.data[(rt_uint16_t)(PITCH_ID - 0x205)*2] = pitch.palpid.out>>8;
+		gimctl_msg.data[(rt_uint16_t)(PITCH_ID - 0x205)*2 + 1] = pitch.palpid.out;
+		gimctl_msg.data[(rt_uint16_t)(YAW_ID - 0x205)*2] = yaw.palpid.out>>8;
+		gimctl_msg.data[(rt_uint16_t)(YAW_ID - 0x205)*2 + 1] = yaw.palpid.out;
+
+		//如果存在第二个云台电机
+		#ifdef DUAL_PITCH_MOTOR
+			gimctl_msg.DATA[(rt_uint16_t)(DUAL_PITCH_ID - 0x205)*2] = (-yaw.palpid.out)>>8;
+			gimctl_msg.DATA[(rt_uint16_t)(DUAL_PITCH_ID - 0x205)*2 + 1] = (-yaw.palpid.out);
+		#endif
 
 //		if(!rt_device_write(can2_dev,0,&gimctl_msg,sizeof(gimctl_msg)))
 //		{
@@ -145,7 +153,8 @@ int gimbal_init(void)
 
 	pitch.motorID = PITCH_ID;
 	pitch.angdata_source = GYRO;//默认数据源陀螺仪
-	pitch.setang = 4095;//初始化默认角度
+	pitch.setang = 0;//初始化默认角度
+
 	//初始化PID
 	pid_init(&yaw.palpid,2,0,0,200,0X7FFF,-0X7FFF);
 	pid_init(&pitch.palpid,1,0,0,3000,0X7FFF,-0X7FFF);

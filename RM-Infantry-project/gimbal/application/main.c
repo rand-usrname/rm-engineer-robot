@@ -29,7 +29,7 @@ int main(void)
 	{
 		
 		remote_ctrl(&RC_data);
-		visual_ctl_CANsend((gimbal_atti.pitch + 180)*65535/360,gimbal_atti.pitch*65535/360,20000);
+		visual_ctl_CANsend((180 - gimbal_atti.yaw)*65535/360,gimbal_atti.pitch*65535/360,20000);
 		rt_thread_mdelay(10);
 	}
 }
