@@ -208,6 +208,5 @@
 #define THREAD_CAN_RECEIVE
 #define THREAD_REMOTE
 #define PID_CALCULATE
-#define USING_GYRO
 
 #endif
