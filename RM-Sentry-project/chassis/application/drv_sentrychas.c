@@ -1,7 +1,7 @@
-#include "drv_chassis.h"
+#include "drv_sentrychas.h"
 
 //底盘电机PID线程句柄
-static rt_thread_t 		chassis_ctrl_handler 	= RT_NULL;
+static rt_thread_t 		chassis_control 	= RT_NULL;
 
 //电机控制结构体，索引0对应最小ID
 static motor_t			chassis_motor[4];
@@ -150,7 +150,7 @@ static void task_2ms_IRQHandler(void *parameter)
 {
 	rt_sem_release(&chassis_2ms_sem);
 }
-static void chassis_control_thread(void* parameter)
+static void chassis_contral_thread(void* parameter)
 {
 	struct rt_can_msg wheelc_message;
 	
@@ -163,7 +163,7 @@ static void chassis_control_thread(void* parameter)
 	while(1)
 	{
 		rt_sem_take(&chassis_2ms_sem, RT_WAITING_FOREVER);
-		chassis_control();
+		chassis_contral();
 		for(int a = 0;a<4;a++)
 		{
 			pid_output_calculate(&chassis_motor[a].speedpid,chassis_motor[a].speedpid.set,chassis_motor[a].motordata.speed);
@@ -205,22 +205,22 @@ int chassis_init(void)
     rt_sem_init(&chassis_2ms_sem, "2ms_sem", 0, RT_IPC_FLAG_FIFO);
 	
     //初始化底盘线程
-	chassis_ctrl_handler = rt_thread_create(
+	chassis_control = rt_thread_create(
 	"chassis_control",		//线程名
-	chassis_control_thread,	//线程入口
+	chassis_contral_thread,	//线程入口
 	RT_NULL,				//入口参数无
 	2048,					//线程栈
 	1,	                    //线程优先级
 	2);						//线程时间片大小
 
 	//线程创建失败返回false
-	if(chassis_ctrl_handler == RT_NULL)
+	if(chassis_control == RT_NULL)
 	{
 		return 0;
 	}
 
     //线程启动失败返回false
-	if(rt_thread_startup(chassis_ctrl_handler) != RT_EOK)
+	if(rt_thread_startup(chassis_control) != RT_EOK)
 	{
 		return 0;
 	}
