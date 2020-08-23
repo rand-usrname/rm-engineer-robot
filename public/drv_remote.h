@@ -37,8 +37,8 @@ typedef struct  __Mouse
 }Mouse_t;
 typedef	struct __Key_Data
 {
-	  uint8_t W;
-    uint8_t S;
+	    uint8_t W;
+        uint8_t S;
 		uint8_t A;
 		uint8_t D;
 		uint8_t Q;
@@ -64,10 +64,11 @@ typedef struct __RC_Ctrl
 }RC_Ctrl_t;
 
 extern RC_Ctrl_t RC_data;
-
+extern rt_uint16_t key_change;
 extern int remote_uart_init(void);
 
 extern switch_action_e Change_from_middle(switch_action_e sx);
 extern switch_action_e Change_to_middle(switch_action_e sx);
+extern switch_action_e Key_action_read(rt_uint8_t *targetdata);
 #endif
 
