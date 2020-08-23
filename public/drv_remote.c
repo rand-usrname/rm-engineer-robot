@@ -1,11 +1,11 @@
 #include "drv_remote.h"
 
 RC_Ctrl_t RC_data;
-RC_Ctrl_t RC_data_last;
-rt_int16_t remote_s1_data = 0;
-rt_int16_t remote_s2_data = 0;
-rt_uint16_t temp_s_data = 0;
-
+static RC_Ctrl_t RC_data_last;
+static rt_int16_t remote_s1_data = 0;
+static rt_int16_t remote_s2_data = 0;
+static rt_uint16_t temp_s_data = 0;
+rt_uint16_t key_change = 0;
 void RCReadKeyBoard_Data(RC_Ctrl_t *RC_CtrlData)
 {
 		RC_CtrlData->Key_Data.W = (RC_CtrlData->v&0x0001)==0x0001;
@@ -121,6 +121,7 @@ static void serial_thread_entry(void *parameter)
             rx_length = rt_device_read(msg.dev, 0, rx_buffer, msg.size);
             rx_buffer[rx_length] = '\0';
 			RemoteDataProcess(rx_buffer,&RC_data);
+			RCReadKeyBoard_Data(&RC_data);
 			if(RC_data_last.Remote_Data.s1==3&&RC_data.Remote_Data.s1!=3)
 			{
 				remote_s1_data = 1;
@@ -140,6 +141,9 @@ static void serial_thread_entry(void *parameter)
 				remote_s2_data = 2;
 				temp_s_data = (RC_data_last.Remote_Data.s1<<8)|RC_data_last.Remote_Data.s2;
 			}
+			
+			if(RC_data_last.v!=RC_data.v)
+            {key_change = 1;}
 			rt_memcpy(&RC_data_last,&RC_data,sizeof(RC_data));
         }
     }
@@ -248,10 +252,18 @@ switch_action_e Change_to_middle(switch_action_e sx)
 	}
 	return no_action;
 }
-rt_uint8_t Keys_state_read(rt_uint8_t *targetdata)
+switch_action_e Key_action_read(rt_uint8_t *targetdata)
 {
-	rt_uint8_t length = (rt_uint8_t *)&RC_data - targetdata;
-	//TODO:°´¼ü´ý´¦Àí
-	return 0 ;
+    if(key_change)
+    {
+	rt_uint8_t length = targetdata - (rt_uint8_t *)&RC_data.Key_Data;
+	rt_uint8_t *temp_now = (rt_uint8_t*)&RC_data.Key_Data;
+	if(*(temp_now+length)==1)
+	{return PRESS_ACTION;}
+	else if(*(temp_now+length)==0)
+	{return LOOSEN_ACTION;}
+	else
+	{return 0;}
+    }
+    else{return 0;}
 }
-
