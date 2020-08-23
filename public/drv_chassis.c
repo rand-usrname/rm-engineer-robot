@@ -256,7 +256,7 @@ int chassis_init(void)
 }
 /**
 * @brief：按照参数设定以云台为前方的速度
-* @param [in]	follow_angle:设定跟随角度（单位° 范围0-8191，超出范围的值会转化到该范围内
+* @param [in]	follow_angle:设定跟随角度（范围0-8191，超出范围的值会转化到该范围内
 				在 ONLY_CHASSIS 模式下该参数为前方
 				angular_velocity:设定底盘自转角速度（单位 0.1 °/s 即 pi/1800 rad/s
 				xspeed:期望的x轴速度分量（单位mm/s
