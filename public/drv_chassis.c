@@ -15,7 +15,7 @@ static chassis_data_t	motion_data;
 * @brief：按照参数设定底盘的运动角速度与速度，速度结果将会被保存在本文件的四个轮子的数据中
 * @param [in]	angle:设定本次操作的正方向（即本次操作的水平坐标系的y轴正方向
 				该值大小范围0~8191，对应了角度范围0~359.95度，
-				angular_velocity:设定底盘自转角速度（单位 0.1 °/s 即 pi/1800 rad/s
+				angular_velocity:设定底盘自转角速度（单位 0.1 °/s 即 1800/PI rad/s
 				xspeed:期望的x轴速度分量（单位mm/s
 				yspeed:期望的y轴速度分量（单位mm/s
 * @return：		无
