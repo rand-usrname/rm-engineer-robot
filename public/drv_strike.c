@@ -1,28 +1,26 @@
 #include "drv_strike.h"
 
 
-#define PWM_DEV_NAME        "pwm3"  	  /* PWM设备名称 */
-#define PWM_DEV_CHANNEL_1     1       															/* PWM通道 摩擦轮 */
-#define PWM_DEV_CHANNEL_2     2       															/* PWM通道 摩擦轮*/
-#define PWM_DEV_CHANNEL_3     3																	/* PWM通道 弹仓电机*/
+#define PWM_DEV_NAME        "pwm8"  	  /* PWM设备名称 */
 static struct rt_device_pwm *pwm_dev;	
+static struct rt_device_pwm *servo_dev;   /* 弹仓PWM设备名称 */
 Motor_t m_rub[2];
 Motor_t m_launch;
-
 /**
  * @brief  摩擦电机初始化（tim的pwm初始化）
  * @retval RT_EOK or RT_ERROR(成功或失败)
+ * @note   设置频率为50hz，实际输出100hz。(RT-THread高级定时器BUG)
  */
 int motor_rub_init(void)
 {
-	pwm_dev = (struct rt_device_pwm *)rt_device_find("pwm1");
+	pwm_dev = (struct rt_device_pwm *)rt_device_find(PWM_DEV_NAME);
 	if(!pwm_dev){return RT_ERROR;}
 	/*设置周期和脉冲宽度*/
-	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_2, 20000000,1000000);
-	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_1, 20000000,1000000);
+	rt_pwm_set(pwm_dev, 3, 20000000,1000000);
+	rt_pwm_set(pwm_dev, 4, 20000000,1000000);
 	/* 使能设备 */
-	rt_pwm_enable(pwm_dev, PWM_DEV_CHANNEL_2);
-	rt_pwm_enable(pwm_dev, PWM_DEV_CHANNEL_1);
+	rt_pwm_enable(pwm_dev, 3);
+	rt_pwm_enable(pwm_dev, 4);
 	return RT_EOK;
 }
 /**
@@ -32,12 +30,12 @@ int motor_rub_init(void)
  */
 int motor_servo_init(void)
 {
-	pwm_dev = (struct rt_device_pwm *)rt_device_find("pwm1");
-	if(!pwm_dev){return RT_ERROR;}
+	servo_dev = (struct rt_device_pwm *)rt_device_find("pwm1");
+	if(!servo_dev){return RT_ERROR;}
 	/*设置周期和脉冲宽度*/
-	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_3, 10000,5000);
+	rt_pwm_set(servo_dev, 2, 10000000,5000000);
 	/* 使能设备 */
-	rt_pwm_enable(pwm_dev, PWM_DEV_CHANNEL_3);
+	rt_pwm_enable(servo_dev, 2);
 	return RT_EOK;
 }
 
@@ -46,8 +44,8 @@ void motor_rub_set(uint16_t duty)
 	RT_ASSERT(duty<=1000);
 	
 	/*设置周期和脉冲宽度*/
-	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_1, 20000000,20000000*duty/1000);
-	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_2, 20000000,20000000*duty/1000);
+	rt_pwm_set(pwm_dev, 3, 20000000,20000*duty);
+	rt_pwm_set(pwm_dev, 4, 20000000,20000*duty);
 }
 
 /**
@@ -60,7 +58,7 @@ void motor_servo_set(uint16_t duty)
 	RT_ASSERT(duty<=1000);
 	
 	/*设置周期和脉冲宽度*/
-	rt_pwm_set(pwm_dev, PWM_DEV_CHANNEL_3, 10000,10000*duty/1000);
+	rt_pwm_set(servo_dev, 2, 10000000,10000*duty);
 }
 
 Strike_t gun1;
@@ -102,7 +100,7 @@ static void heatctrl_thread(void *parameter)
 		 p_temp->rate = (100 * p_temp->now) / p_temp->max;
 		 heat_control(p_temp);															/*热量控制*/
 		 #if LOCAL_HEAT_ENABLE
-		 heatctrl_cool(p_temp);																		/*冷却*/
+		 heatctrl_cool(p_temp);															/*冷却*/
 		 #endif
 		 p_temp = p_temp->next;
 	 }
@@ -164,7 +162,7 @@ void Gun_speed_set(Strike_t *strike, rt_int16_t speed)
 //		if(strike->speed>Refdata->heat_limit_42)
 //			strike->speed = Refdata->heat_limit_42;
 //	}
-	#ifdef SNALL
+	#ifdef SNAIL
 	motor_rub_set(strike->speed);
 	#else
 	//需要换算？
@@ -184,14 +182,14 @@ void Gun_mode_set(Strike_t *strike, rt_base_t mode)
 void strike_stuck(Motor_t *motor, Strike_t *gun)
 {
 	static rt_uint16_t stuck_time = 0;
-	static rt_tick_t tick = 0;																			/*记录系统时间*/
+	static rt_tick_t tick = 0;								/*记录系统时间*/
 	static rt_uint8_t temp = 0;
 	/*如果卡弹*/
 	if(gun->status & STRICK_STUCK)
 	{	
 		if(temp == 1)
 		{
-			if(rt_tick_get() > tick)																	/*倒转1000ms*/
+			if(rt_tick_get() > tick)						/*倒转1000ms*/
 			{
 				gun->status &= ~STRICK_STUCK;
 				stuck_time = 0;
@@ -200,13 +198,13 @@ void strike_stuck(Motor_t *motor, Strike_t *gun)
 		}
 		else
 		{
-			motor->ang.set = motor->dji.angle + 3000;									/**/
+			motor->ang.set = motor->dji.angle + 3000;	
 			tick = rt_tick_get()+1000;
 			temp=1;
 		}
 		
 	}
-	else if(~(gun->status & STRICK_STOP))														/*如果没有禁止转动*/
+	else if(~(gun->status & STRICK_STOP))					/*如果没有禁止转动*/
 	{
 		/*速度环输出过大*/
 		if(ABS(motor->spe.out) > 7777)
@@ -231,10 +229,15 @@ void strike_stuck(Motor_t *motor, Strike_t *gun)
  */
 void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 {
-	static rt_tick_t tick = 0;																			/*记录系统时间*/
-	static rt_tick_t tick_sleep = 0;																/*拨弹电机间隔时间*/
+	static rt_tick_t tick = 0;										/*记录系统时间*/
+	static rt_tick_t tick_sleep = 0;								/*拨弹电机间隔时间*/
+	/* 如果摩擦轮速度小于一定值 */
+	if(gun->speed <= 10)
+	{
+		gun->status = STRICK_STOP;
+	}
 	/*如果停止开火，使位置环不动*/
-	if(gun->status & STRICK_STOP)																		/*不允许开火，直接返回*/
+	if(gun->status & STRICK_STOP)									/*不允许开火，直接返回*/
 	{
 		motor->ang.set = motor->dji.angle;
 		return;
@@ -245,17 +248,17 @@ void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 		if(if_fire==1)
 		{
 			/*一次发弹数量*/
-			if(gun->mode & STRICK_NOLIMITE)															/*不停转动*/
+			if(gun->mode & STRICK_NOLIMITE)							/*不停转动*/
 			{
-				tick_sleep=0;																							/*间隔时间*/
+				tick_sleep=0;										/*间隔时间*/
 				motor_angle_set(motor, FIRE_ANGLE);
 			}
-			else if(gun->mode & STRICK_SINGLE)													/*单发*/
+			else if(gun->mode & STRICK_SINGLE)						/*单发*/
 			{
 				tick_sleep=500;
 				motor_angle_set(motor, FIRE_ANGLE);
 			}
-			else if(gun->mode & STRICK_TRIPLE)													/*三连发*/
+			else if(gun->mode & STRICK_TRIPLE)						/*三连发*/
 			{
 				tick_sleep=1000;
 				motor_angle_set(motor, FIRE_ANGLE*3);
@@ -266,8 +269,8 @@ void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 }
 /************************************ End **************************************************/
 /************************************发射机构线程*******************************************/
-static struct rt_semaphore task_1ms_sem;     													/* 用于接收消息的信号量 */
-static struct rt_semaphore task_10ms_sem;     													/* 用于接收消息的信号量 */
+static struct rt_semaphore task_1ms_sem;     						/* 用于接收消息的信号量 */
+static struct rt_semaphore task_10ms_sem;     						/* 用于接收消息的信号量 */
 /*1ms任务*/
 static struct rt_timer task_1ms;
 /*10ms任务*/
@@ -288,12 +291,15 @@ static void task_1ms_emtry(void *parameter)
 	while(1)
 	{
 		rt_sem_take(&task_1ms_sem, RT_WAITING_FOREVER);
-		//pid速度环
-		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].dji.speed);
-		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);
 		pid_output_calculate(&m_launch.spe,m_launch.ang.out,m_launch.dji.speed);
 		//发送电流
-		motor_current_send(can2_dev,STDID_launch,m_rub[0].spe.out,m_rub[1].spe.out,m_launch.spe.out,0);
+		#ifndef SNAIL
+		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].dji.speed);
+		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);
+		motor_current_send(can1_dev,STDID_launch,m_launch.spe.out,m_rub[0].spe.out,m_rub[1].spe.out,0);
+		#else
+		motor_current_send(can2_dev,STDID_launch,m_launch.spe.out,0,0,0);
+		#endif
 	}
 }
 static void task_10ms_emtry(void *parameter)
@@ -350,8 +356,16 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	gun->mode = STRICK_NOLIMITE | STRICK_LOWSPEED;				/*持续开火+低速高射频*/
 	gun->speed = 0;
 	gun->status = 0;
-	#ifdef SNALL
+	#ifdef SNAIL
 	motor_rub_init();
+//	motor_servo_init();
+	motor_init(&m_launch,0x201,0.027973);
+	pid_init(&m_launch.ang, 
+					3.5,0,0,
+					500,5000,-5000);
+	pid_init(&m_launch.spe, 
+					7.5,0,0,
+					350,8000,-8000);
 	#else
 	motor_init(&m_rub[0],0x201,1);
 	motor_init(&m_rub[1],0x202,1);
@@ -361,15 +375,15 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 					3.5,0,0,
 					500,5000,-5000);
 	pid_init(&m_launch.spe, 
-					7.7,0,0,
+					7.5,0,0,
 					350,8000,-8000);
 	pid_init(&m_rub[0].spe, 
-					8,0.1,0,
+					8.2,0.05,0,
 					1200,14000,-14000);
 	pid_init(&m_rub[1].spe, 
-					8,0.1,0,
+					8.2,0.05,0,
 					1200,14000,-14000);
 	#endif
-	heatctrl_init(&gun->heat, max);												/*热量控制参数初始化*/
+	heatctrl_init(&gun->heat, max);						/*热量控制参数初始化*/
 	strike_start();
 }
