@@ -1,10 +1,16 @@
 #include "drv_remote.h"
-
+/* 存储遥控器当前数据 */
 RC_Ctrl_t RC_data;
+/*存储遥控器上次数据 */
 static RC_Ctrl_t RC_data_last;
+/* 存储s1 s2 的动作 */
 static rt_int16_t remote_s1_data = 0;
 static rt_int16_t remote_s2_data = 0;
+/* 在从两边往中间拨时存储RC_last中拨杆s1 s2的值 */
+/* 当拨杆从中间拨到两边时，可以读到RC_data的值来判断上下拨 */
+/* 但当拨杆为两边往中间拨时，RC_data=RC_lastdata,所以读到动作的时候存一下 */
 static rt_uint16_t temp_s_data = 0;
+/* 按键有按下或松开动作时，置一 */
 rt_uint16_t key_change = 0;
 void RCReadKeyBoard_Data(RC_Ctrl_t *RC_CtrlData)
 {
@@ -120,8 +126,10 @@ static void serial_thread_entry(void *parameter)
             /* 从串口读取数据*/
             rx_length = rt_device_read(msg.dev, 0, rx_buffer, msg.size);
             rx_buffer[rx_length] = '\0';
+			
 			RemoteDataProcess(rx_buffer,&RC_data);
 			RCReadKeyBoard_Data(&RC_data);
+			/* remote_sx_data = 1 中间往两边拨 =2 两边往中间拨 */
 			if(RC_data_last.Remote_Data.s1==3&&RC_data.Remote_Data.s1!=3)
 			{
 				remote_s1_data = 1;
@@ -161,18 +169,18 @@ int remote_uart_init(void)
     /* 查找串口设备 */
     struct serial_configure config = RT_SERIAL_CONFIG_DEFAULT;  /* 初始化配置参数 */
 
-		/* step1：查找串口设备 */
-		serial = rt_device_find(SAMPLE_UART_NAME);
+	/* step1：查找串口设备 */
+	serial = rt_device_find(SAMPLE_UART_NAME);
 
-		/* step2：修改串口配置参数 */
-		config.baud_rate = 100000;        //修改波特率为 9600
-		config.data_bits = DATA_BITS_9;           //数据位 8
-		config.stop_bits = STOP_BITS_1;           //停止位 1
-		config.bufsz     = 128;                   //修改缓冲区 buff size 为 128
-		config.parity    = PARITY_EVEN;           //
+	/* step2：修改串口配置参数 */
+	config.baud_rate = 100000;                //修改波特率为 9600
+	config.data_bits = DATA_BITS_9;           //数据位 8
+	config.stop_bits = STOP_BITS_1;           //停止位 1
+	config.bufsz     = 128;                   //修改缓冲区 buff size 为 128
+	config.parity    = PARITY_EVEN;           //
 
-		/* step3：控制串口设备。通过控制接口传入命令控制字，与控制参数 */
-		rt_device_control(serial, RT_DEVICE_CTRL_CONFIG, &config);
+	/* step3：控制串口设备。通过控制接口传入命令控制字，与控制参数 */
+	rt_device_control(serial, RT_DEVICE_CTRL_CONFIG, &config);
 
     /* 初始化消息队列 */
     rt_mq_init(&rx_mq, "rx_mq",
@@ -203,7 +211,11 @@ int remote_uart_init(void)
     return ret;
 }
 
-
+/**
+  * @brief   读取拨杆动作(只能读取中间往两边拨的动作)
+  * @param   传入S1则读取S1的动作，传入S2则读取S2的动作
+  * @retval  返回往上拨(middle_to_up) 或 往下拨(middle_to_down)
+ **/
 switch_action_e Change_from_middle(switch_action_e sx)
 {
 	if(sx==S1)
@@ -228,6 +240,11 @@ switch_action_e Change_from_middle(switch_action_e sx)
 	}
 	return no_action;
 }
+/**
+  * @brief   读取拨杆动作(只能读取两边往中间拨的动作)
+  * @param   传入S1则读取S1的动作，传入S2则读取S2的动作
+  * @retval  返回从上往中间拨(up_to_middle) 或 从下往中间拨(down_to_middle)
+ **/
 switch_action_e Change_to_middle(switch_action_e sx)
 {
 	if(sx==S1)
@@ -252,6 +269,11 @@ switch_action_e Change_to_middle(switch_action_e sx)
 	}
 	return no_action;
 }
+/**
+  * @brief  读取按键动作(仅键盘数据)
+  * @param  传入&RC_data.Key_Data.x x为你想查询的按键
+  * @retval 返回按键被按下(PRESS_ACTION)或者松开(LOSSEN_ACTION)
+ **/
 switch_action_e Key_action_read(rt_uint8_t *targetdata)
 {
     if(key_change)
