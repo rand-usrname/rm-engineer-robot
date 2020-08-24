@@ -10,26 +10,29 @@ static rt_int16_t remote_s2_data = 0;
 /* 当拨杆从中间拨到两边时，可以读到RC_data的值来判断上下拨 */
 /* 但当拨杆为两边往中间拨时，RC_data=RC_lastdata,所以读到动作的时候存一下 */
 static rt_uint16_t temp_s_data = 0;
-/* 按键有按下或松开动作时，置一 */
-rt_uint16_t key_change = 0;
+/* 按键有按下或松开动作时，置其中一位为1 */
+ rt_uint16_t key_change = 0;
+/* 鼠标左键有动作，高4位置一，右键低四位置一 */
+static rt_uint8_t mouse_key_data = 0;
+
 void RCReadKeyBoard_Data(RC_Ctrl_t *RC_CtrlData)
 {
-		RC_CtrlData->Key_Data.W = (RC_CtrlData->v&0x0001)==0x0001;
-		RC_CtrlData->Key_Data.S = (RC_CtrlData->v&0x0002)==0x0002;
-		RC_CtrlData->Key_Data.A = (RC_CtrlData->v&0x0004)==0x0004;
-		RC_CtrlData->Key_Data.D = (RC_CtrlData->v&0x0008)==0x0008;
-		RC_CtrlData->Key_Data.shift = (RC_CtrlData->v&0x0010)==0x0010;
-		RC_CtrlData->Key_Data.ctrl = (RC_CtrlData->v&0x0020)==0x0020;
-		RC_CtrlData->Key_Data.Q = (RC_CtrlData->v&0x0040)==0x0040;
-		RC_CtrlData->Key_Data.E = (RC_CtrlData->v&0x0080)==0x0080;
-		RC_CtrlData->Key_Data.R = (RC_CtrlData->v&0x0100)==0x0100;
-		RC_CtrlData->Key_Data.F = (RC_CtrlData->v&0x0200)==0x0200;
-		RC_CtrlData->Key_Data.G = (RC_CtrlData->v&0x0400)==0x0400;
-		RC_CtrlData->Key_Data.Z = (RC_CtrlData->v&0x0800)==0x0800;
-		RC_CtrlData->Key_Data.X = (RC_CtrlData->v&0x1000)==0x1000;
-		RC_CtrlData->Key_Data.C = (RC_CtrlData->v&0x2000)==0x2000;
-		RC_CtrlData->Key_Data.V = (RC_CtrlData->v&0x4000)==0x4000;
-		RC_CtrlData->Key_Data.B = (RC_CtrlData->v&0x8000)==0x8000;
+	RC_CtrlData->Key_Data.W = (RC_CtrlData->v&0x0001)==0x0001;
+	RC_CtrlData->Key_Data.S = (RC_CtrlData->v&0x0002)==0x0002;
+	RC_CtrlData->Key_Data.A = (RC_CtrlData->v&0x0004)==0x0004;
+	RC_CtrlData->Key_Data.D = (RC_CtrlData->v&0x0008)==0x0008;
+	RC_CtrlData->Key_Data.shift = (RC_CtrlData->v&0x0010)==0x0010;
+	RC_CtrlData->Key_Data.ctrl = (RC_CtrlData->v&0x0020)==0x0020;
+	RC_CtrlData->Key_Data.Q = (RC_CtrlData->v&0x0040)==0x0040;
+	RC_CtrlData->Key_Data.E = (RC_CtrlData->v&0x0080)==0x0080;
+	RC_CtrlData->Key_Data.R = (RC_CtrlData->v&0x0100)==0x0100;
+	RC_CtrlData->Key_Data.F = (RC_CtrlData->v&0x0200)==0x0200;
+	RC_CtrlData->Key_Data.G = (RC_CtrlData->v&0x0400)==0x0400;
+	RC_CtrlData->Key_Data.Z = (RC_CtrlData->v&0x0800)==0x0800;
+	RC_CtrlData->Key_Data.X = (RC_CtrlData->v&0x1000)==0x1000;
+	RC_CtrlData->Key_Data.C = (RC_CtrlData->v&0x2000)==0x2000;
+	RC_CtrlData->Key_Data.V = (RC_CtrlData->v&0x4000)==0x4000;
+	RC_CtrlData->Key_Data.B = (RC_CtrlData->v&0x8000)==0x8000;
 }
 void RemoteDataProcess(uint8_t *pData, RC_Ctrl_t *RC_CtrlData)
 {
@@ -45,36 +48,36 @@ void RemoteDataProcess(uint8_t *pData, RC_Ctrl_t *RC_CtrlData)
 	   return;
 	}
 
-				s1=((pData[5]>>4)&0x000c)>>2;
-				s2=((pData[5]>>4)&0x0003);
-				ch0=((int16_t)pData[0]|((int16_t)pData[1]<<8))&0x07FF;
-				ch1=(((int16_t)pData[1]>>3)|((int16_t)pData[2]<<5))&0x07FF;
-				ch2=(((int16_t)pData[2]>>6)|((int16_t)pData[3]<<2)|((int16_t)pData[4]<<10))&0x07FF;
-				ch3=(((int16_t)pData[4]>>1)|((int16_t)pData[5]<<7))&0x07FF;					
-				if(
-					((s1==1) || (s1==2) || (s1==3)) && 
-					((s2==1) || (s2==2) || (s2==3))&&
-					((pData[i+12]==0)||(pData[i+12]==1))&&
-					((pData[i+13]==0)||(pData[i+13]==1))&&
-					(ch0<1684)&&(ch0>364)&&
-					(ch1<1684)&&(ch1>364)&&
-					(ch2<1684)&&(ch2>364)&&
-					(ch3<1684)&&(ch3>364)
-					)																	
-				{
-					RC_CtrlData->Remote_Data.ch0=ch0;
-					RC_CtrlData->Remote_Data.ch1=ch1;
-					RC_CtrlData->Remote_Data.ch2=ch2;
-					RC_CtrlData->Remote_Data.ch3=ch3;
-					RC_CtrlData->Remote_Data.s1=s1;
-					RC_CtrlData->Remote_Data.s2=s2;
-					RC_CtrlData->Mouse_Data.x_speed=((int16_t)pData[6])|((int16_t)pData[7]<<8);
-					RC_CtrlData->Mouse_Data.y_speed=((int16_t)pData[8])|((int16_t)pData[9]<<8);
-					RC_CtrlData->Mouse_Data.z_speed=((int16_t)pData[10])|((int16_t)pData[11]<<8);
-					RC_CtrlData->Mouse_Data.press_l=pData[12];
-					RC_CtrlData->Mouse_Data.press_r=pData[13];
-					RC_CtrlData->v=((int16_t)pData[14])|((int16_t)pData[15]<<8);
-				} 
+	s1=((pData[5]>>4)&0x000c)>>2;
+	s2=((pData[5]>>4)&0x0003);
+	ch0=((int16_t)pData[0]|((int16_t)pData[1]<<8))&0x07FF;
+	ch1=(((int16_t)pData[1]>>3)|((int16_t)pData[2]<<5))&0x07FF;
+	ch2=(((int16_t)pData[2]>>6)|((int16_t)pData[3]<<2)|((int16_t)pData[4]<<10))&0x07FF;
+	ch3=(((int16_t)pData[4]>>1)|((int16_t)pData[5]<<7))&0x07FF;					
+	if(
+		((s1==1) || (s1==2) || (s1==3)) && 
+		((s2==1) || (s2==2) || (s2==3))&&
+		((pData[i+12]==0)||(pData[i+12]==1))&&
+		((pData[i+13]==0)||(pData[i+13]==1))&&
+		(ch0<1684)&&(ch0>364)&&
+		(ch1<1684)&&(ch1>364)&&
+		(ch2<1684)&&(ch2>364)&&
+		(ch3<1684)&&(ch3>364)
+	  )																	
+	 {
+		 RC_CtrlData->Remote_Data.ch0=ch0;
+		 RC_CtrlData->Remote_Data.ch1=ch1;
+		 RC_CtrlData->Remote_Data.ch2=ch2;
+		 RC_CtrlData->Remote_Data.ch3=ch3;
+		 RC_CtrlData->Remote_Data.s1=s1;
+		 RC_CtrlData->Remote_Data.s2=s2;
+		 RC_CtrlData->Mouse_Data.x_speed=((int16_t)pData[6])|((int16_t)pData[7]<<8);
+		 RC_CtrlData->Mouse_Data.y_speed=((int16_t)pData[8])|((int16_t)pData[9]<<8);
+		 RC_CtrlData->Mouse_Data.z_speed=((int16_t)pData[10])|((int16_t)pData[11]<<8);
+	   	 RC_CtrlData->Mouse_Data.press_l=pData[12];
+		 RC_CtrlData->Mouse_Data.press_r=pData[13];
+		 RC_CtrlData->v=((int16_t)pData[14])|((int16_t)pData[15]<<8);
+	 } 
 }
 #define SAMPLE_UART_NAME       "uart1"      /* 串口设备名称 */
 
@@ -150,8 +153,12 @@ static void serial_thread_entry(void *parameter)
 				temp_s_data = (RC_data_last.Remote_Data.s1<<8)|RC_data_last.Remote_Data.s2;
 			}
 			
-			if(RC_data_last.v!=RC_data.v)
-            {key_change = 1;}
+			mouse_key_data = ((RC_data_last.Mouse_Data.press_l==RC_data.Mouse_Data.press_l)<<1)|(RC_data_last.Mouse_Data.press_r==RC_data.Mouse_Data.press_r);
+			if(RC_data_last.v != RC_data.v)
+			{
+				key_change |= ((RC_data_last.v)^(RC_data.v));
+			}
+			
 			rt_memcpy(&RC_data_last,&RC_data,sizeof(RC_data));
         }
     }
@@ -238,7 +245,7 @@ switch_action_e Change_from_middle(switch_action_e sx)
 		    {remote_s2_data = 0;return middle_to_down;}
 		}
 	}
-	return no_action;
+	return NO_ACTION;
 }
 /**
   * @brief   读取拨杆动作(只能读取两边往中间拨的动作)
@@ -267,25 +274,79 @@ switch_action_e Change_to_middle(switch_action_e sx)
 		    {remote_s2_data = 0;temp_s_data&=0x0011;return down_to_middle;}
 		}
 	}
-	return no_action;
+	return NO_ACTION;
 }
 /**
   * @brief  读取按键动作(仅键盘数据)
-  * @param  传入&RC_data.Key_Data.x x为你想查询的按键
-  * @retval 返回按键被按下(PRESS_ACTION)或者松开(LOSSEN_ACTION)
+  * @param  传入&RC_data.Key_Data.x x为你想查询的按键 例:&RC_data.Key_Data.shift
+  * @retval 返回PRESS_ACTION(按下) or LOOSEN_ACTION(松开) or NO_ACTION(无动作)
  **/
 switch_action_e Key_action_read(rt_uint8_t *targetdata)
 {
-    if(key_change)
-    {
+	/* 计算字节偏移量 */
 	rt_uint8_t length = targetdata - (rt_uint8_t *)&RC_data.Key_Data;
-	rt_uint8_t *temp_now = (rt_uint8_t*)&RC_data.Key_Data;
-	if(*(temp_now+length)==1)
-	{return PRESS_ACTION;}
-	else if(*(temp_now+length)==0)
-	{return LOOSEN_ACTION;}
+	/* 查询是否该按键对应的位是否有改变 */
+	if((key_change&(0x0001<<length)))
+	{
+	    rt_uint8_t *temp_now = (rt_uint8_t*)&RC_data.Key_Data;
+	    if(*(temp_now+length)==1)
+	    {
+			/* 将该位置零 */
+			key_change &= (~(0x0001<<length));
+			return PRESS_ACTION;
+		}
+	    else if(*(temp_now+length)==0)
+	    {
+			/* 将该位置零 */
+			key_change &= (~(1<<length));
+			return LOOSEN_ACTION;
+		}
+	}
 	else
-	{return 0;}
-    }
-    else{return 0;}
+	{return NO_ACTION;}
+}
+/**
+  * @brief  读取鼠标按键动作
+  * @param  mouse_x = MOUSE_LEFT(鼠标左键) or MOUSE_RIGHT(鼠标右键)
+  * @retval 返回PRESS_ACTION(按下) or LOOSEN_ACTION(松开) or NO_ACTION(无动作)
+ **/
+switch_action_e Mouse_action_read(switch_action_e mouse_x)
+{
+	if(mouse_x == MOUSE_LEFT)
+	{
+		if(mouse_key_data&0x02)
+		{
+			if(RC_data.Mouse_Data.press_l == 1)
+			{
+				mouse_key_data&=0x01;
+				return PRESS_ACTION;
+			}
+			else
+			{
+				mouse_key_data&=0x01;
+				return LOOSEN_ACTION;
+			}
+		}
+		else
+		{return NO_ACTION;}
+	}
+	else if(mouse_x == MOUSE_RIGHT)
+	{
+		if(mouse_key_data&0x01)
+		{
+			if(RC_data.Mouse_Data.press_r == 1)
+			{
+				mouse_key_data&=0x02;
+				return PRESS_ACTION;
+			}
+			else
+			{
+				mouse_key_data&=0x02;
+				return LOOSEN_ACTION;
+			}
+		}
+		else
+		{return NO_ACTION;}
+	}
+	return NO_ACTION;
 }
