@@ -7,7 +7,7 @@
 typedef enum
 {
 	/* 拨杆 动作 */
-	no_action          =  0x00,
+	NO_ACTION          =  0x00,
 	up_to_middle       =  0x01,
 	down_to_middle     =  0x02,
 	middle_to_up       =  0x03,
@@ -19,6 +19,8 @@ typedef enum
 	
 	S1             =  0x07,
 	S2             =  0x08,
+	MOUSE_LEFT     =  0x09,
+	MOUSE_RIGHT    =  0x0A,
 	
 }switch_action_e;
 
@@ -49,10 +51,10 @@ typedef	struct __Key_Data
         uint8_t S;
 		uint8_t A;
 		uint8_t D;
+	    uint8_t shift;
+		uint8_t ctrl;
 		uint8_t Q;
 		uint8_t E;
-		uint8_t shift;
-		uint8_t ctrl;
 	    uint8_t R;
         uint8_t F;
 		uint8_t G;
@@ -72,8 +74,6 @@ typedef struct __RC_Ctrl
 }RC_Ctrl_t;
 /* 外部需读取遥控器某按键或拨杆状态时调用 直接读结构体的值 */
 extern RC_Ctrl_t RC_data;
-/* 之所以外部声明是因为需要手动清零 */
-extern rt_uint16_t key_change;
 /* 外部在main.c中调用 */
 extern int remote_uart_init(void);
 
@@ -83,5 +83,7 @@ extern switch_action_e Change_from_middle(switch_action_e sx);
 extern switch_action_e Change_to_middle(switch_action_e sx);
 /* 读取按键动作(仅键盘数据) */
 extern switch_action_e Key_action_read(rt_uint8_t *targetdata);
+/* 读取按键动作(仅鼠标按键数据) */
+extern switch_action_e Mouse_action_read(switch_action_e mouse_x);
 #endif
 

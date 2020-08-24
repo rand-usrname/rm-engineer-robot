@@ -5,7 +5,7 @@
  * @param  motor：电机数据结构体
  * @retval None
  */
-static void motor_angle_adjsut(rt_uint16_t angle,DjiMotor_t* motor)
+static void motor_angle_adjsut(rt_uint32_t angle,DjiMotor_t* motor)
 {
 	float angletemp = 0;
 	

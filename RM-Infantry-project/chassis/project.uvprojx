@@ -473,6 +473,11 @@
               <FileType>1</FileType>
               <FilePath>application\main.c</FilePath>
             </File>
+            <File>
+              <FileName>robodata.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\application\robodata.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

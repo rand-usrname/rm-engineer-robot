@@ -330,7 +330,7 @@ int gimbal_ctlmode_set(control_mode_t yawset,control_mode_t pitchset)
 * @return：		yaw轴角度，格式0-8191
 * @author：mqy
 */
-int gimbal_palstance_set(rt_uint16_t yawset,rt_uint16_t pitchset)
+int gimbal_palstance_set(rt_int16_t yawset,rt_int16_t pitchset)
 {
 	//只有为角速度控制模式时才允许直接设置角速度
 	if(yaw.control_mode == PALSTANCE)
