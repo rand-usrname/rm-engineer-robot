@@ -1,7 +1,4 @@
-#include "drv_canthread.h"
-#include "robodata.h"
-#include "drv_chassis.h"
-#include "drv_gyro.h"
+#include "can_receive.h"
 
 void can1_rec(struct rt_can_msg *msg)
 {
@@ -38,7 +35,7 @@ void can2_rec(struct rt_can_msg *msg)
             refresh_gimbal_motor_data(msg);
             return;
         case CHASSIS_CTL:
-
+            refresh_ctldata(msg);
             return;
     }
 }

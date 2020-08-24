@@ -204,7 +204,7 @@
 /* Thread Config */
 
 #define THREAD_CHASSIS_CONTROL
-#define OMNI_WHEEL
+#define MECANUM_WHEEL
 #define THREAD_CAN_RECEIVE
 #define THREAD_REMOTE
 #define PID_CALCULATE

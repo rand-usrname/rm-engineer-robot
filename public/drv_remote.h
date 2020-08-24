@@ -3,13 +3,16 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 #include <board.h>
+/* 拨杆动作枚举 */
 typedef enum
 {
+	/* 拨杆 动作 */
 	no_action          =  0x00,
 	up_to_middle       =  0x01,
 	down_to_middle     =  0x02,
 	middle_to_up       =  0x03,
 	middle_to_down     =  0x04,
+	/* 按键 动作 */
 	PRESS_ACTION       =  0x05,
 	LOOSEN_ACTION      =  0x06,
 	
@@ -18,15 +21,19 @@ typedef enum
 	S2             =  0x08,
 	
 }switch_action_e;
+
 typedef struct  __Remote
 {
+	/* 遥杆数据 */
 	uint16_t ch0;
 	uint16_t ch1;
 	uint16_t ch2;
 	uint16_t ch3;
+	/* 拨杆数据 */
 	uint8_t s1;
 	uint8_t s2;
 }Remote_t;
+/* 鼠标数据 */
 typedef struct  __Mouse
 {
 	int16_t x_speed;//向左负
@@ -35,10 +42,11 @@ typedef struct  __Mouse
 	int8_t press_l;
 	int8_t press_r;
 }Mouse_t;
+/* 键盘数据 */
 typedef	struct __Key_Data
 {
-	  uint8_t W;
-    uint8_t S;
+	    uint8_t W;
+        uint8_t S;
 		uint8_t A;
 		uint8_t D;
 		uint8_t Q;
@@ -62,12 +70,18 @@ typedef struct __RC_Ctrl
 	rt_uint16_t v;
 	Key_Data_t Key_Data;
 }RC_Ctrl_t;
-
+/* 外部需读取遥控器某按键或拨杆状态时调用 直接读结构体的值 */
 extern RC_Ctrl_t RC_data;
-
+/* 之所以外部声明是因为需要手动清零 */
+extern rt_uint16_t key_change;
+/* 外部在main.c中调用 */
 extern int remote_uart_init(void);
 
+/* 读取拨杆动作(只能读取中间往两边拨的动作) */
 extern switch_action_e Change_from_middle(switch_action_e sx);
+/* 读取拨杆动作(只能读取两边往中间拨的动作) */
 extern switch_action_e Change_to_middle(switch_action_e sx);
+/* 读取按键动作(仅键盘数据) */
+extern switch_action_e Key_action_read(rt_uint8_t *targetdata);
 #endif
 
