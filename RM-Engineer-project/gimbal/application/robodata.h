@@ -6,11 +6,11 @@
 #define SNAIL
 #define FIRE_ANGLE              50
 
-#define YAW_ZERO_ANGLE          1360
-#define PITCH_ZERO_ANGLE        1330
+#define YAW_ZERO_ANGLE          6762
+#define PITCH_ZERO_ANGLE        7500
 
-#define PITCH_MIN_ANGLE			1000
-#define PITCH_MAX_ANGLE			1500
+#define PITCH_MIN_ANGLE			-401
+#define PITCH_MAX_ANGLE			590
 
 typedef enum
 {

@@ -72,7 +72,6 @@ static void task_1ms_IRQHandler(void *parameter)
 {
 	rt_sem_release(&gimbal_1ms_sem);
 }
-	int yawang,yawpal,pitchang,pitchpal;
 static void gimbal_contral_thread(void* parameter)
 {
 	//初始化CAN控制帧
@@ -82,7 +81,7 @@ static void gimbal_contral_thread(void* parameter)
 	gimctl_msg.rtr	= RT_CAN_DTR;	//数据帧
 	gimctl_msg.priv = 0;			//报文优先级最高
 	gimctl_msg.len = 8;				//长度8
-	
+	int yawang,yawpal,pitchang,pitchpal;
 	//控制数据清零
 	for(int a = 0;a<8;a++)
 	{
@@ -108,7 +107,7 @@ static void gimbal_contral_thread(void* parameter)
 		pitchang = (rt_uint16_t)((gimbal_atti.pitch + 180.0f)*8192.0f/360.0f);
 		pitchpal = (int)((gimbal_atti.pitch_speed)*8192.0f/360.0f);
 		
-//		//pitch轴限位
+		//pitch轴限位
 		if(pitch.setang < ((rt_uint16_t)PITCH_MIN_ANGLE + 4096) % 8192)
 		{
 			pitch.setang = ((rt_uint16_t)PITCH_MIN_ANGLE + 4096) % 8192;
@@ -133,13 +132,13 @@ static void gimbal_contral_thread(void* parameter)
 			gimctl_msg.DATA[(rt_uint16_t)(DUAL_PITCH_ID - 0x205)*2 + 1] = (-yaw.palpid.out);
 		#endif
 
-//		if(!rt_device_write(can2_dev,0,&gimctl_msg,sizeof(gimctl_msg)))
-//		{
-//			//如果发送数据为0计数一次发送失败，失败次数过多发出警告
-//		}
-//		else
-//		{
-//		}
+		if(!rt_device_write(can2_dev,0,&gimctl_msg,sizeof(gimctl_msg)))
+		{
+			//如果发送数据为0计数一次发送失败，失败次数过多发出警告
+		}
+		else
+		{
+		}
 	}
 }
 /**
@@ -167,9 +166,9 @@ int gimbal_init(void)
 	pid_init(&yaw.palpid,2,0,0,200,0X7FFF,-0X7FFF);
 	pid_init(&pitch.palpid,1,0,0,3000,0X7FFF,-0X7FFF);
 
-	pid_init(&yaw.angpid_gyro,0.5,0,0,3,20000,-20000);
-	pid_init(&yaw.angpid_dji,0.1,0,0,3,2000,-2000);
-	pid_init(&pitch.angpid_gyro,2,0,0,3,20000,-20000);
+	pid_init(&yaw.angpid_gyro,1,0,0,3,20000,-20000);
+	pid_init(&yaw.angpid_dji,0.5,0,0,3,2000,-2000);
+	pid_init(&pitch.angpid_gyro,5,0,0,3,20000,-20000);
 	pid_init(&pitch.angpid_dji,4,0,0,5,2000,-2000);
 	
 	//初始化中断释放的信号量

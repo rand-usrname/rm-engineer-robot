@@ -20,7 +20,7 @@
 int main(void)
 {
 	/* 等待陀螺仪就绪 */
-	while(!HERO_IMU.atti_ready);
+	//while(!HERO_IMU.atti_ready);
 	/* 遥控器初始化 */
 	remote_uart_init();
 	/* 云台初始化 */

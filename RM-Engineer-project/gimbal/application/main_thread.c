@@ -24,17 +24,18 @@ static void main_thread_entry(void * parameter)
 		switch_action_e s1_action = Change_from_middle(S1);
 		switch_action_e s2_action = Change_from_middle(S2);
 		/* 该拨杆处于up状态则为键鼠控制 */
-		if(RC_data.Remote_Data.s1 == 1)
-		{key_ctrl = 1;}
-		else{key_ctrl = 0;}
+//		if(RC_data.Remote_Data.s1 == 1)
+//		{key_ctrl = 1;}
+//		else{key_ctrl = 0;}
+		
 #if key_ctrl
 #else
 		/* 如果不自瞄使用遥控器控制 */
 		if(gimbal_ctrl_state == 0)
 		{
 			/* 读取遥控器的ch0及ch1 */
-		    pitch_add = (RC_data.Remote_Data.ch1-1024)/50;
-		    yaw_add = (RC_data.Remote_Data.ch0-1024)/50;
+		    pitch_add = (RC_data.Remote_Data.ch1-1024)/100;
+		    yaw_add = (RC_data.Remote_Data.ch0-1024)/100;
 		    /*TODO: 需要限位 */
 		
 		    gimbal_addangle_set(yaw_add,pitch_add);
@@ -42,11 +43,11 @@ static void main_thread_entry(void * parameter)
 		/* 自瞄情况下 */
 		if(gimbal_ctrl_state == 1)
 		{
-			if(get_pitchusetime()>0)
+			if(get_pitchusetime()==0)
 			{
 				pitch_add = get_pitch_add();
 			}
-			if(get_yawusetime() > 0)
+			if(get_yawusetime() == 0)
 			{
 				yaw_add = get_yaw_add();
 			}
@@ -59,7 +60,7 @@ static void main_thread_entry(void * parameter)
 		}
 		
 		/*开关摩擦轮 */
-		if(s2_action == middle_to_up)
+		if(s1_action == middle_to_up)
 		{
 			if(gun1.speed <11)
 			{Gun_speed_set(&gun1,100);}
@@ -67,7 +68,7 @@ static void main_thread_entry(void * parameter)
 		}
 		
 		/* 拨弹 */
-		if(s2_action == middle_to_down)
+		if(s1_action == middle_to_down)
 		{
 			strike_fire(&m_launch,&gun1,1);
 		}
