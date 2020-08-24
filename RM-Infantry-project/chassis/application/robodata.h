@@ -19,8 +19,8 @@
 
 #endif
 
-#define YAE_ZERO_ANGLE          3360
-#define PITCH_ZERO_ANGLE        0
+#define YAW_ZERO_ANGLE          4040
+#define PITCH_ZERO_ANGLE        1330
 
 typedef enum
 {
@@ -43,10 +43,11 @@ typedef enum
 typedef enum
 {
     //接收
-    YAW_ID      = 0x206,
-    PITCH_ID    = 0x207,
+    YAW_ID      = 0x208,
+    PITCH_ID    = 0x205,
 
     CHASSIS_CTL = 0x100
+    
 }drv_can2ID_e;
 //底盘CAN2设备ID
 
