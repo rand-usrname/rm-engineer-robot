@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F427xx, ARM_MATH_CM4, USE_HAL_DRIVER, RT_USING_ARM_LIBC</Define>
               <Undefine></Undefine>
-              <IncludePath>.;..\..\rt-thread\include;application;.;..\..\applications;.;..\..\RM-Engineer-project;.;..\..\RM-Hero-project;.;..;.;..\..\RM-Sentry-project;.;..\..\board;..\..\board\CubeMX_Config\Inc;..\..\libraries\HAL_Drivers;..\..\libraries\HAL_Drivers\config;..\..\public;.;..\..\rt-thread\libcpu\arm\cortex-m4;..\..\rt-thread\libcpu\arm\common;..\..\rt-thread\components\dfs\include;..\..\rt-thread\components\dfs\filesystems\devfs;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\finsh;..\..\rt-thread\components\libc\compilers\armlibc;..\..\rt-thread\components\libc\compilers\common;..\..\libraries\STM32F4xx_HAL\STM32F4xx_HAL_Driver\Inc;..\..\libraries\STM32F4xx_HAL\CMSIS\Device\ST\STM32F4xx\Include;..\..\libraries\STM32F4xx_HAL\CMSIS\Include</IncludePath>
+              <IncludePath>.;..\..\rt-thread\include;application;.;..\..\applications;.;..\..\RM-Engineer-project;.;..\..\RM-Hero-project;.;..\..\RM-Infantry-project;.;..;.;..\..\board;..\..\board\CubeMX_Config\Inc;..\..\libraries\HAL_Drivers;..\..\libraries\HAL_Drivers\config;..\..\public;.;..\..\rt-thread\libcpu\arm\cortex-m4;..\..\rt-thread\libcpu\arm\common;..\..\rt-thread\components\dfs\include;..\..\rt-thread\components\dfs\filesystems\devfs;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\drivers\include;..\..\rt-thread\components\finsh;..\..\rt-thread\components\libc\compilers\armlibc;..\..\rt-thread\components\libc\compilers\common;..\..\libraries\STM32F4xx_HAL\STM32F4xx_HAL_Driver\Inc;..\..\libraries\STM32F4xx_HAL\CMSIS\Device\ST\STM32F4xx\Include;..\..\libraries\STM32F4xx_HAL\CMSIS\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -468,6 +468,11 @@
               <FilePath>application\can_receive.c</FilePath>
             </File>
             <File>
+              <FileName>drv_sentrychas.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>application\drv_sentrychas.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>application\main.c</FilePath>
@@ -476,6 +481,16 @@
               <FileName>robodata.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\application\robodata.h</FilePath>
+            </File>
+            <File>
+              <FileName>task_create.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\application\task_create.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_chassis.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\application\task_chassis.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -538,11 +553,6 @@
           <GroupName>public</GroupName>
           <Files>
             <File>
-              <FileName>drv_chassis.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\public\drv_chassis.c</FilePath>
-            </File>
-            <File>
               <FileName>drv_canthread.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\public\drv_canthread.c</FilePath>
@@ -553,14 +563,14 @@
               <FilePath>..\..\public\drv_remote.c</FilePath>
             </File>
             <File>
+              <FileName>drv_motor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\public\drv_motor.c</FilePath>
+            </File>
+            <File>
               <FileName>pid.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\public\pid.c</FilePath>
-            </File>
-            <File>
-              <FileName>drv_gyro.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\public\drv_gyro.c</FilePath>
             </File>
           </Files>
         </Group>

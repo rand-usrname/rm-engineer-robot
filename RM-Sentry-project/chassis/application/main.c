@@ -11,7 +11,7 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 #include <board.h>
-#include "drv_chassis.h"
+#include "drv_sentrychas.h"
 #include "drv_remote.h"
 #include "drv_gyro.h"
 
@@ -28,22 +28,10 @@ int main(void)
 	int bs = 500;
 	while(1)
 	{
-		sport_mode_set(ONLY_CHASSIS);
-		if(Change_from_middle(S1))
+		if(Change_from_middle(S1)==middle_to_up)
 		{
-			if(RC_data.Remote_Data.s1 == 1)
-			{
-				bs += 100;
-			}
-			else if(RC_data.Remote_Data.s1 == 2)
-			{
-				bs -= 100;
-			}
+			int i=0;
 		}
-		angular_velocity = ((RC_data.Remote_Data.ch0 - 1024) > 50)*bs - ((RC_data.Remote_Data.ch0 - 1024) < -50)*bs;
-		xspeed = ((RC_data.Remote_Data.ch2 - 1024) > 50)*bs - ((RC_data.Remote_Data.ch2 - 1024) < -50)*bs;
-		yspeed = ((RC_data.Remote_Data.ch3 - 1024) > 50)*bs - ((RC_data.Remote_Data.ch3 - 1024) < -50)*bs;
-		chassis_speed_set(0,angular_velocity,xspeed,yspeed);
 	}
 	
 	//功率限制测试主函数
