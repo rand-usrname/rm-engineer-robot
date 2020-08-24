@@ -4,13 +4,12 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 
-#define YAW_ZERO_ANGLE			4040
+#define YAW_ZERO_ANGLE			5430
 #define PITCH_ZERO_ANGLE		1330
 
 #define PITCH_MIN_ANGLE			(-540)
 #define PITCH_MAX_ANGLE			460
 
-#define SNALL   0
 #define FIRE_ANGLE 60
 #define HERO
 

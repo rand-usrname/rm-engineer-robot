@@ -19,7 +19,7 @@
 
 #endif
 
-#define YAW_ZERO_ANGLE          4040
+#define YAW_ZERO_ANGLE          5430
 #define PITCH_ZERO_ANGLE        1330
 
 typedef enum
