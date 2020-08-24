@@ -54,7 +54,7 @@ typedef struct
 //外部调用的控制函数
 extern int gimbal_absangle_set(rt_uint16_t yawset,rt_uint16_t pitchset);
 extern int gimbal_addangle_set(rt_int16_t yawset,rt_int16_t pitchset);
-extern int gimbal_palstance_set(rt_uint16_t yawset,rt_uint16_t pitchset);
+extern int gimbal_palstance_set(rt_int16_t yawset,rt_int16_t pitchset);
 extern int gimbal_ctlmode_set(control_mode_t yawset,control_mode_t pitchset);
 extern int angle_datasource_set(data_source_t yawset,data_source_t pitchset);
 

@@ -203,10 +203,9 @@
 
 /* Thread Config */
 
-#define THREAD_CHASSIS_CONTROL
-#define OMNI_WHEEL
 #define THREAD_CAN_RECEIVE
 #define THREAD_REMOTE
+#define MOTOR_CONTROL
 #define PID_CALCULATE
 
 #endif

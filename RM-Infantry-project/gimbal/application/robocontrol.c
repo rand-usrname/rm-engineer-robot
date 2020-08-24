@@ -7,53 +7,54 @@
 */
 static int chassis_ctl(rt_int16_t xspeed, rt_int16_t yspeed, rt_uint8_t mode,rt_int16_t angel_or_speed)
 {
-	xspeed *= 3;
-	yspeed *= 3;
-
 	struct rt_can_msg txmsg;
-	
+
 	txmsg.id = CHASSIS_CTL;
-	txmsg.ide = RT_CAN_STDID;txmsg.rtr=RT_CAN_DTR;
-	txmsg.len=8;
-	txmsg.data[0]=(rt_uint8_t)(xspeed>>8);
-	txmsg.data[1]=(rt_uint8_t)(xspeed);
-	txmsg.data[2]=(rt_uint8_t)(yspeed>>8);
-	txmsg.data[3]=(rt_uint8_t)(yspeed);
-	txmsg.data[4]=(rt_uint8_t)(angel_or_speed>>8);
-	txmsg.data[5]=(rt_uint8_t)(angel_or_speed);
-	txmsg.data[6]=(rt_uint8_t)(mode);
-	txmsg.data[7]=0;
+	txmsg.ide = RT_CAN_STDID;
+	txmsg.rtr = RT_CAN_DTR;
+	txmsg.len = 8;
+	txmsg.data[0] = (rt_uint8_t)(xspeed>>8);
+	txmsg.data[1] = (rt_uint8_t)(xspeed);
+	txmsg.data[2] = (rt_uint8_t)(yspeed>>8);
+	txmsg.data[3] = (rt_uint8_t)(yspeed);
+	txmsg.data[4] = (rt_uint8_t)(angel_or_speed>>8);
+	txmsg.data[5] = (rt_uint8_t)(angel_or_speed);
+	txmsg.data[6] = (rt_uint8_t)(mode);
+	txmsg.data[7] = 0;
 	rt_device_write(can1_dev, 0, &txmsg, sizeof(txmsg));
 }
 int gun1speed = 0;
-data_source_t datasource = DJI_MOTOR;
+int basespeed = 100;
+/**
+* @brief：云台控制模式设置
+* @param [in]	yawset：yaw轴控制模式
+				pitchset：pitch轴控制模式
+* @return：		yaw轴角度，格式0-8191
+* @author：mqy
+*/
+int computer_ctrl(RC_Ctrl_t *remote)
+{
+	//根据鼠标设置云台转动
+	
+	gimbal_addangle_set(remote->Mouse_Data.x_speed,remote->Mouse_Data.y_speed);
+	rt_int16_t xspeed = (remote->Key_Data.D - remote->Key_Data.A) * basespeed;
+	rt_int16_t yspeed = (remote->Key_Data.W - remote->Key_Data.S) * basespeed;
+	
+	chassis_ctl(xspeed,yspeed,0,0);
+}
+/**
+* @brief：云台控制模式设置
+* @param [in]	yawset：yaw轴控制模式
+				pitchset：pitch轴控制模式
+* @return：		yaw轴角度，格式0-8191
+* @author：mqy
+*/
 int remote_ctrl(RC_Ctrl_t *remote)
 {
 	rt_int16_t pitchadd = 0;
 	rt_int16_t yawadd = 0;
 	//状态触发部分
-	
-	//S2状态触发
-	if(remote->Remote_Data.s2 == 3)//右侧按键在中
-	{
-		pitchadd = (rt_int16_t)((remote->Remote_Data.ch1 - 1024)/30);
-		yawadd = -(rt_int16_t)((remote->Remote_Data.ch0 - 1024)/30);
-	}
-	else if(remote->Remote_Data.s2 == 2)//右侧按键在下
-	{
-		//return 1;//TODO:填充电脑控制函数
-	}
-	else if(remote->Remote_Data.s2 == 1)//右侧案件在上
-	{
-		if(get_yawusetime() < 1)
-		{
-			yawadd = -get_yaw_add()/16;
-		}
-		if(get_pitchusetime() < 1)
-		{
-			pitchadd = get_pitch_add()/16;
-		}
-	}
+
 	
 	//S1状态触发
 	if(remote->Remote_Data.s1 == 3)//左侧按键在中
@@ -68,6 +69,30 @@ int remote_ctrl(RC_Ctrl_t *remote)
 	{
 		
 	}
+
+	//S2状态触发
+	if(remote->Remote_Data.s2 == 3)//右侧按键在中
+	{
+		pitchadd = (rt_int16_t)((remote->Remote_Data.ch1 - 1024)/30);
+		yawadd = -(rt_int16_t)((remote->Remote_Data.ch0 - 1024)/30);
+	}
+	else if(remote->Remote_Data.s2 == 2)//右侧按键在下
+	{
+		//使用电脑数据进行操作，屏蔽其他控制
+		computer_ctrl(remote);
+		return 1;
+	}
+	else if(remote->Remote_Data.s2 == 1)//右侧案件在上
+	{
+		if(get_yawusetime() < 1)
+		{
+			yawadd = -get_yaw_add()/16;
+		}
+		if(get_pitchusetime() < 1)
+		{
+			pitchadd = get_pitch_add()/16;
+		}
+	}
 	
 	//动作触发部分
 	//S1动作
@@ -79,6 +104,7 @@ int remote_ctrl(RC_Ctrl_t *remote)
 	}
 	else if(s_action == middle_to_down)//向下拨动
 	{
+		//调整并设置摩擦轮速度
 		if(gun1speed  == 0)
 		{
 			gun1speed = -3000;
@@ -102,17 +128,9 @@ int remote_ctrl(RC_Ctrl_t *remote)
 	}
 	else if(s_action == middle_to_down)//向下拨动
 	{
-		if(datasource == DJI_MOTOR)
-		{
-			datasource = GYRO;
-		}
-		else
-		{
-			datasource = DJI_MOTOR;
-		}
-		
-		angle_datasource_set(datasource,datasource);
 	}
-
+	chassis_ctl((remote->Remote_Data.ch2 - 1024)*3,(remote->Remote_Data.ch3 - 1024)*3,0,0);
 	gimbal_addangle_set(yawadd,pitchadd);
+	return 1;
 }
+

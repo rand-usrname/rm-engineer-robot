@@ -11,7 +11,7 @@ static rt_int16_t remote_s2_data = 0;
 /* 但当拨杆为两边往中间拨时，RC_data=RC_lastdata,所以读到动作的时候存一下 */
 static rt_uint16_t temp_s_data = 0;
 /* 按键有按下或松开动作时，置其中一位为1 */
- rt_uint16_t key_change = 0;
+static rt_uint16_t key_change = 0;
 /* 鼠标左键有动作，高4位置一，右键低四位置一 */
 static rt_uint8_t mouse_key_data = 0;
 
