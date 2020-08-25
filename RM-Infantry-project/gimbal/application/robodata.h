@@ -35,7 +35,11 @@ typedef enum
 	VISUAL_CTLID = 0X301,	//视觉通信发送
 	
 	//接收
-	VISUAL_REVID = 0X302	//视觉通信接收
+	VISUAL_REVID = 0X302,	//视觉通信接收
+	
+	RUB0_ID		 = 0X201,	//发射机构接收
+	RUB1_ID		 = 0X202,
+	LAUNCH_ID	 = 0X203
 	
 }drv_can2ID_e;
 //底盘CAN2设备ID
