@@ -83,7 +83,8 @@ static void chassis_control(void)
 
 		case FOLLOW_GIMBAL:
 			//在跟随模式下需要计算设定角速度
-			pid_output_motor(&motion_data.anglepid,motion_data.anglepid.set,motion_data.follow_angle);
+			motion_data.anglepid.set = motion_data.follow_angle;
+			pid_output_motor(&motion_data.anglepid,motion_data.anglepid.set,motion_data.yaw_data.angle);
 			
 			motor_speed_set(
 			motion_data.yaw_data.angle,//传入当前角度参数
@@ -245,7 +246,7 @@ int chassis_init(void)
 	pid_init(&chassis_motor[1].speedpid,6,0.004,0.2,500,8000,-8000);
 	pid_init(&chassis_motor[2].speedpid,6,0.004,0.2,500,8000,-8000);
 	pid_init(&chassis_motor[3].speedpid,6,0.004,0.2,500,8000,-8000);
-	pid_init(&motion_data.anglepid,2,0,10,10,1000,-1000);
+	pid_init(&motion_data.anglepid,2,0,1,10,1000,-1000);
 	motion_data.follow_angle = 0;
 	motion_data.angular_velocity = 0;
 	motion_data.xspeed = 0;

@@ -163,13 +163,13 @@ int gimbal_init(void)
 	pitch.setang = 4096;//初始化默认角度
 
 	//初始化PID
-	pid_init(&yaw.palpid,2,0,0,200,0X7FFF,-0X7FFF);
-	pid_init(&pitch.palpid,1,0,0,3000,0X7FFF,-0X7FFF);
+	pid_init(&yaw.palpid,20,0.1,10,200,0X7FFF,-0X7FFF);
+	pid_init(&pitch.palpid,10,0,10,3000,0X7FFF,-0X7FFF);
 
-	pid_init(&yaw.angpid_gyro,1,0,0,3,20000,-20000);
-	pid_init(&yaw.angpid_dji,0.5,0,0,3,2000,-2000);
-	pid_init(&pitch.angpid_gyro,5,0,0,3,20000,-20000);
-	pid_init(&pitch.angpid_dji,4,0,0,5,2000,-2000);
+	pid_init(&yaw.angpid_gyro,10,0,0,3,20000,-20000);
+	pid_init(&yaw.angpid_dji,8,0.01,0,3,2000,-2000);
+	pid_init(&pitch.angpid_gyro,17,0.05,0,3,20000,-20000);
+	pid_init(&pitch.angpid_dji,10,0.04,0,5,2000,-2000);
 	
 	//初始化中断释放的信号量
 	rt_sem_init(&gimbal_1ms_sem, "1ms_sem", 0, RT_IPC_FLAG_FIFO);
