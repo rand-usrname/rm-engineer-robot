@@ -1,3 +1,20 @@
+/************************************** Copyright ****************************** 
+  *
+  *                 (C) Copyright 2020,China, HITwh.
+  *                            All Rights Reserved
+  *                              
+  *                     By  哈尔滨工业大学（威海）HERO战队
+  *                     HITwh Excellent Robot Organization
+  *                     https://gitee.com/HIT-718LC
+  *    
+  * FileName   : drv_sentrychas.h   
+  * Version    : v1.0		
+  * Author     : yi_lu			
+  * Date       : 2020-08-23         
+  * Description:    哨兵的底盘不同于一般底盘,单独写一个底盘文件
+
+  ****************************************************************************** */
+
 
 #ifndef __DRV_SENTRYCHAS_H__
 #define __DRV_SENTRYCHAS_H__
@@ -9,7 +26,14 @@
 #include "robodata.h"
 #include "math.h"
 #include "can_receive.h"
+#include "drv_motor.h"
 
+extern Motor_t m_chassis_3508[2];
+
+void chassis_init(void);
+
+
+#ifdef mqy
 typedef enum
 {
 	NO_FOLLOW,							//底盘不跟随云台，但以云台朝向为前方
@@ -37,7 +61,7 @@ typedef struct
 	pid_t		    speedpid;			//pid参数结构体
 	
 } motor_t;
-//该结构体用于四个麦轮的控制和数据存储
+//该结构体用于四个麦轮的控制和数据存储 
 
 typedef struct
 {
@@ -48,8 +72,7 @@ typedef struct
 	int				powermax;			//最大功率限制
 	
 	//以下三个数据储存以云台为正方向的期望速度
-	rt_uint16_t		follow_angle;		//跟随角度，范围0-8191
-	rt_int16_t 		angular_velocity;	//单位0.1 °/s
+	rt_uint16_t		angle;		//跟随角度，范围0-8191
 	rt_int16_t 		xspeed;				//单位mm/s
 	rt_int16_t		yspeed;				//单位mm/s
 
@@ -60,5 +83,6 @@ extern void sport_mode_set(sport_mode_e sport_mode);
 extern int refresh_chassis_motor_data(struct rt_can_msg* message);
 extern int refresh_gimbal_motor_data(struct rt_can_msg* message);
 extern int chassis_init(void);
+#endif
 
 #endif
