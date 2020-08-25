@@ -33,7 +33,7 @@ typedef struct _Heatctrl_t
 
 	/*如果使能本地热量计算*/
 	#if LOCAL_HEAT_ENABLE
-	rt_uint8_t 				  cool;							    /*枪口冷却值*/
+	rt_uint8_t 				cool;							    /*枪口冷却值*/
 	rt_uint8_t    			buff;							    /*枪口冷却buff，即枪口冷却翻几倍*/
 	#endif
 }Heatctrl_t;

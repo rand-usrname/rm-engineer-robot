@@ -67,6 +67,7 @@ void heat_control(Heatctrl_t *p_temp)
 {
 	if(p_temp == &gun1.heat)
 	{
+		
 	}
 }
 
