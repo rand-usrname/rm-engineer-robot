@@ -1,5 +1,6 @@
 #include "drv_aimbot.h"
 #include "math.h"
+#include "drv_gyro.h"
 
 /**********与视觉的通信部份***********/
 
@@ -8,7 +9,6 @@ static visual_ctl_t visual_ctl;
 
 //视觉接收信息结构体
 static visual_rev_t visual_rev;
-
 /**
 * @brief：初始化视觉结构体
 * @param [in]	无
@@ -68,9 +68,9 @@ int refresh_visual_data(rt_uint8_t* data)
 			break;
 	
 		case SIGNALCHIP:
-			visual_rev.x = (rt_int16_t)((data[2]<<8) + data[3]);
-			visual_rev.y = (rt_int16_t)((data[4]<<8) + data[5]);
-			visual_rev.z = (rt_int16_t)((data[6]<<8) + data[7]);
+			visual_rev.x = ((rt_int16_t)((data[2]<<8) + data[3]))/1000.0f;
+			visual_rev.y = ((rt_int16_t)((data[4]<<8) + data[5]))/1000.0f;
+			visual_rev.z = ((rt_int16_t)((data[6]<<8) + data[7]))/1000.0f;
 			break;
 
 		default:
@@ -183,25 +183,17 @@ rt_int16_t get_pitchusetime(void)
 #define G   9.7988f 
 #define t_transmit 3
 #define pi_operator 0.01745f
-//接口
-Aimbot_t *Aimbot_data;
-
-//视觉发送的目标坐标
-static Point_t *vision_point;
+//接口 
+Aimbot_t Aimbot_data;
 
 //定义一个数组队列 ，用于存储近40ms内的角速度。
-static float Palstance_Deque[40] = {2.0f,0};
+static float Palstance_Deque[40] = {0.0f,};
 
-//角速度的获取接口暂时未确定 目前假定已知
-static float current_yaw_palstance = 1.0f;
-static float current_roll_palstance = 1.0f;
-static float vision_palstance = 1.0f;
-//需要 获取子弹速度   当前pitch yaw角度
+static float vision_yaw_palstance = 0.0f;
+//需要获取子弹速度
 static float bullet_speed = 0.0f;
-static float pitch_angle = 30.0f;
-static float yaw_angle = 10.0f;
-//视觉处理图像时间
-static rt_uint8_t t_camera = 14;//单位ms，
+
+
 //快速开方
 static float Q_rsqrt( float number )
 {
@@ -217,66 +209,89 @@ static float Q_rsqrt( float number )
     y  = y * ( threehalfs - ( x2 * y * y ) );  
     return y;
 }
-static rt_uint8_t Isgreater_than_zero(float data)
-{
-	if(data >= 0)
-		return 1;
-	else
-		return -1;
-}
+
+/* 以下所有函数需遵循 返回值或传参
+   单位 °
+   方向 pitch向上为正 yaw轴从云台上方往下看逆时针为正
+   视觉yaw轴方向和上述相反 需做转换
+*/
 
 
-//队列填充
-static void get_new_palstance(float *pdata,float yaw_palstance, float roll_palstance, float current_pitch)
+/**
+  * @brief  队列填充当前时间的yaw轴角速度(1ms一次) 单位 °/s
+  * @param  pdata is Palstance_Deque(存储yaw角速度的队列)  
+  * @param  gimbal_atti 陀螺仪数据结构体
+  * @retval none
+ **/
+static void get_new_palstance(float *pdata,ATTI_t *gimbal_atti)
 {
 	float *temp = pdata;
-	float motor_palstance =  Q_rsqrt(yaw_palstance*yaw_palstance+roll_palstance*roll_palstance);
-	//判断符号
-	if((-45 < current_pitch)&& (current_pitch<45))
-	{motor_palstance*= Isgreater_than_zero(yaw_palstance);}
-	else if((current_pitch>=45) && (current_pitch<135))
-	{motor_palstance*= Isgreater_than_zero(roll_palstance);}
+	float motor_palstance =  gimbal_atti->yaw_speed;
     Palstance_Deque[0] = motor_palstance;
 	rt_memcpy((Palstance_Deque+1),temp,39);
 }
-//坐标系转换：摄像头坐标系转为电机坐标系 ，原点为发射机构摩擦轮位置处
-static Point_t Transformed_coordinate(Point_t* vision_point,float pitch_angle)
-{
-	Point_t motor_point;
-	motor_point.x = vision_point->x;
-    motor_point.y = -(vision_point->z) * sin(pitch_angle) + vision_point->y * cos(pitch_angle);
-    motor_point.z = vision_point->z * cos(pitch_angle) + vision_point->y * sin(pitch_angle);
 
-	return motor_point;
-}
-//通过坐标求出未加补偿时的Δpitch,Δyaw 为使用方便 暂且用Aimbot_t类型的结构体暂存
-static Aimbot_t Calc_from_point(Point_t *motor_point)
+/* 视觉端已经做好坐标系变换 */
+//坐标系转换：摄像头坐标系转为电机坐标系 ，原点为发射机构摩擦轮位置处
+//static Point_t Transformed_coordinate(Point_t* vision_point,float pitch_angle)
+//{
+//	Point_t motor_point;
+//	motor_point.x = vision_point->x;
+//    motor_point.y = -(vision_point->z) * sin(pitch_angle) + vision_point->y * cos(pitch_angle);
+//    motor_point.z = vision_point->z * cos(pitch_angle) + vision_point->y * sin(pitch_angle);
+
+//	return motor_point;
+//}
+
+/**
+  * @brief   通过视觉返回的目标坐标数据计算原始的pitch yaw 增量(不考虑重力影响及预瞄量) 
+  * @param   视觉发送的目标坐标
+  * @retval  返回一个存储有原始pitch yaw 增量的结构体 量纲为0-360°
+ **/
+static Aimbot_t Calc_from_point(visual_rev_t *visual_rev)
 {
 	Aimbot_t calc_angle;
-	calc_angle.pitch = atan((motor_point->y)/(motor_point->z))/pi_operator;
-	calc_angle.yaw = atan((motor_point->x)/(motor_point->z))/pi_operator;
+	calc_angle.pitch_add = atan((visual_rev->y)/(visual_rev->z))/pi_operator;
+	/* yaw轴方向取反 */
+	calc_angle.yaw_add = -atan((visual_rev->x)/(visual_rev->z))/pi_operator;
 	return calc_angle;
 }
 
-//重力补偿角 输入当前pitch Δpitch,子弹速度，与目标距离， 返回补偿后的pitch;
+/**
+  * @brief  对Calc_from_point求出的pitch_add进行重力补偿，即考虑重力影响
+  * @param  current_pitch  当前pitch角度 单位为°
+  * @param  delta_pitch  Calc_from_point求出的为补偿的pitch_add 单位为°
+  * @distance 与目标的直线距离 单位为m 
+  * @bullet_speed 子弹速度 单位 m/s
+  * @retval 返回补偿后的pitch_add 量纲0-360°
+ **/
 static float Gravity_compensation(float current_pitch, float delta_pitch,float distance,rt_uint16_t bullet_speed)
 {
+	/* 转换为弧度制 */
 	float target_pitch = (delta_pitch + current_pitch)*pi_operator;
+	
+	/* x_0向前为正 y_0正方向和重力加速度同向 */
 	float x_0 = distance * cos(-target_pitch);
 	float y_0 = distance * sin(-target_pitch);
+	
 	float temp = (bullet_speed*bullet_speed*bullet_speed*bullet_speed)-G*(G*x_0*x_0-2*bullet_speed*bullet_speed*y_0);
-	if(temp < 0) return delta_pitch;
+	if(temp < 0) return 0;  /* 射程不够 */
 	else
 	{
+		/* 计算补偿后的角度 单位rad*/
 		float aim_pitch = -atan((-bullet_speed*bullet_speed+Q_rsqrt(temp))/(G*x_0));
-		return aim_pitch/pi_operator;
+		/* 转换成°后返回增量 */
+		return (aim_pitch/pi_operator-current_pitch);
 	}
 }
-/*
-     提前量 获取yaw轴提前角补偿
-    1、 获取目标角速度：视觉返回的目标角速度，云台绝对角速度，动态时滞t_lag
-    2、 获取提前角：子弹飞行时间：距离 子弹速度; 目标角速度，
-*/
+
+
+/**
+  * @brief   得到yaw轴的提前量预瞄角度
+  * @param   vision_palstance 视觉摄像头中对方的相对角速度(可根据两帧的对方位置改变算出)
+  * @param   t_lag 视觉处理一帧图像用时加上数据传输等用时
+  * @retval  返回yaw轴的增量 
+ **/
 static float Advance_yaw_angle(float vision_palstance, rt_uint8_t t_lag,
 							   float distance,rt_uint16_t bullet_speed)
 {
@@ -285,8 +300,10 @@ static float Advance_yaw_angle(float vision_palstance, rt_uint8_t t_lag,
 	float Gimbal_palstance_lag = *(Palstance_Deque+t_lag);
 	float aim_palstance = Gimbal_palstance_lag+vision_palstance;
 	/****************************2****************************/
-	return ((aim_palstance*distance/bullet_speed)/pi_operator + yaw_angle);
+	return aim_palstance*distance/bullet_speed;
 }
+
+
 
 /******************************************************************************************************************/
 rt_thread_t aim_thread;
@@ -306,28 +323,41 @@ static void Obtain_palstance_emtry(void *parameter)
 	while(1)
 	{
 		rt_sem_take(&Obtain_palstance_sem, RT_WAITING_FOREVER);
-		get_new_palstance(Palstance_Deque,current_yaw_palstance,current_roll_palstance,pitch_angle);
+		get_new_palstance(Palstance_Deque,&gimbal_atti);
 	}
 } 
 
 static void aim_bot_emtry(void *parameter)
 {
+	static rt_tick_t tick = 0;
+	static float last_visual_yaw = 0;
 	while(1)
 	{
+		/* 收到视觉消息时释放信号量 */
 		rt_sem_take(&Aim_bot_sem, RT_WAITING_FOREVER);
 		//坐标转换
-		Point_t temp_point = Transformed_coordinate(vision_point,pitch_angle);
-		//计算初始Δpitch Δyaw
-		Aimbot_t temp_aim_data = Calc_from_point(&temp_point);
-		//获取距离，子弹水平速度
-		float temp_dis = (temp_point.z)*(temp_point.z)+(temp_point.x)*(temp_point.x);
-		float distance = Q_rsqrt(temp_dis);
-		float bullet_speed_horizontal = bullet_speed*cos(pitch_angle);
-		//重力补偿
-		Aimbot_data->pitch = Gravity_compensation(pitch_angle,temp_aim_data.pitch,distance,bullet_speed_horizontal);
-		//提前量预瞄
-		Aimbot_data->yaw = Advance_yaw_angle(vision_palstance,t_camera+t_transmit,distance,bullet_speed_horizontal);
+		//Point_t temp_point = Transformed_coordinate(vision_point,pitch_angle);
 		
+		//计算初始Δpitch Δyaw
+		Aimbot_t temp_aim_data = Calc_from_point(&visual_rev);
+		
+		
+		//获取距离，子弹水平速度
+		float temp_dis = (visual_rev.z)*(visual_rev.z)+(visual_rev.x)*(visual_rev.x)+(visual_rev.z)*(visual_rev.z);
+		float distance = Q_rsqrt(temp_dis);
+		
+		float bullet_speed_horizontal = bullet_speed*cos((gimbal_atti.pitch+temp_aim_data.pitch_add)*pi_operator);
+		
+		//重力补偿
+		Aimbot_data.pitch_add = Gravity_compensation(gimbal_atti.pitch,temp_aim_data.pitch_add,distance,bullet_speed_horizontal);
+		/* 根据两次角度求角速度 单位°/s */
+		vision_yaw_palstance = (temp_aim_data.yaw_add - last_visual_yaw)/((rt_tick_get()-tick)/1000.0f);
+		
+		//提前量预瞄
+		Aimbot_data.yaw_add = Advance_yaw_angle(vision_yaw_palstance,(visual_rev.computime+t_transmit),distance,bullet_speed_horizontal);
+		
+		last_visual_yaw = temp_aim_data.yaw_add;
+		tick = rt_tick_get();
 	}
 	
 }
@@ -360,4 +390,4 @@ void aim_bot_creat(void)
 	}
 	rt_thread_suspend(aim_thread);
 }
-INIT_APP_EXPORT(aim_bot_creat);
+//INIT_APP_EXPORT(aim_bot_creat);
