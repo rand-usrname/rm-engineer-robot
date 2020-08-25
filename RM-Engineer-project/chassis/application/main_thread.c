@@ -22,7 +22,7 @@ rt_thread_t Main_Thread;
 
 static void main_thread_entry(void * parameter)
 {
-	static rt_uint8_t trailer_cur = 0x0E;
+	static rt_uint8_t trailer_cur = 0x0F;
 	while(1)
 	{
 #ifdef GIMBAL_CTRL
@@ -34,9 +34,9 @@ static void main_thread_entry(void * parameter)
 		    trailerl.state = (((gimbal_ctrl_data.rescue_cmd)>>4)&0x0E);
 		    trailerr.state = (((gimbal_ctrl_data.rescue_cmd)>>4)&0x0E);
 		}
-		if(trailer_cur == 0x0E)
+		if(trailer_cur == 0x0F)
 		{trailer_go(&trailerl);}
-		else if(trailer_cur == 0xE0)
+		else if(trailer_cur == 0xF0)
 		{trailer_go(&trailerr);}
 		trailer_cur = ~trailer_cur;
 		/* Ë¢¿¨¸´»î */
@@ -64,9 +64,9 @@ static void main_thread_entry(void * parameter)
             /* Á¢¼´¸´Î» */
 			trailerl.state = rescue_reset;trailerr.state = rescue_reset;
 		}
-		if(trailer_cur == 0x0E)
+		if(trailer_cur == 0x0F)
 		{trailer_go(&trailerl);}
-		else if(trailer_cur == 0xE0)
+		else if(trailer_cur == 0xF0)
 		{trailer_go(&trailerr);}
 		trailer_cur = ~trailer_cur;
 		/* Ë¢¿¨¿ØÖÆ */

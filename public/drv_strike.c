@@ -232,9 +232,13 @@ void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 	static rt_tick_t tick = 0;										/*记录系统时间*/
 	static rt_tick_t tick_sleep = 0;								/*拨弹电机间隔时间*/
 	/* 如果摩擦轮速度小于一定值 */
-	if(gun->speed <= 10)
+	if(gun->speed < 11)
 	{
 		gun->status = STRICK_STOP;
+	}
+	else
+	{
+		gun->status &= ~STRICK_STOP;
 	}
 	/*如果停止开火，使位置环不动*/
 	if(gun->status & STRICK_STOP)									/*不允许开火，直接返回*/
@@ -296,7 +300,13 @@ static void task_1ms_emtry(void *parameter)
 		#ifndef SNAIL
 		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].dji.speed);
 		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);
-		motor_current_send(can1_dev,STDID_launch,m_launch.spe.out,m_rub[0].spe.out,m_rub[1].spe.out,0);
+		
+		/* 发送电流 */
+		rt_int16_t send_current[4] = {0};
+		send_current[(RUB0_ID-0x201)] = m_rub[0].spe.out;
+		send_current[(RUB1_ID-0x201)] = m_rub[1].spe.out;
+		send_current[(LAUNCH_ID-0x201)] = m_launch.spe.out;
+		motor_current_send(can1_dev,STDID_launch,send_current[0],send_current[1],send_current[2],0);
 		#else
 		motor_current_send(can2_dev,STDID_launch,m_launch.spe.out,0,0,0);
 		#endif
@@ -367,9 +377,9 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 					7.5,0,0,
 					350,8000,-8000);
 	#else
-	motor_init(&m_rub[0],0x201,1);
-	motor_init(&m_rub[1],0x202,1);
-	motor_init(&m_launch,0x203,0.027973);
+	motor_init(&m_rub[0],RUB0_ID,1);
+	motor_init(&m_rub[1],RUB1_ID,1);
+	motor_init(&m_launch,LAUNCH_ID,0.027973);
 	//pid 和电机初始化可以放在外面 原因 ：减速比问题 pid参数问题
 	pid_init(&m_launch.ang, 
 					3.5,0,0,
