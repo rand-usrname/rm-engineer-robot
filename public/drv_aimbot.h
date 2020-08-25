@@ -10,15 +10,15 @@
 
 typedef struct _Point_t
 {
-	float x;
-	float y;
-	float z;
+	float x;  /* 与目标水平距离 */
+	float y;  /* 与目标高度差 */
+	float z;  /* 与目标垂直距离 */
 }Point_t;
 //作为留出的接口
 typedef struct _Aimbot_t
 {
-	float pitch;
-	float yaw;
+	float pitch_add;
+	float yaw_add;
 }Aimbot_t;
 
 /***********与视觉通信的部分************/
@@ -70,7 +70,7 @@ typedef struct
 	int			computime;		//计算时间
 	rt_int16_t	yawadd;			//-32768 ~ 32767 标定数据
 	rt_int16_t	pitchadd;		//-32768 ~ 32767 标定角度
-	rt_int16_t	x,y,z;			//三点坐标，单位均为 mm/s
+	float	    x,y,z;			//三点坐标，单位均为 m
 	rt_uint8_t	yaw_usetime;	//标记使用次数
 	rt_uint8_t	pitch_usetime;	//标记使用次数
 
