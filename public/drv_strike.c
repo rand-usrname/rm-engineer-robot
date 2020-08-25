@@ -231,11 +231,6 @@ void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 {
 	static rt_tick_t tick = 0;										/*记录系统时间*/
 	static rt_tick_t tick_sleep = 0;								/*拨弹电机间隔时间*/
-	/* 如果摩擦轮速度小于一定值 */
-	if(gun->speed <= 10)
-	{
-		gun->status = STRICK_STOP;
-	}
 	/*如果停止开火，使位置环不动*/
 	if(gun->status & STRICK_STOP)									/*不允许开火，直接返回*/
 	{
@@ -296,7 +291,7 @@ static void task_1ms_emtry(void *parameter)
 		#ifndef SNAIL
 		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].dji.speed);
 		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);
-		motor_current_send(can1_dev,STDID_launch,m_launch.spe.out,m_rub[0].spe.out,m_rub[1].spe.out,0);
+		motor_current_send(can2_dev,STDID_launch,m_rub[0].spe.out,m_rub[1].spe.out,m_launch.spe.out,0);
 		#else
 		motor_current_send(can2_dev,STDID_launch,m_launch.spe.out,0,0,0);
 		#endif

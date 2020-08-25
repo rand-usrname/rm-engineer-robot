@@ -113,11 +113,11 @@ int refresh_ctldata(struct rt_can_msg* msg)
 	ctldata.sport_mode = (sport_mode_e)(msg->data[6]);
 	if(ctldata.sport_mode == FOLLOW_GIMBAL)
 	{
-		ctldata.augular_vel = (msg->data[4]<<8) + msg->data[5];
+		ctldata.follow_angle = (msg->data[4]<<8) + msg->data[5];
 	}
 	else if(ctldata.sport_mode == NO_FOLLOW)
 	{
-		ctldata.follow_angle = (msg->data[4]<<8) + msg->data[5];
+		ctldata.augular_vel = (msg->data[4]<<8) + msg->data[5];
 	}
 	ctldata.usetime = 0;
 	return 1;
