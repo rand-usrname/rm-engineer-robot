@@ -472,6 +472,16 @@
               <FileType>1</FileType>
               <FilePath>application\main.c</FilePath>
             </File>
+            <File>
+              <FileName>task_create.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>application\task_create.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_gimbal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>application\task_gimbal.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
