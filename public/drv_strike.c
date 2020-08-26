@@ -311,7 +311,7 @@ static void task_1ms_emtry(void *parameter)
 		send_current[(LAUNCH_ID-0x201)] = m_launch.spe.out;
 		motor_current_send(can1_dev,STDID_launch,send_current[0],send_current[1],send_current[2],0);
 		#else
-		motor_current_send(can2_dev,STDID_launch,m_launch.spe.out,0,0,0);
+		//motor_current_send(can2_dev,STDID_launch,m_launch.spe.out,0,0,0);
 		#endif
 	}
 }
@@ -372,7 +372,7 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	#ifdef SNAIL
 	motor_rub_init();
 //	motor_servo_init();
-	motor_init(&m_launch,0x201,0.027973);
+	motor_init(&m_launch,0x201,1);
 	pid_init(&m_launch.ang, 
 					3.5,0,0,
 					500,5000,-5000);

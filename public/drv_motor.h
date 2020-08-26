@@ -19,8 +19,8 @@ typedef struct
 	rt_int16_t current;
 	rt_uint8_t temperature;
 	
-	rt_uint16_t old_angle;																										/*上一次编码器数值*/
-	rt_int32_t loop;																											/*一共所转度数*/
+	rt_int16_t old_angle;																										/*上一次编码器数值*/
+	rt_int32_t all_angle;																											/*一共所转度数*/
 	float ratio;																															/*减速箱的减速比<=1*/
 	
 	rt_uint32_t motorID;																													/*电机反馈报文ID*/
