@@ -12,20 +12,20 @@ static void motor_angle_adjsut(rt_uint32_t angle,DjiMotor_t* motor)
 	/*计算总的编码器转过角度*/
 	if(motor->speed >= 0)
 	{
-		if(angle < motor->old_angle - 1000)														/*加1000是为了去除编码器波动*/
+		if((angle < motor->old_angle - 1000)&&(motor->old_angle > 4096))				/*加1000是为了去除编码器波动*/
 		{
-			motor->loop += 1;
+			motor->all_angle += 8192;
 		}
 	}
 	else
 	{
-		if(angle > motor->old_angle + 1000)														/*加1000是为了去除编码器波动*/
+		if((angle > motor->old_angle + 1000)&&(angle > 4096))				/*加1000是为了去除编码器波动*/
 		{
-			motor->loop -= 1; 
+			motor->all_angle -= 8192; 
 		}
 	}
 	/*计算0-8191范围内的角度*/
-	angletemp = (motor->loop*8192 + angle) * motor->ratio / 8192;
+	angletemp = (motor->all_angle + angle) * motor->ratio / 8192;
 	angletemp = angletemp - (int)angletemp; 
 	if(angletemp < 0)
 	{

@@ -300,34 +300,24 @@ static void task_1ms_entry(void *parameter)
 		rt_sem_take(&task_1ms_sem, RT_WAITING_FOREVER);
 		
 		rt_int16_t send_current[4] = {0};
-
-		//驱动电机
-
-		//摩擦轮电机选择:
-		//1. Snail
-		//2. 3508屁股
-		#ifdef RUB_SNAIL	//Snail摩擦轮
-		;//pwm电机无需再输出
-		#else	//3508摩擦轮
+		rt_int16_t launch_6020_cur[4] = {0};
+		
+		pid_output_calculate(&m_launch.spe,m_launch.ang.out,m_launch.dji.speed);
+		
+		#ifndef RUB_SNAIL /* 如果是3508摩擦轮 */
 		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].dji.speed);
-		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);/* code */
+		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);
 		send_current[(RUB0_ID-0x201)] = m_rub[0].spe.out;
 		send_current[(RUB1_ID-0x201)] = m_rub[1].spe.out;
-		motor_current_send(can2_dev,STDID_launch,m_launch.spe.out,0,0,0);
 		#endif
-
-		pid_output_calculate(&m_launch.spe,m_launch.ang.out,m_launch.dji.speed);
-
-		//发弹电机选择:
-		//1. 6020
-		//2. 2006
-		#ifdef LAUNCH_6020	//6020拨弹,ID不同
-		send_current[(LAUNCH_ID-0x205)] = (rt_int16_t)m_launch.spe.out;
-		motor_current_send(can1_dev,0x1FF,send_current[0],send_current[1],send_current[2],send_current[3]);
-		#else	//2006拨弹
-		send_current[(LAUNCH_ID-0x201)] = (rt_int16_t)m_launch.spe.out;
-		motor_current_send(can1_dev,STDID_launch,send_current[0],send_current[1],send_current[2],send_current[3]);
-	
+		//6020拨弹,ID不同
+		#ifdef LAUNCH_6020
+		motor_current_send(can2_dev,STDID_launch,send_current[0],send_current[1],send_current[2],send_current[3]);
+		launch_6020_cur[(LAUNCH_ID-0x205)] = m_launch.spe.out;
+		motor_current_send(can1_dev,0x1FF,launch_6020_cur[0],launch_6020_cur[1],launch_6020_cur[2],launch_6020_cur[3]);
+		#else   //2006拨弹
+		send_current[(LAUNCH_ID-0x201)] = m_launch.spe.out;
+		motor_current_send(can2_dev,STDID_launch,send_current[0],send_current[1],send_current[2],send_current[3]);
 		#endif
 	}
 }
