@@ -9,7 +9,7 @@
 /*电机消息发送ID（STDID）*/
 typedef enum 
 {
-	STDID_Pantilt = 0x1FF,
+	STDID_gimbal = 0x1FF,
 	STDID_launch = 0x200
 }SendID_e;
 typedef struct

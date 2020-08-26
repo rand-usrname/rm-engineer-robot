@@ -482,6 +482,11 @@
               <FileType>1</FileType>
               <FilePath>application\task_gimbal.c</FilePath>
             </File>
+            <File>
+              <FileName>mid_gimbal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\application\mid_gimbal.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -542,11 +547,6 @@
         <Group>
           <GroupName>public</GroupName>
           <Files>
-            <File>
-              <FileName>drv_gimbal.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\public\drv_gimbal.c</FilePath>
-            </File>
             <File>
               <FileName>drv_strike.c</FileName>
               <FileType>1</FileType>

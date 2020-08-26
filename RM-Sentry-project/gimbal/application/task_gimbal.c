@@ -1,38 +1,38 @@
 #include "task_gimbal.h"
 #include "drv_motor.h"
-//#include "ctrl_strike.h"
+#include "drv_strike.h"
+#include "can_receive.h"
 #include "drv_canthread.h"
 #include "drv_remote.h"
 //#include "drv_computer.h"
+#include "robodata.h"
 
-Motor_t m_yaw={0};/*5901-185-6417-3090-4095*/ //ratio=0.285->1681-2387-4163-5550-5836*/
-Motor_t m_pitch={0};
-Motor_t m_launch={0}; //拨弹6020
+
 
 /*临时测试使用*/
 rt_uint8_t iffire = 0;														/*开火标志*/
 
 static void pid_1ms_calculate(void);
 static void pid_5ms_calculate(void);
-static void tx2_gimbal_ctrl(void);
-static void tx2_send(void);
+//static void tx2_gimbal_ctrl(void);
+//static void tx2_send(void);
 static void auto_move(void);
 /**
  * @brief  101ms任务执行函数
  */
 void task_fun101ms(void)
 {
-	motor_rub_set(gun1.speed);/*摩擦轮开启关闭*/
-	tx2_send();
+	//motor_rub_set(gun1.speed);/*摩擦轮开启关闭*/
+	//tx2_send();
 }
 /**
  * @brief  5ms任务执行函数
  */
 void task_fun5ms(void)
 {
-	strike_fire(&m_launch,&gun1,&iffire);/*射击执行函数*/
+	//strike_fire(&m_launch,&gun1,&iffire);/*射击执行函数*/
 	iffire=0;
-	tx2_gimbal_ctrl();
+	//tx2_gimbal_ctrl();
 	pid_5ms_calculate();
 }
 /**
@@ -68,6 +68,8 @@ void slave_readmsg(struct rt_can_msg *rxmsg)
 		gun1.mode = rxmsg->data[3];
 	}
 }
+
+#ifdef MINIPC
 /*临时测试使用*/
 /**
  * @brief  小电脑云台控制
@@ -105,6 +107,8 @@ void tx2_send(void)
 	txdata[6]=0;txdata[7]=tx2_data.tail;
 	rt_device_write(tx2_serial, 0, txdata, 8);
 }
+#endif
+
 /*来回动*/
 void auto_move(void)
 {
@@ -139,9 +143,9 @@ void auto_move(void)
 static void pid_5ms_calculate(void)
 {
 	/*pid位置环计算*/
-	pid_out_check(&m_pitch.ang, m_pitch.ang.set, m_pitch.dji.angle);
-	pid_out_check(&m_yaw.ang, m_yaw.ang.set, m_yaw.dji.angle);
-	pid_out_check(&m_launch.ang, m_launch.ang.set, m_launch.dji.angle);
+	pid_output_calculate(&m_pitch.ang, m_pitch.ang.set, m_pitch.dji.angle);
+	pid_output_calculate(&m_yaw.ang, m_yaw.ang.set, m_yaw.dji.angle);
+	pid_output_calculate(&m_launch.ang, m_launch.ang.set, m_launch.dji.angle);
 }
 /**
  * @brief  1ms的pid计算
@@ -149,10 +153,13 @@ static void pid_5ms_calculate(void)
 static void pid_1ms_calculate(void)
 {
 	/*pid速度环计算*/
-	pid_out_nocheck(&m_pitch.spe, m_pitch.ang.out, m_pitch.dji.speed);
-	pid_out_nocheck(&m_yaw.spe, m_yaw.ang.out, m_yaw.dji.speed);
-	pid_out_nocheck(&m_launch.spe, m_launch.ang.out, m_launch.dji.speed);
+	pid_output_motor(&m_pitch.spe, m_pitch.ang.out, m_pitch.dji.speed);
+	pid_output_motor(&m_yaw.spe, m_yaw.ang.out, m_yaw.dji.speed);
+	pid_output_motor(&m_launch.spe, m_launch.ang.out, m_launch.dji.speed);
 	/*电机电流发送*/
 	motor_current_send(can2_dev, STDID_gimbal, m_yaw.spe.out, 0, 0, m_pitch.spe.out);
 	motor_current_send(can2_dev, STDID_launch, m_launch.spe.out, 0 , 0, 0);
 }
+
+
+
