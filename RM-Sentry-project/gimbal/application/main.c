@@ -13,14 +13,32 @@
 #include <board.h>
 #include "drv_chassis.h"
 #include "drv_remote.h"
+#include "drv_motor.h"
 #include "drv_gyro.h"
+#include "task_create.h"
+#include "drv_strike.h"
 
 int beginyaw;//记录初始yaw值
 
 int main(void)
 {
-	chassis_init();
+
+	/*遥控器初始化*/
 	remote_uart_init();
+	/*云台电机初始化*/
+    motor_gimbal_init();
+	/*发弹电机初始化*/
+	motor_launch_init();
+	/*can1初始化*/
+	can1_init();
+	/*摩擦轮初始化*/
+	motor_rub_init();
+	/*发弹机构初始化*/
+	strike_init(&gun1,100);
+	/*热量控制初始化*/
+	//heatctrl_start();
+	/*定时器任务创建*/
+	task_create();
 	
 	int angular_velocity = 0;
 	int xspeed = 0;

@@ -38,7 +38,8 @@ void can2_rec(struct rt_can_msg *msg)
         case PITCH_ID:
             //refresh_gimbal_motor_data(msg);
             return;
-        case CHASSIS_CTL:
+        case STDID_GIMBAL:
+            read_gimbal_data(msg);
 
             return;
     }

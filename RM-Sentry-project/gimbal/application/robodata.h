@@ -23,6 +23,8 @@
 #define PITCH_ZERO_ANGLE        0
 
 #define GIMBAL_CTL 		
+#define SNAIL
+#define FIRE_ANGLE 	(360.0f/10.0f)	//发弹角度
 
 typedef enum
 {
@@ -51,5 +53,6 @@ typedef enum
     CHASSIS_CTL = 0x100
 }drv_can2ID_e;
 //底盘CAN2设备ID
+
 
 #endif

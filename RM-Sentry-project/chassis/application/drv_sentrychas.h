@@ -31,6 +31,7 @@
 extern Motor_t m_chassis_3508[2];
 
 void chassis_init(void);
+void chassis_control(void);
 
 
 #ifdef mqy
