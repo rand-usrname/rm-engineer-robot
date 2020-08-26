@@ -1,4 +1,5 @@
 #include "drv_strike.h"
+#include "robodata.h"
 
 
 #define PWM_DEV_NAME        "pwm8"  	  /* PWM设备名称 */
@@ -293,29 +294,45 @@ static void task_10ms_IRQHandler(void *parameter)
 {
 	rt_sem_release(&task_10ms_sem);
 }
-static void task_1ms_emtry(void *parameter)
+static void task_1ms_entry(void *parameter)
 {
 	while(1)
 	{
 		rt_sem_take(&task_1ms_sem, RT_WAITING_FOREVER);
-		pid_output_calculate(&m_launch.spe,m_launch.ang.out,m_launch.dji.speed);
-		//发送电流
-		#ifndef SNAIL
-		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].dji.speed);
-		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);
 		
-		/* 发送电流 */
 		rt_int16_t send_current[4] = {0};
+
+		//驱动电机
+
+		//摩擦轮电机选择:
+		//1. Snail
+		//2. 3508屁股
+		#ifdef RUB_SNAIL	//Snail摩擦轮
+		;//pwm电机无需再输出
+		#else	//3508摩擦轮
+		pid_output_calculate(&m_rub[0].spe,m_rub[0].spe.set,m_rub[0].dji.speed);
+		pid_output_calculate(&m_rub[1].spe,m_rub[1].spe.set,m_rub[1].dji.speed);/* code */
 		send_current[(RUB0_ID-0x201)] = m_rub[0].spe.out;
 		send_current[(RUB1_ID-0x201)] = m_rub[1].spe.out;
-		send_current[(LAUNCH_ID-0x201)] = m_launch.spe.out;
-		motor_current_send(can1_dev,STDID_launch,send_current[0],send_current[1],send_current[2],0);
-		#else
-		//motor_current_send(can2_dev,STDID_launch,m_launch.spe.out,0,0,0);
+		motor_current_send(can2_dev,STDID_launch,m_launch.spe.out,0,0,0);
+		#endif
+
+		pid_output_calculate(&m_launch.spe,m_launch.ang.out,m_launch.dji.speed);
+
+		//发弹电机选择:
+		//1. 6020
+		//2. 2006
+		#ifdef LAUNCH_6020	//6020拨弹,ID不同
+		send_current[(LAUNCH_ID-0x205)] = (rt_int16_t)m_launch.spe.out;
+		motor_current_send(can1_dev,0x1FF,send_current[0],send_current[1],send_current[2],send_current[3]);
+		#else	//2006拨弹
+		send_current[(LAUNCH_ID-0x201)] = (rt_int16_t)m_launch.spe.out;
+		motor_current_send(can1_dev,STDID_launch,send_current[0],send_current[1],send_current[2],send_current[3]);
+	
 		#endif
 	}
 }
-static void task_10ms_emtry(void *parameter)
+static void task_10ms_entry(void *parameter)
 {
 	while(1)
 	{
@@ -332,14 +349,14 @@ static void strike_start(void)
 	/*定时器处理线程*/
 	rt_thread_t thread;
 	rt_sem_init(&task_1ms_sem, "1ms_sem", 0, RT_IPC_FLAG_FIFO);
-	thread = rt_thread_create("1ms_sem", task_1ms_emtry, RT_NULL, 1024, 1, 1);
+	thread = rt_thread_create("1ms_sem", task_1ms_entry, RT_NULL, 1024, 1, 1);
 	if (thread != RT_NULL)
 	{
 			rt_thread_startup(thread);
 	}
 	
 	rt_sem_init(&task_10ms_sem, "10ms_sem", 0, RT_IPC_FLAG_FIFO);
-	thread = rt_thread_create("10ms_sem", task_10ms_emtry, RT_NULL, 1024, 1, 1);
+	thread = rt_thread_create("10ms_sem", task_10ms_entry, RT_NULL, 1024, 1, 1);
 	if (thread != RT_NULL)
 	{
 			rt_thread_startup(thread);
@@ -360,6 +377,36 @@ static void strike_start(void)
 	rt_timer_start(&task_1ms);
 	rt_timer_start(&task_10ms);
 }
+
+//以下函数应该放在私有文件中,自己调整PID参数,以下作为示例
+__weak void strike_pid_init(void)
+{
+	//自己初始化发射机构(摩擦轮+发弹)的PID
+
+	//举例1:snail摩擦轮+2006拨弹
+	// pid_init(&m_launch.ang, 
+	// 				3.5,0,0,
+	// 				500,5000,-5000);
+	// pid_init(&m_launch.spe, 
+	// 				7.5,0,0,
+	// 				350,8000,-8000);
+
+	//举例2:3508摩擦轮+2006拨弹
+	// pid_init(&m_rub[0].spe,  
+	// 				8.2,0.05,0,
+	// 				1200,14000,-14000);
+	// pid_init(&m_rub[1].spe, 
+	// 				8.2,0.05,0,
+	// 				1200,14000,-14000);
+	// pid_init(&m_launch.ang, 
+	// 				3.5,0,0,
+	// 				500,5000,-5000);
+	// pid_init(&m_launch.spe, 
+	// 				7.5,0,0,
+	// 				350,8000,-8000);
+
+}
+
 /**
  * @brief  发射机构初始化
  * @param  gun：发射机构结构体指针
@@ -369,34 +416,23 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	gun->mode = STRICK_NOLIMITE | STRICK_LOWSPEED;				/*持续开火+低速高射频*/
 	gun->speed = 0;
 	gun->status = 0;
-	#ifdef SNAIL
+
+	//摩擦轮电机选择:
+	//1. Snail
+	//2. 3508屁股
+	#ifdef RUB_SNAIL
 	motor_rub_init();
-//	motor_servo_init();
-	motor_init(&m_launch,0x201,1);
-	pid_init(&m_launch.ang, 
-					3.5,0,0,
-					500,5000,-5000);
-	pid_init(&m_launch.spe, 
-					7.5,0,0,
-					350,8000,-8000);
-	#else
+	#else	//默认3508
 	motor_init(&m_rub[0],RUB0_ID,1);
 	motor_init(&m_rub[1],RUB1_ID,1);
-	motor_init(&m_launch,LAUNCH_ID,0.027973);
-	//pid 和电机初始化可以放在外面 原因 ：减速比问题 pid参数问题
-	pid_init(&m_launch.ang, 
-					3.5,0,0,
-					500,5000,-5000);
-	pid_init(&m_launch.spe, 
-					7.5,0,0,
-					350,8000,-8000);
-	pid_init(&m_rub[0].spe, 
-					8.2,0.05,0,
-					1200,14000,-14000);
-	pid_init(&m_rub[1].spe, 
-					8.2,0.05,0,
-					1200,14000,-14000);
+	
 	#endif
+
+	//	motor_servo_init();
+	motor_init(&m_launch,LAUNCH_ID,0.027973);
+
+	strike_pid_init();
+
 	heatctrl_init(&gun->heat, max);						/*热量控制参数初始化*/
 	strike_start();
 }

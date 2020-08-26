@@ -11,39 +11,40 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 #include <board.h>
-#include "drv_chassis.h"
-#include "drv_remote.h"
-#include "drv_gyro.h"
 
-int beginyaw;//记录初始yaw值
+#include "drv_remote.h"
+#include "drv_motor.h"
+#include "drv_gyro.h"
+#include "drv_strike.h"
+
+#include "mid_gimbal.h"
+#include "task_create.h"
+#include "task_gimbal.h"
+
+
 
 int main(void)
 {
-	chassis_init();
+
+	/*遥控器初始化*/
 	remote_uart_init();
+	/*云台电机初始化(PID初始化)*/
+    motor_gimbal_init();
+	/*通用发弹机构初始化(包括snail初始化和m_launch初始化)*/
+	strike_init(&gun1,100);
+	/*哨兵6020发弹电机与其他兵种不同,重新初始化ID和PID参数*/
+	launch_reinit();
+	/*热量控制初始化*/
+	heatctrl_start();
+	/*定时器任务创建*/
+	task_create();
 	
-	int angular_velocity = 0;
-	int xspeed = 0;
-	int yspeed = 0;
-	int bs = 500;
 	while(1)
 	{
-		sport_mode_set(ONLY_CHASSIS);
 		if(Change_from_middle(S1))
 		{
-			if(RC_data.Remote_Data.s1 == 1)
-			{
-				bs += 100;
-			}
-			else if(RC_data.Remote_Data.s1 == 2)
-			{
-				bs -= 100;
-			}
+			;
 		}
-		angular_velocity = ((RC_data.Remote_Data.ch0 - 1024) > 50)*bs - ((RC_data.Remote_Data.ch0 - 1024) < -50)*bs;
-		xspeed = ((RC_data.Remote_Data.ch2 - 1024) > 50)*bs - ((RC_data.Remote_Data.ch2 - 1024) < -50)*bs;
-		yspeed = ((RC_data.Remote_Data.ch3 - 1024) > 50)*bs - ((RC_data.Remote_Data.ch3 - 1024) < -50)*bs;
-		chassis_speed_set(0,angular_velocity,xspeed,yspeed);
 	}
 	
 	//功率限制测试主函数

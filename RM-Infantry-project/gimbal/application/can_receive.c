@@ -37,13 +37,13 @@ void can2_rec(struct rt_can_msg *msg)
 		case VISUAL_REVID:
 			refresh_visual_data(msg->data);
 		return;
-		case 0x201:
+		case RUB0_ID:
 			motor_readmsg(msg,&m_rub[0].dji);
 		return;
-		case 0x202:
+		case RUB1_ID:
 			motor_readmsg(msg,&m_rub[1].dji);
 		return;
-		case 0x203:
+		case LAUNCH_ID:
 			motor_readmsg(msg,&m_launch.dji);
 			return;
         default:

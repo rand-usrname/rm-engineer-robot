@@ -22,12 +22,22 @@
 #define YAE_ZERO_ANGLE          3360
 #define PITCH_ZERO_ANGLE        0
 
+//tsymq
+#define PITCH_UP	4094
+#define PITCH_DOWN	3080
+#define YAW_UP 5832
+#define YAW_DOWN 1685
+
 #define GIMBAL_CTL 		
+#define RUB_SNAIL
+#define LAUNCH_6020
+#define LAUNCH_ID 0x205
+#define FIRE_ANGLE 	(360.0f/10.0f)	//发弹角度
 
 typedef enum
 {
     //发送
-    CHASSIS_CTLID = 0x200,
+    GIMBAL_CTLID = 0x200,
 
     //接收
 	LEFT_FRONT  = 0x201,    //四个底盘轮子的ID
@@ -51,5 +61,6 @@ typedef enum
     CHASSIS_CTL = 0x100
 }drv_can2ID_e;
 //底盘CAN2设备ID
+
 
 #endif

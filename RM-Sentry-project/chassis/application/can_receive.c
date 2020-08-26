@@ -1,8 +1,9 @@
 #include "drv_canthread.h"
-#include "robodata.h"
-#include "drv_sentrychas.h"
 #include "drv_gyro.h"
 #include "drv_motor.h"
+
+#include "mid_chassis.h"
+#include "robodata.h"
 
 void can1_rec(struct rt_can_msg *msg)
 {
@@ -38,8 +39,9 @@ void can2_rec(struct rt_can_msg *msg)
         case PITCH_ID:
             //refresh_gimbal_motor_data(msg);
             return;
-        case CHASSIS_CTL:
-
+            
+        case STDID_GIMBAL:
+            read_gimbal_data(msg);
             return;
     }
 }

@@ -2,7 +2,7 @@
 #include "drv_motor.h"
 #include "drv_canthread.h"
 #include "drv_remote.h"
-#include "drv_sentrychas.h"
+#include "mid_chassis.h"
 //#include "drv_computer.h"
 
 /*临时测试使用*/
@@ -29,8 +29,9 @@ void task_fun5ms(void)
 {
 
 	/*与云台通信*/
-	//master_send_message();
-	//master_send_gimbal(slave_pitch_angle, slave_yaw_angle);
+	//chassis_send_message();
+	/*底盘模式控制*/
+	chassis_control();
 	pid_5ms_calculate();
 }
 /**
@@ -188,6 +189,9 @@ void master_send_strike(rt_int16_t gun_speed, rt_uint8_t if_fire, rt_uint8_t gun
 }
 
 #endif
+
+
+
 
 /**
  * @brief  5ms的pid计算

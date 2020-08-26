@@ -15,9 +15,13 @@
 
   ****************************************************************************** */
 
-#include "drv_sentrychas.h"
+
 #include "drv_remote.h"
-//#include "drv_motor.h"
+#include "drv_motor.h"
+
+#include "mid_chassis.h"
+
+#include "task_chassis.h"
 
 Motor_t m_chassis_3508[2];
 
@@ -52,7 +56,7 @@ void chassis_init(void)
 /**
  * @brief  µ×ÅÌ¿ØÖÆÄ£Ê½
  */
-void chassis_control()
+void chassis_control(void)
 {
 	if(remote_mode==0)
 	{
@@ -61,6 +65,26 @@ void chassis_control()
 		
 	}
 	
+}
+
+rt_size_t chassis_send_message(rt_device_t dev, rt_int16_t *msg)
+{
+	struct rt_can_msg txmsg;
+	
+	txmsg.id = STDID_CHASSIS;
+	txmsg.ide = RT_CAN_STDID;
+	txmsg.rtr=RT_CAN_DTR;
+	txmsg.len=8;
+	txmsg.data[0]=(rt_uint8_t)(msg[0]>>8);
+	txmsg.data[1]=(rt_uint8_t)(msg[0]);
+	txmsg.data[2]=(rt_uint8_t)(msg[1]>>8);
+	txmsg.data[3]=(rt_uint8_t)(msg[1]);
+	txmsg.data[4]=(rt_uint8_t)(msg[2]>>8);
+	txmsg.data[5]=(rt_uint8_t)(msg[2]);
+	txmsg.data[6]=(rt_uint8_t)(msg[3]>>8);
+	txmsg.data[7]=(rt_uint8_t)(msg[3]);
+	
+	return rt_device_write(dev, 0, &txmsg, sizeof(txmsg));
 }
 
 

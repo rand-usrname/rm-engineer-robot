@@ -11,26 +11,31 @@
   * Version    : v1.0		
   * Author     : yi_lu			
   * Date       : 2020-08-23         
-  * Description:    哨兵的底盘不同于一般底盘,单独写一个底盘文件
+  * Description:    哨兵的底盘中间件
 
   ****************************************************************************** */
 
 
-#ifndef __DRV_SENTRYCHAS_H__
-#define __DRV_SENTRYCHAS_H__
+#ifndef __MID_CHASSIS_H__
+#define __MID_CHASSIS_H__
 
 #include <rtthread.h>
 #include <rtdevice.h>
 
 #include "pid.h"
-#include "robodata.h"
 #include "math.h"
 #include "can_receive.h"
 #include "drv_motor.h"
 
+#include "robodata.h"
+
+#define  STDID_GIMBAL  0x110
+#define  STDID_CHASSIS  0x111
+
 extern Motor_t m_chassis_3508[2];
 
 void chassis_init(void);
+void chassis_control(void);
 
 
 #ifdef mqy

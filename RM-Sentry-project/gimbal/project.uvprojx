@@ -463,14 +463,29 @@
           <GroupName>Application</GroupName>
           <Files>
             <File>
-              <FileName>can_receive.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>application\can_receive.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>application\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_create.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>application\task_create.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_gimbal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>application\task_gimbal.c</FilePath>
+            </File>
+            <File>
+              <FileName>mid_gimbal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\application\mid_gimbal.c</FilePath>
+            </File>
+            <File>
+              <FileName>mid_canrec.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\application\mid_canrec.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -532,11 +547,6 @@
         <Group>
           <GroupName>public</GroupName>
           <Files>
-            <File>
-              <FileName>drv_gimbal.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\public\drv_gimbal.c</FilePath>
-            </File>
             <File>
               <FileName>drv_strike.c</FileName>
               <FileType>1</FileType>
