@@ -31,7 +31,7 @@
 #define GIMBAL_CTL 		
 #define RUB_SNAIL
 #define LAUNCH_6020
-#define LAUNCH_ID 0x201
+#define LAUNCH_ID 0x205
 #define FIRE_ANGLE 	(360.0f/10.0f)	//·¢µ¯½Ç¶È
 
 typedef enum

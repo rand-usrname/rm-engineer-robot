@@ -15,9 +15,12 @@
 
   ****************************************************************************** */
 
-#include "drv_sentrychas.h"
+
 #include "drv_remote.h"
 #include "drv_motor.h"
+
+#include "mid_chassis.h"
+
 #include "task_chassis.h"
 
 Motor_t m_chassis_3508[2];

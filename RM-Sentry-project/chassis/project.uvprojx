@@ -468,11 +468,6 @@
               <FilePath>application\can_receive.c</FilePath>
             </File>
             <File>
-              <FileName>drv_sentrychas.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>application\drv_sentrychas.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>application\main.c</FilePath>
@@ -491,6 +486,11 @@
               <FileName>task_chassis.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\application\task_chassis.c</FilePath>
+            </File>
+            <File>
+              <FileName>mid_chassis.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\application\mid_chassis.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -11,7 +11,7 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 #include <board.h>
-#include "drv_chassis.h"
+
 #include "drv_remote.h"
 #include "drv_motor.h"
 #include "drv_gyro.h"
@@ -30,12 +30,12 @@ int main(void)
 	remote_uart_init();
 	/*云台电机初始化(PID初始化)*/
     motor_gimbal_init();
-	/*发弹机构初始化(包括snail初始化和m_launch初始化)*/
+	/*通用发弹机构初始化(包括snail初始化和m_launch初始化)*/
 	strike_init(&gun1,100);
-	/*哨兵6020发弹电机与其他兵种不同,重新初始化*/
+	/*哨兵6020发弹电机与其他兵种不同,重新初始化ID和PID参数*/
 	launch_reinit();
 	/*热量控制初始化*/
-	//heatctrl_start();
+	heatctrl_start();
 	/*定时器任务创建*/
 	task_create();
 	

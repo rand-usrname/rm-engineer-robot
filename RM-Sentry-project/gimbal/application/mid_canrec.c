@@ -4,10 +4,10 @@
 #include "drv_strike.h"
 #include "drv_gyro.h"
 #include "task_gimbal.h"
-#include "can_receive.h"
+#include "mid_canrec.h"
+#include "mid_gimbal.h"
 
-Motor_t m_yaw={0};/*5901-185-6417-3090-4095*/ //ratio=0.285->1681-2387-4163-5550-5836*/
-Motor_t m_pitch={0};
+
 
 void can1_rec(struct rt_can_msg *msg)
 {
@@ -39,8 +39,14 @@ void can2_rec(struct rt_can_msg *msg)
 {
     switch(msg->id)
     {
+        //发弹6020
         case Launch_ID:
 			motor_readmsg(msg,&m_launch.dji);
+            return;
+        
+        //与底盘通信    
+        case STDID_CHASSIS:
+            read_chassis_data(msg);
             return;
     }
 }

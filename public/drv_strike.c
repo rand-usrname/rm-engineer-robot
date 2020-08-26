@@ -317,14 +317,15 @@ static void task_1ms_entry(void *parameter)
 		#endif
 
 		pid_output_calculate(&m_launch.spe,m_launch.ang.out,m_launch.dji.speed);
-		send_current[(LAUNCH_ID-0x201)] = m_launch.spe.out;
 
 		//发弹电机选择:
 		//1. 6020
 		//2. 2006
 		#ifdef LAUNCH_6020	//6020拨弹,ID不同
+		send_current[(LAUNCH_ID-0x205)] = (rt_int16_t)m_launch.spe.out;
 		motor_current_send(can1_dev,0x1FF,send_current[0],send_current[1],send_current[2],send_current[3]);
 		#else	//2006拨弹
+		send_current[(LAUNCH_ID-0x201)] = (rt_int16_t)m_launch.spe.out;
 		motor_current_send(can1_dev,STDID_launch,send_current[0],send_current[1],send_current[2],send_current[3]);
 	
 		#endif
