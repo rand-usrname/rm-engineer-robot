@@ -244,7 +244,7 @@ int refresh_gimbal_motor_data(struct rt_can_msg* message)
 		case YAW_ID:
 			assign_motor_data(&yaw.motordata,message);
 			//转换角度数值的坐标系
-			temang = (PITCH_ZERO_ANGLE + 4096) % 8192;
+			temang = (YAW_ZERO_ANGLE + 4096) % 8192;
 			if(yaw.motordata.angle < temang)
 			{
 				yaw.motordata.angle = 8191 - temang + yaw.motordata.angle;
