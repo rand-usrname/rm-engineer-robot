@@ -242,6 +242,7 @@ int chassis_init(void)
 	{
 		chassis_motor[a].motorID = (drv_can1ID_e)(0x201 + a);//初始化ID数值
 	}
+	//TODO:PID初始化放在外边
 	pid_init(&chassis_motor[0].speedpid,6,0.004,0.2,500,8000,-8000);
 	pid_init(&chassis_motor[1].speedpid,6,0.004,0.2,500,8000,-8000);
 	pid_init(&chassis_motor[2].speedpid,6,0.004,0.2,500,8000,-8000);

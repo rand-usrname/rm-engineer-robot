@@ -24,12 +24,11 @@ int main(void)
 	while(!HERO_IMU.atti_ready);
 	gimbal_init();
 	strike_init(&gun1,1000);
-	gimbal_addangle_set(gimbal_atti.yaw,gimbal_atti.pitch);
 	while(1)
 	{
 		
 		remote_ctrl(&RC_data);
-		visual_ctl_CANsend((180 - gimbal_atti.yaw)*65535/360,gimbal_atti.pitch*65535/360,20000);
+		visual_ctl_CANsend((8191 - yaw.motordata.angle)*65535/8191,gimbal_atti.pitch*65535/360,20000);
 		rt_thread_mdelay(10);
 	}
 }
