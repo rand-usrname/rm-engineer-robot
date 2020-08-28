@@ -3,7 +3,7 @@
 
 #include <rtthread.h>
 #include <rtdevice.h>
-#define SNAIL
+#define RUB_SNAIL
 #define FIRE_ANGLE              50
 
 #define YAW_ZERO_ANGLE          6762
@@ -20,7 +20,7 @@ typedef enum
     //接收
     GYRO_ANGLE_ID = 0x101,  //陀螺仪数据结算ID
     GYRO_SPEED_ID = 0x102,
-    
+    LAUNCH_ID   = 0x201,
     YAW_ID      = 0x205,	//云台两电机数据更新ID
     PITCH_ID    = 0x208
 

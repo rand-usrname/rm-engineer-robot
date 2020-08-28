@@ -1,7 +1,6 @@
 #include "drv_refsystem.h"
 static DJI_Data_t DJI_ReadData;
-static Refdata_t contain_ref = {0};
-Refdata_t *Refdata;
+Refdata_t Refdata={0,};
 const unsigned char CRC8_INIT = 0xff; 
 uint16_t CRC_INIT = 0xffff;
 const unsigned char CRC8_TAB[256] = 
@@ -196,8 +195,8 @@ static rt_err_t DJI_DataProcess(uint8_t *pData, DJI_Data_t *DJI_ReadData)
 				break;
 				}
 			
-				//数据存储在Robomaster
-				Refdata = (Refdata_t*)(&DJI_ReadData->ext_game_robot_state);
+				//数据存储
+				rt_memcpy(&Refdata,&DJI_ReadData->ext_game_robot_state,sizeof(Refdata));
 			}
 		if(*(pData + sizeof(FrameHeader_t) + LEN_CMDID + length + LEN_TAIL) == 0xA5)
 		{
@@ -277,6 +276,5 @@ int DJI_Init(void)
     {
         ret = RT_ERROR;
     }
-	Refdata = &contain_ref;
     return ret;
 }
