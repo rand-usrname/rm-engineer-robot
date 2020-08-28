@@ -499,21 +499,6 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	#else	//默认3508
 	motor_init(&m_rub[0],RUB0_ID,1);
 	motor_init(&m_rub[1],RUB1_ID,1);
-	motor_init(&m_launch,LAUNCH_ID,0.027973);
-
-	//TODO:pid 和电机初始化可以放在外面 原因 ：减速比问题 pid参数问题
-	pid_init(&m_launch.ang, 
-					3.5,0,0,
-					500,5000,-5000);
-	pid_init(&m_launch.spe, 
-					7.5,0,0,
-					350,8000,-8000);
-	pid_init(&m_rub[0].spe, 
-					8.2,0.05,0,
-					1200,14000,-14000);
-	pid_init(&m_rub[1].spe, 
-					8.2,0.05,0,
-					1200,14000,-14000);
 	#endif
 
 	//	motor_servo_init();

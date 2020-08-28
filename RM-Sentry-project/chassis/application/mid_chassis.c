@@ -67,6 +67,7 @@ void chassis_control(void)
 	
 }
 
+//第三部分:云台与底盘通信
 rt_size_t chassis_send_message(rt_device_t dev, rt_int16_t *msg)
 {
 	struct rt_can_msg txmsg;
@@ -87,6 +88,11 @@ rt_size_t chassis_send_message(rt_device_t dev, rt_int16_t *msg)
 	return rt_device_write(dev, 0, &txmsg, sizeof(txmsg));
 }
 
+
+void read_gimbal_data(struct rt_can_msg *msg)
+{
+	;
+}
 
 #ifdef mqy
 //底盘电机PID线程句柄
@@ -193,7 +199,7 @@ static void chassis_control_thread(void* parameter)
 	wheelc_message.ide	= RT_CAN_STDID;	//标准帧
 	wheelc_message.rtr	= RT_CAN_DTR;	//数据帧
 	wheelc_message.priv = 0;			//报文优先级最高
-	wheelc_message.len = 8;				//长度8
+	wheelc_message.len 	= 8;				//长度8
 	
 	while(1)
 	{

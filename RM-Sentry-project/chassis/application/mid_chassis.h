@@ -37,6 +37,8 @@ extern Motor_t m_chassis_3508[2];
 void chassis_init(void);
 void chassis_control(void);
 
+void read_gimbal_data(struct rt_can_msg *msg);
+
 
 #ifdef mqy
 typedef enum
