@@ -4,8 +4,8 @@
 static rt_thread_t 		gimbal_control 	= RT_NULL;
 
 //yaw pitch电机数据结构体
-static gimbalmotor_t	yaw;
-static gimbalmotor_t	pitch;
+gimbalmotor_t	yaw;
+gimbalmotor_t	pitch;
 
 /**
 * @brief：该函数计算角度环并输出
