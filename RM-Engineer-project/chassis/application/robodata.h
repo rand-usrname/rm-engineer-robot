@@ -1,3 +1,4 @@
+
 #ifndef __ROBODATA_H__
 #define __ROBODATA_H__
 
@@ -12,9 +13,9 @@
 #ifdef MECANUM_WHEEL
 
     //前后轮间距，单位mm
-    #define VEHICLE_WIDTH		390//单位毫米
+    #define VEHICLE_WIDTH		485//单位毫米
     //左右轮间距，单位mm
-    #define VEHICLE_LONG		390//单位毫米
+    #define VEHICLE_LONG		510//单位毫米
 	
 #endif
 #ifdef OMNI_WHEEL
@@ -37,7 +38,10 @@ typedef enum
 	RIGHT_FRONT	= 0x202,
 	LEFT_BACK	= 0x203,
 	RIGHT_BACK	= 0x204,
-
+	
+	TRAILER_LEFT = 0x205,
+	TRAILER_RIGHT = 0x206,
+	
     GYRO_ANGLE_ID = 0x101,  //陀螺仪数据结算ID
     GYRO_SPEED_ID = 0x102
     
@@ -48,8 +52,6 @@ typedef enum
 typedef enum
 {
     //接收
-	TRAILER_LEFT = 0x201,
-	TRAILER_RIGHT = 0x202,
     YAW_ID      = 0x206,
     PITCH_ID    = 0x207,
 

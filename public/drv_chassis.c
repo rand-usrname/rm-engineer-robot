@@ -242,10 +242,10 @@ int chassis_init(void)
 	{
 		chassis_motor[a].motorID = (drv_can1ID_e)(0x201 + a);//初始化ID数值
 	}
-	pid_init(&chassis_motor[0].speedpid,6,0.004,0.2,500,8000,-8000);
-	pid_init(&chassis_motor[1].speedpid,6,0.004,0.2,500,8000,-8000);
-	pid_init(&chassis_motor[2].speedpid,6,0.004,0.2,500,8000,-8000);
-	pid_init(&chassis_motor[3].speedpid,6,0.004,0.2,500,8000,-8000);
+	pid_init(&chassis_motor[0].speedpid,7,0.004,0.2,500,8000,-8000);
+	pid_init(&chassis_motor[1].speedpid,7,0.004,0.2,500,8000,-8000);
+	pid_init(&chassis_motor[2].speedpid,7,0.004,0.2,500,8000,-8000);
+	pid_init(&chassis_motor[3].speedpid,7,0.004,0.2,500,8000,-8000);
 	pid_init(&motion_data.anglepid,2,0,1,10,1000,-1000);
 	motion_data.follow_angle = 0;
 	motion_data.angular_velocity = 0;

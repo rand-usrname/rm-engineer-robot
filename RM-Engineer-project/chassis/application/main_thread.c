@@ -45,7 +45,6 @@ static void main_thread_entry(void * parameter)
 		else{REVIVE_CARD_RESET;}
 #endif
 #ifdef SINGLE_CTRL
-		/* 待添加独立控制代码 */
 		/* 对底盘进行控制 */
 		chassis_speed_set(0,0,RC_data.Remote_Data.ch2-1024,RC_data.Remote_Data.ch3-1024);
 		/* 遥控器读取 */
@@ -58,11 +57,6 @@ static void main_thread_entry(void * parameter)
         {
 			if((trailerl.state == rescue_unable)&&(trailerr.state == rescue_unable))
 			{trailerl.state = rescue_prepare;trailerr.state = rescue_prepare;}
-		}
-		else if(switch_s1_action == middle_to_down)
-		{
-            /* 立即复位 */
-			trailerl.state = rescue_reset;trailerr.state = rescue_reset;
 		}
 		if(trailer_cur == 0x0F)
 		{trailer_go(&trailerl);}
