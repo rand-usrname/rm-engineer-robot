@@ -106,14 +106,14 @@ int remote_ctrl(RC_Ctrl_t *remote)
 	{
 		//yaw增量设置，采用视觉数据或者遥控器数据
 		if(get_yawusetime() < 1){
-			yawadd = -get_yaw_add()/16;
+			yawadd = -get_yaw_add()/8;
 		}
 		else{
 			yawadd = -(rt_int16_t)((remote->Remote_Data.ch0 - 1024)/30);
 		}
 		//pitch增量设置，采用视觉数据或者遥控器数据
 		if(get_pitchusetime() < 1){
-			pitchadd = get_pitch_add()/16;
+			pitchadd = get_pitch_add()/8;
 		}
 		else{
 			pitchadd = (rt_int16_t)((remote->Remote_Data.ch1 - 1024)/30);
