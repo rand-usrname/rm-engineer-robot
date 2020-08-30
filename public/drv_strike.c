@@ -494,7 +494,6 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	#else	//д╛хо3508
 	motor_init(&m_rub[0],RUB0_ID,1);
 	motor_init(&m_rub[1],RUB1_ID,1);
-	
 	#endif
 
 	//	motor_servo_init();

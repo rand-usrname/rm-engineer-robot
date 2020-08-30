@@ -86,6 +86,25 @@ void launch_reinit(void)
 
 
 //第三部分:云台与底盘通信
+rt_size_t gimbal_send_message(rt_device_t dev, rt_int16_t *msg)
+{
+	struct rt_can_msg txmsg;
+	
+	txmsg.id = STDID_CHASSIS;
+	txmsg.ide = RT_CAN_STDID;
+	txmsg.rtr=RT_CAN_DTR;
+	txmsg.len=8;
+	txmsg.data[0]=(rt_uint8_t)(msg[0]>>8);
+	txmsg.data[1]=(rt_uint8_t)(msg[0]);
+	txmsg.data[2]=(rt_uint8_t)(msg[1]>>8);
+	txmsg.data[3]=(rt_uint8_t)(msg[1]);
+	txmsg.data[4]=(rt_uint8_t)(msg[2]>>8);
+	txmsg.data[5]=(rt_uint8_t)(msg[2]);
+	txmsg.data[6]=(rt_uint8_t)(msg[3]>>8);
+	txmsg.data[7]=(rt_uint8_t)(msg[3]);
+	
+	return rt_device_write(dev, 0, &txmsg, sizeof(txmsg));
+}
 void read_chassis_data(struct rt_can_msg *msg)
 {
     ;
