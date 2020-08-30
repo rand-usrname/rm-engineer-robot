@@ -5,7 +5,7 @@
 /**********与视觉的通信部份***********/
 
 //视觉控制信息结构体
-static visual_ctl_t visual_ctl;
+static visual_head_t visual_head;
 
 //视觉接收信息结构体
 static visual_rev_t visual_rev;
@@ -20,8 +20,6 @@ int vision_init(void)
 {
 	//接收信息置零
 	visual_rev.computime = 0;
-	visual_rev.aim_mode = BLANK;
-	visual_rev.forcester = COMPUTER;
 	visual_rev.pitchadd = 0;
 	visual_rev.yawadd = 0;
 	visual_rev.x = 0;
@@ -31,13 +29,11 @@ int vision_init(void)
 	visual_rev.pitch_usetime = 0;
 
 	//控制信息置为默认值
-	visual_ctl.aim_mode = BLANK;
-	visual_ctl.forcester = COMPUTER;
-	visual_ctl.tracolor = RED;
+	visual_head.aim_mode = NORMAL_AIM;
+	visual_head.tracolor = RED;
 
 	return 1;
 }
-INIT_APP_EXPORT(vision_init);
 
 /**
 * @brief：接收并解析视觉识别信息
@@ -48,40 +44,38 @@ INIT_APP_EXPORT(vision_init);
 */
 int refresh_visual_data(rt_uint8_t* data)
 {
-	visual_rev.yaw_usetime = 0;
-	visual_rev.pitch_usetime = 0;
-	visual_rev.aim_mode = (aim_mode_e)((data[0]>>5) & 0X7);//取前三位
-	visual_rev.forcester = (forecast_e)((data[0]>>4) & 0X1);//取第四位
-	visual_rev.computime = (rt_uint8_t)(data[1]);
-	switch (visual_rev.aim_mode)
+	switch (visual_head.aim_mode)
 	{
-	case RUNE:
-	case BIG_ARMOR:
-	case SMALL_ARMOR:
-	case BASE_ARMOR:
-	case ENG_ARMOE:
-		switch(visual_rev.forcester)
+	case NORMAL_AIM:
+	case SMALL_WINDWILL:
+	case BIG_WINDWILL:
+	case LOB_SHOT:
+		/* 校验信息 */
+	   if((rt_uint8_t)(data[1]+data[2]+data[3]+data[4]+data[5]+data[6]) == data[7])
+	   {
+			visual_rev.yawadd = (rt_int16_t)((data[1]<<8) + data[2]);
+			visual_rev.pitchadd = (rt_int16_t)((data[3]<<8) + data[4]);
+			visual_rev.yaw_usetime = 0;
+			visual_rev.pitch_usetime = 0;
+	   }
+	   else
+	   {
+		   /* 校验不通过啥事不干 */
+	   }
+		break;
+	case ELEC_AIM:
+		/* 校验信息 */
+	    if((rt_uint8_t)(data[1]+data[2]+data[3]+data[4]+data[5]+data[6]) == data[7])
 		{
-		case COMPUTER:
-			visual_rev.yawadd = (rt_int16_t)((data[2]<<8) + data[3]);
-			visual_rev.pitchadd = (rt_int16_t)((data[4]<<8) + data[5]);
-			break;
-	
-		case SIGNALCHIP:
-			visual_rev.x = ((rt_int16_t)((data[2]<<8) + data[3]))/1000.0f;
-			visual_rev.y = ((rt_int16_t)((data[4]<<8) + data[5]))/1000.0f;
-			visual_rev.z = ((rt_int16_t)((data[6]<<8) + data[7]))/1000.0f;
-			break;
-
-		default:
-			break;
+			visual_rev.x = ((rt_int16_t)((data[0]<<8) + data[1]))/1000.0f;
+			visual_rev.y = ((rt_int16_t)((data[2]<<8) + data[3]))/1000.0f;
+			visual_rev.z = ((rt_int16_t)((data[4]<<8) + data[5]))/1000.0f;
+			visual_rev.computime = data[6];
 		}
+		else
+		{}
 		break;
-
-	case CAISSON:
-		break;
-	
-	case BLANK:	//若为空值默认返回
+	case ENGINEER_AMMO:  /* 工程取弹未定 */
 	default:	//若为其他情况默认返回
 		break;
 	}
@@ -98,14 +92,31 @@ int refresh_visual_data(rt_uint8_t* data)
 */
 void ctldata_get(rt_uint8_t data[],rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet_vel)
 {
-	data[0] = (visual_ctl.aim_mode << 5) | (visual_ctl.forcester << 4) | (visual_ctl.tracolor << 3);
-	data[1] = yaw_ang >> 8;
-	data[2] = yaw_ang;
-	data[3] = pitch_ang >> 8;
-	data[4] = pitch_ang;
-	data[5] = bullet_vel >> 8;
-	data[6] = bullet_vel;
-	data[7] = 0;
+	/* 帧头决定颜色及自瞄模式 */
+	data[0] = visual_head.tracolor|visual_head.aim_mode; 
+	switch(visual_head.aim_mode)
+	{
+		case NORMAL_AIM:
+		case SMALL_WINDWILL:
+		case BIG_WINDWILL:
+		case LOB_SHOT:
+			data[1] = yaw_ang >> 8;
+			data[2] = yaw_ang;
+			data[3] = pitch_ang >> 8;
+			data[4] = pitch_ang;
+			data[5] = bullet_vel >> 8;
+			data[6] = bullet_vel;
+			data[7] = (rt_uint8_t)(data[1]+data[2]+data[3]+data[4]+data[5]+data[6]);
+			break;
+		case ELEC_AIM:
+			for(int i=1;i<=7;i++)
+			{
+				data[i] = 0;
+			}
+			break;
+		default:
+			break;
+	}
 }
 
 /**
@@ -139,17 +150,6 @@ int visual_ctl_CANsend(rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet
 */
 int visual_ctl_UARTsend(rt_device_t dev,rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet_vel)
 {
-	rt_uint8_t data[11];
-	data[0] = 0X3B;		//帧头
-	data[9] = 0;		//和校验位
-	data[10] = ~0X3B;	//帧尾
-	ctldata_get(&data[1],yaw_ang,pitch_ang,bullet_vel);
-	for(int a = 1; a<9; a++)
-	{
-		data[9] += data[a];
-	}
-	rt_device_write(dev,0,data,11);//写入11个字节的数据
-	
 	return 1;
 }
 
