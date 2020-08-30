@@ -56,7 +56,7 @@ typedef struct
 	rt_int16_t	pitchadd;		//-32768 ~ 32767 标定角度
 	rt_uint8_t	yaw_usetime;	//标记使用次数
 	rt_uint8_t	pitch_usetime;	//标记使用次数
-	float	    x,y,z;			//三点坐标，单位均为 m
+	Point_t	    visual_point;			//三点坐标，单位均为 m
 	int			computime;		//计算时间
 
 }visual_rev_t;
@@ -72,8 +72,8 @@ extern void tarcolor_set(tarcolor_e tarcolor);
 extern void aim_mode_set(aim_mode_e aim_mode);
 
 //向视觉发送控制信息，默认使用 CAN2 设备
-extern int visual_ctl_UARTsend(rt_device_t dev,rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet_vel);
-extern int visual_ctl_CANsend(rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet_vel);
+extern int visual_ctl_UARTsend(rt_device_t dev,rt_int16_t yaw_ang,rt_int16_t pitch_ang,float bullet_vel);
+extern int visual_ctl_CANsend(rt_int16_t yaw_ang,rt_int16_t pitch_ang,float bullet_vel);
 
 //使用视觉控制数据调用的函数
 extern rt_int16_t get_yaw_add(void);

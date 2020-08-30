@@ -22,9 +22,9 @@ int vision_init(void)
 	visual_rev.computime = 0;
 	visual_rev.pitchadd = 0;
 	visual_rev.yawadd = 0;
-	visual_rev.x = 0;
-	visual_rev.y = 0;
-	visual_rev.z = 0;
+	visual_rev.visual_point.x = 0;
+	visual_rev.visual_point.y = 0;
+	visual_rev.visual_point.z = 0;
 	visual_rev.yaw_usetime = 0;
 	visual_rev.pitch_usetime = 0;
 
@@ -53,8 +53,8 @@ int refresh_visual_data(rt_uint8_t* data)
 		/* 校验信息 */
 	   if((rt_uint8_t)(data[1]+data[2]+data[3]+data[4]+data[5]+data[6]) == data[7])
 	   {
-			visual_rev.yawadd = (rt_int16_t)((data[1]<<8) + data[2]);
-			visual_rev.pitchadd = (rt_int16_t)((data[3]<<8) + data[4]);
+			visual_rev.yawadd = (rt_int16_t)((data[0]<<8) + data[1]);
+			visual_rev.pitchadd = (rt_int16_t)((data[2]<<8) + data[3]);
 			visual_rev.yaw_usetime = 0;
 			visual_rev.pitch_usetime = 0;
 	   }
@@ -67,9 +67,9 @@ int refresh_visual_data(rt_uint8_t* data)
 		/* 校验信息 */
 	    if((rt_uint8_t)(data[1]+data[2]+data[3]+data[4]+data[5]+data[6]) == data[7])
 		{
-			visual_rev.x = ((rt_int16_t)((data[0]<<8) + data[1]))/1000.0f;
-			visual_rev.y = ((rt_int16_t)((data[2]<<8) + data[3]))/1000.0f;
-			visual_rev.z = ((rt_int16_t)((data[4]<<8) + data[5]))/1000.0f;
+			visual_rev.visual_point.x = ((rt_int16_t)((data[0]<<8) + data[1]))/1000.0f;
+			visual_rev.visual_point.y = ((rt_int16_t)((data[2]<<8) + data[3]))/1000.0f;
+			visual_rev.visual_point.z = ((rt_int16_t)((data[4]<<8) + data[5]))/1000.0f;
 			visual_rev.computime = data[6];
 		}
 		else
@@ -86,11 +86,11 @@ int refresh_visual_data(rt_uint8_t* data)
 * @param:data:留出八字节空间的数据指针
 		 pitch_ang:pitch轴角度，范围-32768 ~ 32767 
 		 yaw_ang:yaw轴角度，范围-32768 ~ 32767 
-		 bullet_vel:发射子弹速度，单位mm/s
+		 bullet_vel:发射子弹速度，单位m/s
 * @return：无
 * @author：mqy
 */
-void ctldata_get(rt_uint8_t data[],rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet_vel)
+void ctldata_get(rt_uint8_t data[],rt_int16_t yaw_ang,rt_int16_t pitch_ang,float bullet_vel)
 {
 	/* 帧头决定颜色及自瞄模式 */
 	data[0] = visual_head.tracolor|visual_head.aim_mode; 
@@ -104,8 +104,8 @@ void ctldata_get(rt_uint8_t data[],rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_in
 			data[2] = yaw_ang;
 			data[3] = pitch_ang >> 8;
 			data[4] = pitch_ang;
-			data[5] = bullet_vel >> 8;
-			data[6] = bullet_vel;
+			data[5] = (bullet_vel-5)*10;
+			data[6] = 0;
 			data[7] = (rt_uint8_t)(data[1]+data[2]+data[3]+data[4]+data[5]+data[6]);
 			break;
 		case ELEC_AIM:
@@ -123,11 +123,11 @@ void ctldata_get(rt_uint8_t data[],rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_in
 * @brief:通过CAN向视觉发送信息
 * @param:pitch_ang:pitch轴角度，范围-32768 ~ 32767 
 		 yaw_ang:yaw轴角度，范围-32768 ~ 32767 
-		 bullet_vel:发射子弹速度，单位mm/s
+		 bullet_vel:发射子弹速度，单位m/s
 * @return：		无
 * @author：mqy
 */
-int visual_ctl_CANsend(rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet_vel)
+int visual_ctl_CANsend(rt_int16_t yaw_ang,rt_int16_t pitch_ang,float bullet_vel)
 {
 	struct rt_can_msg txmsg;
 	txmsg.id = VISUAL_CTLID;
@@ -148,7 +148,7 @@ int visual_ctl_CANsend(rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet
 * @return：		无
 * @author：mqy
 */
-int visual_ctl_UARTsend(rt_device_t dev,rt_int16_t yaw_ang,rt_int16_t pitch_ang,rt_int16_t bullet_vel)
+int visual_ctl_UARTsend(rt_device_t dev,rt_int16_t yaw_ang,rt_int16_t pitch_ang,float bullet_vel)
 {
 	return 1;
 }
@@ -191,7 +191,7 @@ static float Palstance_Deque[40] = {0.0f,};
 
 static float vision_yaw_palstance = 0.0f;
 //需要获取子弹速度
-static float bullet_speed = 0.0f;
+static float bullet_speed = 20.0f;
 
 
 //快速开方
@@ -231,17 +231,18 @@ static void get_new_palstance(float *pdata,ATTI_t *gimbal_atti)
 	rt_memcpy((Palstance_Deque+1),temp,39);
 }
 
-/* 视觉端已经做好坐标系变换 */
-//坐标系转换：摄像头坐标系转为电机坐标系 ，原点为发射机构摩擦轮位置处
-//static Point_t Transformed_coordinate(Point_t* vision_point,float pitch_angle)
-//{
-//	Point_t motor_point;
-//	motor_point.x = vision_point->x;
-//    motor_point.y = -(vision_point->z) * sin(pitch_angle) + vision_point->y * cos(pitch_angle);
-//    motor_point.z = vision_point->z * cos(pitch_angle) + vision_point->y * sin(pitch_angle);
 
-//	return motor_point;
-//}
+//坐标系转换：摄像头坐标系转为电机坐标系 ，原点为发射机构摩擦轮位置处
+static Point_t Transformed_coordinate(Point_t* vision_point,float pitch_angle)
+{
+	Point_t motor_point;
+	motor_point.x = vision_point->x;
+    motor_point.y = -(vision_point->z) * sin(pitch_angle) + vision_point->y * cos(pitch_angle);
+    motor_point.z = vision_point->z * cos(pitch_angle) + vision_point->y * sin(pitch_angle);
+
+	return motor_point;
+}
+
 
 /**
   * @brief   通过视觉返回的目标坐标数据计算原始的pitch yaw 增量(不考虑重力影响及预瞄量) 
@@ -251,9 +252,9 @@ static void get_new_palstance(float *pdata,ATTI_t *gimbal_atti)
 static Aimbot_t Calc_from_point(visual_rev_t *visual_rev)
 {
 	Aimbot_t calc_angle;
-	calc_angle.pitch_add = atan((visual_rev->y)/(visual_rev->z))/pi_operator;
+	calc_angle.pitch_add = atan((visual_rev->visual_point.y)/(visual_rev->visual_point.z))/pi_operator;
 	/* yaw轴方向取反 */
-	calc_angle.yaw_add = -atan((visual_rev->x)/(visual_rev->z))/pi_operator;
+	calc_angle.yaw_add = -atan((visual_rev->visual_point.x)/(visual_rev->visual_point.z))/pi_operator;
 	return calc_angle;
 }
 
@@ -336,14 +337,14 @@ static void aim_bot_emtry(void *parameter)
 		/* 收到视觉消息时释放信号量 */
 		rt_sem_take(&Aim_bot_sem, RT_WAITING_FOREVER);
 		//坐标转换
-		//Point_t temp_point = Transformed_coordinate(vision_point,pitch_angle);
+		Point_t temp_point = Transformed_coordinate(&visual_rev.visual_point,(gimbal_atti.pitch*pi_operator));
 		
 		//计算初始Δpitch Δyaw
 		Aimbot_t temp_aim_data = Calc_from_point(&visual_rev);
 		
 		
 		//获取距离，子弹水平速度
-		float temp_dis = (visual_rev.z)*(visual_rev.z)+(visual_rev.x)*(visual_rev.x)+(visual_rev.z)*(visual_rev.z);
+		float temp_dis = (visual_rev.visual_point.z)*(visual_rev.visual_point.z)+(visual_rev.visual_point.x)*(visual_rev.visual_point.x)+(visual_rev.visual_point.z)*(visual_rev.visual_point.z);
 		float distance = Q_rsqrt(temp_dis);
 		
 		float bullet_speed_horizontal = bullet_speed*cos((gimbal_atti.pitch+temp_aim_data.pitch_add)*pi_operator);

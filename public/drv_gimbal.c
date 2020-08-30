@@ -132,7 +132,7 @@ static void gimbal_contral_thread(void* parameter)
 			gimctl_msg.DATA[(rt_uint16_t)(DUAL_PITCH_ID - 0x205)*2 + 1] = (-yaw.palpid.out);
 		#endif
 
-		if(!rt_device_write(can2_dev,0,&gimctl_msg,sizeof(gimctl_msg)))
+		if(!rt_device_write(can1_dev,0,&gimctl_msg,sizeof(gimctl_msg)))
 		{
 			//如果发送数据为0计数一次发送失败，失败次数过多发出警告
 		}

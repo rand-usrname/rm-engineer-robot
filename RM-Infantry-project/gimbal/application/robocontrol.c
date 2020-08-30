@@ -105,19 +105,21 @@ int remote_ctrl(RC_Ctrl_t *remote)
 	else//右侧按键不在上
 	{
 		//yaw增量设置，采用视觉数据或者遥控器数据
-		if(get_yawusetime() < 1){
-			yawadd = -get_yaw_add()/16;
-		}
-		else{
-			yawadd = -(rt_int16_t)((remote->Remote_Data.ch0 - 1024)/30);
-		}
-		//pitch增量设置，采用视觉数据或者遥控器数据
-		if(get_pitchusetime() < 1){
-			pitchadd = get_pitch_add()/16;
-		}
-		else{
-			pitchadd = (rt_int16_t)((remote->Remote_Data.ch1 - 1024)/30);
-		}
+//		if(get_yawusetime() < 1){
+//			yawadd = -get_yaw_add()/36000.0f*8192;
+//		}
+//		else{
+//			yawadd = -(rt_int16_t)((remote->Remote_Data.ch0 - 1024)/30);
+//		}
+//		//pitch增量设置，采用视觉数据或者遥控器数据
+//		if(get_pitchusetime() < 1){
+//			pitchadd = get_pitch_add()/36000.0f*8192;
+//		}
+//		else{
+//			pitchadd = (rt_int16_t)((remote->Remote_Data.ch1 - 1024)/30);
+//		}
+		yawadd = -(rt_int16_t)((remote->Remote_Data.ch0 - 1024)/30);
+		pitchadd = (rt_int16_t)((remote->Remote_Data.ch1 - 1024)/30);
 	}
 	
 	//动作触发部分
