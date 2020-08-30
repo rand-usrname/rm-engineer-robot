@@ -30,6 +30,6 @@ int main(void)
 	/* 发射机构初始化 */
 	strike_init(&gun1,1000);
 	/* 视觉通信组件初始化 */
-	vision_init();
+	//vision_init();
 	return RT_EOK;
 }

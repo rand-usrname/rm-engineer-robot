@@ -397,7 +397,7 @@ static void task_1ms_entry(void *parameter)
 		motor_current_send(can1_dev,0x1FF,launch_6020_cur[0],launch_6020_cur[1],launch_6020_cur[2],launch_6020_cur[3]);
 		#else   //2006拨弹
 		send_current[(LAUNCH_ID-0x201)] = m_launch.spe.out;
-		motor_current_send(can2_dev,STDID_launch,send_current[0],send_current[1],send_current[2],send_current[3]);
+		motor_current_send(can1_dev,STDID_launch,send_current[0],send_current[1],send_current[2],send_current[3]);
 		#endif
 	}
 }
@@ -453,12 +453,6 @@ __weak void strike_pid_init(void)
 	//自己初始化发射机构(摩擦轮+发弹)的PID
 
 	//举例1:snail摩擦轮+2006拨弹
-	// pid_init(&m_launch.ang, 
-	// 				3.5,0,0,
-	// 				500,5000,-5000);
-	// pid_init(&m_launch.spe, 
-	// 				7.5,0,0,
-	// 				350,8000,-8000);
 
 	//举例2:3508摩擦轮+2006拨弹
 	// pid_init(&m_rub[0].spe,  
@@ -485,13 +479,14 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	gun->mode = STRICK_NOLIMITE | STRICK_LOWSPEED;				/*持续开火+低速高射频*/
 	gun->speed = 0;
 	gun->status = 0;
-	if(gun->mode == STRICK_NOLIMITE)
-	{tick_sleep = 50;}
-	else if(gun->mode == STRICK_SINGLE)
-	{tick_sleep = 300;}
-	else if(gun->mode == STRICK_TRIPLE)
-	{tick_sleep = 900;}
+	tick_sleep = 50;
 	//摩擦轮电机选择:
+	 pid_init(&m_launch.ang, 
+	 				5.5,0,0,
+	 				500,5000,-5000);
+	 pid_init(&m_launch.spe, 
+	 				7.5,0,0,
+	 				350,8000,-8000);
 	//1. Snail
 	//2. 3508屁股
 	#ifdef RUB_SNAIL
