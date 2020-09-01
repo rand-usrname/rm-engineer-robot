@@ -406,6 +406,6 @@ typedef struct __Robodata
 	uint16_t heat_42;                           //42mm实时热量
 	uint16_t heat_mobile;                       //机动17mm实时热量
 }Refdata_t;
-extern Refdata_t Refdata;
+extern Refdata_t *Refdata;
 int DJI_Init(void);
 #endif
