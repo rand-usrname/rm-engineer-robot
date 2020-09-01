@@ -17,6 +17,7 @@
 #include "main_thread.h"
 #include "drv_strike.h"
 #include "drv_aimbot.h"
+#include "drv_refsystem.h"
 int main(void)
 {
 	/* 等待陀螺仪就绪 */
@@ -30,6 +31,8 @@ int main(void)
 	/* 发射机构初始化 */
 	strike_init(&gun1,1000);
 	/* 视觉通信组件初始化 */
-	//vision_init();
+	vision_init();
+	/* 裁判系统初始化 */
+	DJI_Init();
 	return RT_EOK;
 }
