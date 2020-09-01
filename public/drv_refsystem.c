@@ -197,7 +197,7 @@ static rt_err_t DJI_DataProcess(uint8_t *pData, DJI_Data_t *DJI_ReadData)
 				}
 			
 				//Êý¾Ý´æ´¢ÔÚRobomaster
-				Refdata = (Refdata_t*)(&DJI_ReadData->ext_game_robot_state);
+				Refdata = (Refdata_t*)(&DJI_ReadData->ext_game_robot_state.robot_id);
 			}
 		if(*(pData + sizeof(FrameHeader_t) + LEN_CMDID + length + LEN_TAIL) == 0xA5)
 		{
