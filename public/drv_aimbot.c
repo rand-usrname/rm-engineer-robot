@@ -5,10 +5,10 @@
 /**********与视觉的通信部份***********/
 
 //视觉控制信息结构体
-static visual_head_t visual_head;
+visual_head_t visual_head;
 
 //视觉接收信息结构体
-static visual_rev_t visual_rev;
+ visual_rev_t visual_rev;
 /**
 * @brief：初始化视觉结构体
 * @param [in]	无
@@ -51,10 +51,10 @@ int refresh_visual_data(rt_uint8_t* data)
 	case BIG_WINDWILL:
 	case LOB_SHOT:
 		/* 校验信息 */
-	   if((rt_uint8_t)(data[1]+data[2]+data[3]+data[4]+data[5]+data[6]) == data[7])
+	   if((rt_uint8_t)(data[0]+data[1]+data[2]+data[3]+data[4]+data[5]+data[6]) == data[7])
 	   {
-			visual_rev.yawadd = (rt_int16_t)((data[0]<<8) + data[1]);
-			visual_rev.pitchadd = (rt_int16_t)((data[2]<<8) + data[3]);
+			visual_rev.yawadd = ((rt_int16_t)((data[0]<<8) + data[1]))/100.0f;
+			visual_rev.pitchadd = ((rt_int16_t)((data[2]<<8) + data[3]))/100.0f;
 			visual_rev.yaw_usetime = 0;
 			visual_rev.pitch_usetime = 0;
 	   }
@@ -65,7 +65,7 @@ int refresh_visual_data(rt_uint8_t* data)
 		break;
 	case ELEC_AIM:
 		/* 校验信息 */
-	    if((rt_uint8_t)(data[1]+data[2]+data[3]+data[4]+data[5]+data[6]) == data[7])
+	    if((rt_uint8_t)(data[0]+data[1]+data[2]+data[3]+data[4]+data[5]+data[6]) == data[7])
 		{
 			visual_rev.visual_point.x = ((rt_int16_t)((data[0]<<8) + data[1]))/1000.0f;
 			visual_rev.visual_point.y = ((rt_int16_t)((data[2]<<8) + data[3]))/1000.0f;
@@ -76,7 +76,7 @@ int refresh_visual_data(rt_uint8_t* data)
 		{}
 		break;
 	case ENGINEER_AMMO:  /* 工程取弹未定 */
-	default:	//若为其他情况默认返回
+	default:	/* 若为其他情况默认返回 */
 		break;
 	}
 	return 1;
@@ -162,12 +162,16 @@ int visual_ctl_UARTsend(rt_device_t dev,rt_int16_t yaw_ang,rt_int16_t pitch_ang,
 rt_int16_t get_yaw_add(void)
 {
 	visual_rev.yaw_usetime++;
-	return visual_rev.yawadd;
+	float temp = visual_rev.yawadd;
+	visual_rev.yawadd = 0;
+	return temp;
 }
 rt_int16_t get_pitch_add(void)
 {
 	visual_rev.pitch_usetime++;
-	return visual_rev.pitchadd;
+	float temp = visual_rev.pitchadd;
+	visual_rev.pitchadd = 0;
+	return temp;;
 }
 rt_int16_t get_yawusetime(void)
 {

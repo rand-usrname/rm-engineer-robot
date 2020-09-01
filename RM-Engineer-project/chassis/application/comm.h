@@ -15,7 +15,7 @@ typedef struct __gimbal_data{
 	chassis_mode_e     chassis_ctrl;
 	rt_uint16_t        follow_angle;             /* 跟随角度 */
 	rt_int16_t         angular_velocity;         /* 小陀螺转速(仅在不跟随模式设置） */
-	rt_uint8_t         rescue_cmd;               /* 拖车就绪状态 */
+	rt_uint8_t         rescue_cmd;               /* 拖车或刷卡就绪状态 */
 }gimbal_data_t;
 extern gimbal_data_t gimbal_ctrl_data;
 

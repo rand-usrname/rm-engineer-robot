@@ -52,8 +52,8 @@ typedef struct
 
 typedef struct
 {
-	rt_int16_t	yawadd;			//-32768 ~ 32767 标定数据
-	rt_int16_t	pitchadd;		//-32768 ~ 32767 标定角度
+	float	yawadd;			//-32768 ~ 32767 标定数据
+	float	pitchadd;		//-32768 ~ 32767 标定角度
 	rt_uint8_t	yaw_usetime;	//标记使用次数
 	rt_uint8_t	pitch_usetime;	//标记使用次数
 	Point_t	    visual_point;			//三点坐标，单位均为 m
@@ -81,6 +81,7 @@ extern rt_int16_t get_pitch_add(void);
 extern rt_int16_t get_yawusetime(void);
 extern rt_int16_t get_pitchusetime(void);
 
+extern visual_rev_t visual_rev;
 /***********与视觉通信的部分结束************/
 
 

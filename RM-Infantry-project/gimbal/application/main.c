@@ -17,6 +17,27 @@
 #include "drv_aimbot.h"
 #include "drv_strike.h"
 #include "robocontrol.h"
+void strike_pid_init(void)
+{
+	//自己初始化发射机构(摩擦轮+发弹)的PID
+
+	//举例1:snail摩擦轮+2006拨弹
+
+	//举例2:3508摩擦轮+2006拨弹
+	// pid_init(&m_rub[0].spe,  
+	// 				8.2,0.05,0,
+	// 				1200,14000,-14000);
+	// pid_init(&m_rub[1].spe, 
+	// 				8.2,0.05,0,
+	// 				1200,14000,-14000);
+	 pid_init(&m_launch.ang, 
+	 				3.5,0,0,
+	 				500,5000,-5000);
+	 pid_init(&m_launch.spe, 
+	 				7.5,0,0,
+	 				350,8000,-8000);
+
+}
 
 int main(void)
 {
@@ -25,6 +46,7 @@ int main(void)
 	gimbal_init();
 	strike_init(&gun1,1000);
 	vision_init();
+	strike_pid_init();
 	while(1)
 	{
 		

@@ -27,6 +27,7 @@ static void main_thread_entry(void * parameter)
 	{
 #ifdef GIMBAL_CTRL
 		/* 对底盘运动进行控制 */
+		sport_mode_set(gimbal_ctrl_data.chassis_ctrl);
 		chassis_speed_set(gimbal_ctrl_data.follow_angle,gimbal_ctrl_data.angular_velocity,gimbal_ctrl_data.x_speed,gimbal_ctrl_data.y_speed);
 		/* 对拖车进行控制 */
 		if((trailerl.state == rescue_unable)&&(trailerr.state == rescue_unable))
