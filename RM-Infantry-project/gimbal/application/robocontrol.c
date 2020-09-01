@@ -104,16 +104,15 @@ int remote_ctrl(RC_Ctrl_t *remote)
 	}
 	else//右侧按键不在上
 	{
-		//yaw增量设置，采用视觉数据或者遥控器数据
 		if(get_yawusetime() < 1){
-			yawadd = -get_yaw_add()/8;
+			yawadd = -get_yaw_add()/360.0f*8192;
 		}
 		else{
 			yawadd = -(rt_int16_t)((remote->Remote_Data.ch0 - 1024)/30);
 		}
 		//pitch增量设置，采用视觉数据或者遥控器数据
 		if(get_pitchusetime() < 1){
-			pitchadd = get_pitch_add()/8;
+			pitchadd = get_pitch_add()/360.0f*8192;
 		}
 		else{
 			pitchadd = (rt_int16_t)((remote->Remote_Data.ch1 - 1024)/30);
@@ -172,7 +171,19 @@ int remote_ctrl(RC_Ctrl_t *remote)
 			break;
 	}
 	//设置云台
-	gimbal_addangle_set(yawadd,pitchadd);
+	if(pitchadd!=0)
+	{
+		pitch.setang = (pitchadd+get_pitchangle());
+	}
+	if(yawadd!=0)
+	{
+		yaw.setang = (yawadd+get_yawangle());
+	}
+	yawadd = 0;
+	pitchadd = 0;
+	//保证数据不超过范围
+	yaw.setang %= 8192;
+	pitch.setang %= 8192;
 	return 1;
 }
 
