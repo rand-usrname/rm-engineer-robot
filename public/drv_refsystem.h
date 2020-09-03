@@ -383,28 +383,8 @@ typedef __packed struct
 
 typedef struct __Robodata
 {
-	uint8_t  robot_id;                          //机器人ID 可用于数据校验
-	uint8_t  robot_level;                       //机器人等级
-	uint16_t remain_HP;                         //剩余血量
-	uint16_t max_HP;                            //血量上限
-	uint16_t cooling_rate_17;                   // 17mm 冷却上限 单位 /s
-	uint16_t heat_limit_17;                     // 17mm 热量上限
-	uint16_t cooling_rate_42;                   // 42mm 冷却上限 单位 /s
-	uint16_t heat_limit_42;                     // 42mm 热量上限
-	uint8_t  speed_limit_17;                    // 17mm 子弹速度上限
-	uint8_t  speed_limit_42;                    // 42mm 子弹速度上限
-	uint8_t  max_chassic_power;                 // 底盘功率上限
-	uint8_t  mains_power_gimbal_output : 1;     // 云台供电状态
-	uint8_t  mains_power_chassis_output : 1;    // 底盘供电状态
-	uint8_t  mains_power_shooter_output : 1;    // 发射机构供电状态
-	
-	uint16_t chassis_volt;                      //底盘电压
-	uint16_t chassis_current;                   //底盘电流
-	float    chassis_power;                     //瞬时底盘功率 
-	uint16_t chassis_power_buffer;              //60焦耳缓冲能量
-	uint16_t heat_17;                           //17mm实时热量
-	uint16_t heat_42;                           //42mm实时热量
-	uint16_t heat_mobile;                       //机动17mm实时热量
+	ext_game_robot_state_t			  	 ref_robot_state;				    //0x0201
+	ext_power_heat_data_t		  		 ref_power_heat_data;				//0x0202
 }Refdata_t;
 extern Refdata_t *Refdata;
 int DJI_Init(void);
