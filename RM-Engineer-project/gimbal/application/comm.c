@@ -37,3 +37,18 @@ rt_size_t Send_chassis_data(rt_device_t dev)
 	txmsg.data[7] = chassis_ctrl_data.rescue_cmd;
 	return rt_device_write(dev, 0, &txmsg, sizeof(txmsg));
 }
+void Comm_Deinit(void)
+{
+	chassis_ctrl_data.angular_velocity = 0;
+	chassis_ctrl_data.chassis_ctrl = 0;
+	chassis_ctrl_data.follow_angle = 0;
+	chassis_ctrl_data.x_speed = 0;
+	chassis_ctrl_data.y_speed = 0;
+	chassis_ctrl_data.rescue_cmd = 0;
+	
+	ammo_ctrl_data.auto_ammo_one = 0;
+	ammo_ctrl_data.auto_ammo_three = 0;
+	ammo_ctrl_data.magazine_turn = 0;
+	ammo_ctrl_data.raise_cmd = 0;
+	ammo_ctrl_data.Reserved = 0;
+}

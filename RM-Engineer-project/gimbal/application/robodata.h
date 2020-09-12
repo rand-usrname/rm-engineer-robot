@@ -4,13 +4,16 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 #define RUB_SNAIL
-#define FIRE_ANGLE              50
+#define FIRE_ANGLE              60
 
-#define YAW_ZERO_ANGLE          6762
-#define PITCH_ZERO_ANGLE        7500
+#define YAW_ZERO_ANGLE          8186
+#define PITCH_ZERO_ANGLE        1347
 
-#define PITCH_MIN_ANGLE			-401
+#define PITCH_MIN_ANGLE			-410
 #define PITCH_MAX_ANGLE			590
+
+#define YAW_MIN_ANGLE           -5487
+#define YAW_MAX_ANGLE           1905
 
 typedef enum
 {
@@ -22,7 +25,7 @@ typedef enum
     GYRO_SPEED_ID = 0x102,
     LAUNCH_ID   = 0x201,
     YAW_ID      = 0x205,	//云台两电机数据更新ID
-    PITCH_ID    = 0x208
+    PITCH_ID    = 0x206
 
 }drv_can1ID_e;
 //底盘CAN1设备ID

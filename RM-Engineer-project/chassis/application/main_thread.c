@@ -27,23 +27,28 @@ static void main_thread_entry(void * parameter)
 	{
 #ifdef GIMBAL_CTRL
 		/* 对底盘运动进行控制 */
-		sport_mode_set(gimbal_ctrl_data.chassis_ctrl);
+		sport_mode_e sport_mode_state = 0;
+		if(gimbal_ctrl_data.chassis_ctrl == 0)
+		{
+			sport_mode_state = 0;
+		}
+		else if (gimbal_ctrl_data.chassis_ctrl == 1)
+		{
+			sport_mode_state = 1;
+		}
+		sport_mode_set(sport_mode_state);
 		chassis_speed_set(gimbal_ctrl_data.follow_angle,gimbal_ctrl_data.angular_velocity,gimbal_ctrl_data.x_speed,gimbal_ctrl_data.y_speed);
 		/* 对拖车进行控制 */
 		if((trailerl.state == rescue_unable)&&(trailerr.state == rescue_unable))
 		{
-		    trailerl.state = (((gimbal_ctrl_data.rescue_cmd)>>4)&0x0E);
-		    trailerr.state = (((gimbal_ctrl_data.rescue_cmd)>>4)&0x0E);
+		    trailerl.state = ((gimbal_ctrl_data.rescue_cmd)>>4);
+		    trailerr.state = ((gimbal_ctrl_data.rescue_cmd)>>4);
 		}
 		if(trailer_cur == 0x0F)
 		{trailer_go(&trailerl);}
 		else if(trailer_cur == 0xF0)
 		{trailer_go(&trailerr);}
 		trailer_cur = ~trailer_cur;
-		/* 刷卡复活 */
-		rt_uint8_t revive_card_cmd = ((gimbal_ctrl_data.rescue_cmd)&0x0E);
-		if(revive_card_cmd){REVIVE_CARD_SET;}
-		else{REVIVE_CARD_RESET;}
 #endif
 #ifdef SINGLE_CTRL
 		/* 对底盘进行控制 */
@@ -64,11 +69,6 @@ static void main_thread_entry(void * parameter)
 		else if(trailer_cur == 0xF0)
 		{trailer_go(&trailerr);}
 		trailer_cur = ~trailer_cur;
-		/* 刷卡控制 */
-		if(switch_s2_action == middle_to_up)
-		{	REVIVE_CARD_SET;}
-		else if(switch_s2_action == middle_to_down)
-		{	REVIVE_CARD_RESET;}
 		
 #endif
 		rt_thread_mdelay(10);

@@ -16,8 +16,9 @@ void can1_rec(struct rt_can_msg *msg)
         case GYRO_SPEED_ID:
             gyro_read_speed(msg);
             return;
-		
-		
+		case LAUNCH_ID:
+			motor_readmsg(msg,&m_launch.dji);
+			return;
         default:
 
             return;

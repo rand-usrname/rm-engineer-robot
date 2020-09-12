@@ -42,7 +42,7 @@ static int gimbalpid_cal(gimbalmotor_t* motor,int gyroangle,int gyropal,rt_uint8
 	switch (motor->control_mode)
 	{
 	case ANGLE:
-		if(angle_time > 9)
+		if(angle_time > 5)
 		{	
 			//次数达到10次再进行计算
 			motor->palpid.set = angpid_cal(motor,gyroangle);
@@ -72,6 +72,7 @@ static void task_1ms_IRQHandler(void *parameter)
 {
 	rt_sem_release(&gimbal_1ms_sem);
 }
+int yawang,yawpal,pitchang,pitchpal;
 static void gimbal_contral_thread(void* parameter)
 {
 	//初始化CAN控制帧
@@ -81,7 +82,7 @@ static void gimbal_contral_thread(void* parameter)
 	gimctl_msg.rtr	= RT_CAN_DTR;	//数据帧
 	gimctl_msg.priv = 0;			//报文优先级最高
 	gimctl_msg.len = 8;				//长度8
-	int yawang,yawpal,pitchang,pitchpal;
+//	int yawang,yawpal,pitchang,pitchpal;
 	//控制数据清零
 	for(int a = 0;a<8;a++)
 	{
@@ -95,7 +96,7 @@ static void gimbal_contral_thread(void* parameter)
 		rt_sem_take(&gimbal_1ms_sem, RT_WAITING_FOREVER);
 
 		//计数执行角度环，1-10共10个状态
-		if(angle_time > 9)
+		if(angle_time > 5)
 		{
 			angle_time = 0;
 		}
@@ -132,7 +133,7 @@ static void gimbal_contral_thread(void* parameter)
 			gimctl_msg.DATA[(rt_uint16_t)(DUAL_PITCH_ID - 0x205)*2 + 1] = (-yaw.palpid.out);
 		#endif
 
-		if(!rt_device_write(can1_dev,0,&gimctl_msg,sizeof(gimctl_msg)))
+		if(!rt_device_write(can2_dev,0,&gimctl_msg,sizeof(gimctl_msg)))
 		{
 			//如果发送数据为0计数一次发送失败，失败次数过多发出警告
 		}
@@ -148,6 +149,7 @@ static void gimbal_contral_thread(void* parameter)
 				0:初始化失败
 * @author：mqy
 */
+
 int gimbal_init(void)
 {
 	//初始化结构体数据
@@ -163,12 +165,12 @@ int gimbal_init(void)
 	pitch.setang = 4096;//初始化默认角度
 
 	//初始化PID
-	pid_init(&yaw.palpid,20,0.1,10,200,0X7FFF,-0X7FFF);
+	pid_init(&yaw.palpid,24,1,0,500,0X7FFF,-0X7FFF);
 	pid_init(&pitch.palpid,10,0,10,3000,0X7FFF,-0X7FFF);
 
-	pid_init(&yaw.angpid_gyro,10,0,0,3,20000,-20000);
+	pid_init(&yaw.angpid_gyro,18,0.1,0,60,20000,-20000);
 	pid_init(&yaw.angpid_dji,8,0.01,0,3,2000,-2000);
-	pid_init(&pitch.angpid_gyro,17,0.05,0,3,20000,-20000);
+	pid_init(&pitch.angpid_gyro,14,0.05,0,3,20000,-20000);
 	pid_init(&pitch.angpid_dji,10,0.04,0,5,2000,-2000);
 	
 	//初始化中断释放的信号量

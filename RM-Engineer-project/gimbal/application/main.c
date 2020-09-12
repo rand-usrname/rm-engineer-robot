@@ -18,6 +18,7 @@
 #include "drv_strike.h"
 #include "drv_aimbot.h"
 #include "drv_refsystem.h"
+#include "comm.h"
 int main(void)
 {
 	/* 等待陀螺仪就绪 */
@@ -33,6 +34,8 @@ int main(void)
 	/* 视觉通信组件初始化 */
 	vision_init();
 	/* 裁判系统初始化 */
-	DJI_Init();
+	//DJI_Init();
+	/* 云底 云抬通信组件初始化 */
+	Comm_Deinit();
 	return RT_EOK;
 }

@@ -7,7 +7,7 @@
 #include "comm.h"
 
 /* 云台控制模式 or 独立控制模式 */ /* 独立控制可与测试时使用 */
-#define   SINGLE_CTRL     //SINGLE_CTRL   GIMBAL_CTRL
+#define   GIMBAL_CTRL     //SINGLE_CTRL   GIMBAL_CTRL
 
 
 #ifdef MECANUM_WHEEL
@@ -25,9 +25,8 @@
 
 #endif
 
-#define YAW_ZERO_ANGLE          3360
-#define PITCH_ZERO_ANGLE        0
-
+#define YAW_ZERO_ANGLE          8186
+#define PITCH_ZERO_ANGLE        1347
 typedef enum
 {
     //发送
@@ -52,17 +51,12 @@ typedef enum
 typedef enum
 {
     //接收
-    YAW_ID      = 0x206,
-    PITCH_ID    = 0x207,
+    YAW_ID      = 0x205,
+    PITCH_ID    = 0x206,
 
     CHASSIS_CTL = 0x100
 }drv_can2ID_e;
 //底盘CAN2设备ID
 
-//底盘刷卡
-#define REVIVE_CARD_PIN    1
-#define REVIVE_CARD_INIT   rt_pin_mode(REVIVE_CARD_PIN,PIN_MODE_INPUT_PULLUP)
-#define REVIVE_CARD_SET    rt_pin_write(REVIVE_CARD_PIN,1)
-#define REVIVE_CARD_RESET  rt_pin_write(REVIVE_CARD_PIN,0)
 
 #endif

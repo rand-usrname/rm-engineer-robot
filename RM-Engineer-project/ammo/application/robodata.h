@@ -5,12 +5,15 @@
 #include <rtdevice.h>
 
 /* 云台控制模式 or 独立控制模式 */ /* 独立控制可与测试时使用 */
-#define   GIMBAL_CTRL     //SINGLE_CTRL   GIMBAL_CTRL
+#define   SINGLE_CTRL     //SINGLE_CTRL   GIMBAL_CTRL
 
 typedef enum
 {    
-	UPLIFT_LEFT  = 0x201,
-	UPLIFT_RIGHT = 0x202,
+	GRAP_LEFT    = 0x201,
+	GRAP_RIGHT   = 0x202,
+	UPLIFT_LEFT  = 0x203,
+	UPLIFT_RIGHT = 0x204,
+	FILTER_2006  = 0x205,
 }drv_can1ID_e;
 //底盘CAN1设备ID
 
@@ -18,9 +21,6 @@ typedef enum
 typedef enum
 {
 	GIMBAL_ID   = 0x101,
-	GRAP_LEFT   = 0x201,
-	GRAP_RIGHT  = 0x202,
-	FILTER_2006 = 0x203,
 }drv_can2ID_e;
 //底盘CAN2设备ID
 

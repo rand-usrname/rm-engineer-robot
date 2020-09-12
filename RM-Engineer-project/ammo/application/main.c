@@ -19,6 +19,9 @@
 
 int main(void)
 {
+	#ifdef SINGLE_CTRL
+	remote_uart_init();
+	#endif
 	/* 云台数据初始化 */
 	gimbal_ctrl_init();
 	/* 弹仓电机初始化 */
@@ -27,6 +30,8 @@ int main(void)
 	Ammo_init();
 	/* 主控制线程初始化 */
 	Main_Thread_init();
+	
+	/* 电磁阀GPIO测试 */
 	return RT_EOK;
 }
 	

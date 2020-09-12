@@ -4,7 +4,7 @@
 static rt_thread_t 		chassis_ctrl_handler 	= RT_NULL;
 
 //电机控制结构体，索引0对应最小ID
-static motor_t			chassis_motor[4];
+ motor_t			chassis_motor[4];
 
 //运动数据，包括云台两轴角度，期望速度等
 static chassis_data_t	motion_data;
@@ -184,14 +184,14 @@ static void chassis_control_thread(void* parameter)
 		wheelc_message.data[6] = chassis_motor[3].speedpid.out>>8;
 		wheelc_message.data[7] = chassis_motor[3].speedpid.out;
 		
-		if(!rt_device_write(can1_dev,0,&wheelc_message,sizeof(wheelc_message)))
-		{
-			//如果发送数据为0计数一次发送失败，失败次数过多发出警告
-		}
-		else
-		{
+//		if(!rt_device_write(can1_dev,0,&wheelc_message,sizeof(wheelc_message)))
+//		{
+//			//如果发送数据为0计数一次发送失败，失败次数过多发出警告
+//		}
+//		else
+//		{
 
-		}
+//		}
 	}
 }
 /**

@@ -1,5 +1,5 @@
 #include "ammo.h"
-
+#include "drv_canthread.h"
 Motor_t Raise[2];
 Motor_t Grap[2];
 
@@ -26,6 +26,7 @@ void grap_angle_set(rt_int8_t step)
 	motor_angle_set(&Grap[1],-step);
 }
 /******************如果抬升机构采取速度环*****************/
+/* 没用到 */
 void raise_speed_set(rt_int16_t speed)
 {
 	Raise[0].spe.set = speed;
@@ -36,7 +37,7 @@ void raise_speed_set(rt_int16_t speed)
 void grap_radio_angle_set(rt_int16_t angle)
 {
 	motor_angle_set(&Grap[0],angle);
-	motor_angle_set(&Grap[1],-angle);
+	motor_angle_set(&Grap[1],angle);
 }
 
 
@@ -60,7 +61,10 @@ static void task_10ms_IRQHandler(void *parameter)
 	rt_sem_release(&task_10ms_sem);
 }
 
-
+rt_int16_t speed_cur = 0;
+rt_int16_t speed_set = 0;
+rt_int16_t angle_cur = 0;
+rt_int16_t angle_set = 0;
 static void task_1ms_emtry(void *parameter)
 {
 	while(1)
@@ -74,10 +78,15 @@ static void task_1ms_emtry(void *parameter)
 		pid_output_calculate(&Raise[0].ang,Raise[0].ang.out,Raise[0].dji.speed);
 		pid_output_calculate(&Raise[1].ang,Raise[1].ang.out,Raise[1].dji.speed);
 		#endif
-		pid_output_calculate(&Grap[0].spe,Grap[0].ang.out,Grap[0].dji.speed);
+		//pid_output_calculate(&Grap[0].spe,Grap[0].ang.out,Grap[0].dji.speed);
 		pid_output_calculate(&Grap[1].spe,Grap[1].ang.out,Grap[1].dji.speed);
-		pid_output_calculate(&m_magazine.spe,m_magazine.ang.out,m_magazine.dji.speed);
+		//pid_output_calculate(&m_magazine.spe,m_magazine.ang.out,m_magazine.dji.speed);
+		speed_cur = Grap[1].dji.speed;
+		speed_set = Grap[1].spe.set;
+		angle_cur = Grap[1].dji.angle;
+		angle_set = Grap[1].ang.set;
 		/* 发送电流 */
+		//motor_current_send(can1_dev,0x200,-Grap[1].spe.out,Grap[1].spe.out,Raise[0].spe.out,Raise[1].spe.out);
 	}
 }
 static void task_10ms_emtry(void *parameter)
@@ -90,9 +99,9 @@ static void task_10ms_emtry(void *parameter)
 		pid_output_motor(&Raise[0].ang,Raise[0].ang.set,Raise[0].dji.angle);
 		pid_output_motor(&Raise[1].ang,Raise[1].ang.set,Raise[1].dji.angle);
 		#endif
-		pid_output_motor(&Grap[0].ang,Grap[0].ang.set,Grap[0].dji.angle);
+		//pid_output_motor(&Grap[0].ang,Grap[0].ang.set,Grap[0].dji.angle);
 		pid_output_motor(&Grap[1].ang,Grap[1].ang.set,Grap[1].dji.angle);
-		pid_output_motor(&m_magazine.ang,m_magazine.ang.set,m_magazine.dji.angle);
+		//pid_output_motor(&m_magazine.ang,m_magazine.ang.set,m_magazine.dji.angle);
 	}
 }
 
@@ -137,9 +146,27 @@ void Ammo_init(void)
 	
 	motor_init(&Raise[0],UPLIFT_LEFT,1);
 	motor_init(&Raise[1],UPLIFT_RIGHT,1);
-	motor_init(&Grap[0],GRAP_LEFT,1);
-	motor_init(&Grap[1],GRAP_RIGHT,1);
+	motor_init(&Grap[0],GRAP_LEFT,0.04);
+	motor_init(&Grap[1],GRAP_RIGHT,0.04);
 	/* PID 初始化 */
 	/* ...... */
+//	pid_init(&Grap[0].ang, 
+//					4,0,0,
+//					300,5000,-5000);
+//	pid_init(&Grap[0].spe, 
+//					10,0,0,
+//					300,8000,-8000);
+	/* 6 0.6 24 */
+	pid_init(&Grap[1].ang, 
+					6,0.1,3,
+					500,2000,-2000);
+	pid_init(&Grap[1].spe, 
+					5,0,0,
+					300,8000,-8000);
+	
+	pid_init(&Raise[0].spe,20,2,0,2000,15000,-15000);
+	pid_init(&Raise[1].spe,20,2,0,2000,15000,-15000);
 	Ammo_start();
+	/* 设置取弹机构的初始角度 */
+	Grap[1].ang.set = 600;
 }

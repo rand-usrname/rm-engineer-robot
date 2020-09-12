@@ -26,8 +26,6 @@ int main(void)
 #endif
 	/* 拖车初始化 */
 	trailer_start();
-	/* 电磁阀初始化 */
-	REVIVE_CARD_INIT;
 	/* 云台控制初始化 */
 	gimbal_ctrl_init();
 	/* 主控制线程初始化 */
