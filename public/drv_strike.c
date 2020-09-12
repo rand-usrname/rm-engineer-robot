@@ -1,18 +1,13 @@
 #include "drv_strike.h"
 #include "robodata.h"
 #include "drv_refsystem.h"
-#include "robocontrol.h"     //拨弹电机是否启动控制
 
 #define PWM_DEV_NAME        "pwm8"  	  /* PWM设备名称 */
 static struct rt_device_pwm *pwm_dev;	
 static struct rt_device_pwm *servo_dev;   /* 弹仓PWM设备名称 */
 Motor_t m_rub[2];
 Motor_t m_launch;
-#define BULLET_17_Q 10
-#define BULLET_42_Q 100
-static rt_tick_t tick = 0;
 static rt_tick_t tick_sleep = 0;		  /*拨弹电机间隔时间*/
-uint16_t overheat = 0;        //超热量测试标志位
 /**
  * @brief  摩擦电机初始化（tim的pwm初始化）
  * @retval RT_EOK or RT_ERROR(成功或失败)
@@ -68,8 +63,7 @@ void motor_servo_set(uint16_t duty)
 	rt_pwm_set(servo_dev, 2, 10000000,10000*duty);
 }
 
-Strike_t gun1 = {0};
-rt_int32_t heat_est;
+Strike_t gun1;
 /*热量控制函数，由用户根据实际编写*/
 void heat_control(Heatctrl_t *p_temp)
 {
@@ -79,7 +73,7 @@ void heat_control(Heatctrl_t *p_temp)
 		if(p_temp->unlimit_heat)
 		{
 			if(gun1.mode == STRICK_NOLIMITE)
-				{tick_sleep = 100;}
+				{tick_sleep = 50;}
 	        else if(gun1.mode == STRICK_TRIPLE)
 				{tick_sleep = 600;}
 			else if(gun1.mode == STRICK_SINGLE)
@@ -88,20 +82,23 @@ void heat_control(Heatctrl_t *p_temp)
 		/* 否则根据剩余热量对发弹间隔做出限制 */
 		else
 		{
-            //先计算下一次发射后的热量
-            heat_est = p_temp->heat_now;     //实时热量
+			/* 17mm */
+			#ifndef BULLET_42
+			rt_uint16_t now_furture = p_temp->now;
 			/* 3连发 */
+			//先计算下一次发射后的热量
 			if(gun1.mode == STRICK_TRIPLE)
 			{
 				/* 预估值可以再调整 */
-				heat_est += (3*p_temp->heating_rate);
+				now_furture += 30;
 			}
-			/* 全自动或单发 */
-			else
+			/* 全自动 */
+			else if(gun1.mode == STRICK_NOLIMITE)
 			{
-                heat_est += (p_temp->heating_rate);
+				//接下来100ms内如果一直发弹
+				now_furture += 1000/tick_sleep - p_temp->cool/10;
 			}
-			/*当前血量支持我超出多少热量*/
+			/* 当前血量支持我超出多少热量*/
 			rt_uint16_t more_heat = 0;
 			rt_uint16_t hp_furture = 0;
 //			if((now_furture < 2*(p_temp->max))&&(now_furture>p_temp->max))
@@ -121,31 +118,29 @@ void heat_control(Heatctrl_t *p_temp)
 			
 			//未超出热量仅判断模式选择tick_sleep
 			if(gun1.mode == STRICK_NOLIMITE)
-				{tick_sleep = 300;}
-				else if(gun1.mode == STRICK_TRIPLE)
-				{tick_sleep = 900;}
+				{tick_sleep = 50;}
+	        else if(gun1.mode == STRICK_TRIPLE)
+				{tick_sleep = 600;}
 			else if(gun1.mode == STRICK_SINGLE)
-				{tick_sleep = 300;}
+				{tick_sleep = 100;}
 			 //如果处于超出热量但未到余量的情况 对tick_sleep做出限制
 			 /* TODO */
-
+			 
 			/* 对超出的热量的情况做出控制 */
-			if(heat_est >= p_temp->ref_heat_limit)
+			if(now_furture >= p_temp->max+more_heat)
 			{
-				//gun1.status = STRICK_STOP;
-                overheat = 1;
+				gun1.status = STRICK_STOP;
 			}
 			else
 			{
-                overheat = 0;
-				//gun1.status &= ~STRICK_STOP;
+				gun1.status &= ~STRICK_STOP;
 			}
-////			#else
-////			if(gun1.mode == STRICK_SINGLE)
-////			{}
-////			else if(gun1.mode = STRICK_TRIPLE)
-////			{}
-////			#endif
+			#else
+			if(gun1.mode == STRICK_SINGLE)
+			{}
+			else if(gun1.mode = STRICK_TRIPLE)
+			{}
+			#endif
 		}
 	}
 }
@@ -166,59 +161,47 @@ static __inline void heatctrl_cool(Heatctrl_t *heat)
 	if(heat->now > heat->max){heat->now = heat->max;}
 }
 #endif
-/* 用于接收消息的信号量 */
-static struct rt_semaphore heat_10ms_sem;     						
-/*10ms任务*/
-static struct rt_timer heat_10ms;
-/* task_10ms 超时函数 */
-static void heat_10ms_IRQHandler(void *parameter)
-{
-	rt_sem_release(&heat_10ms_sem);
-}
+
 /**
  * @brief  热量控制线程
  */
 static void heatctrl_thread(void *parameter)
 {
-	Heatctrl_t *p_heat_temp;
+	Heatctrl_t *p_temp = p_heat;
 	while(1)
 	{
-        rt_sem_take(&heat_10ms_sem, RT_WAITING_FOREVER);
-		p_heat_temp = p_heat;
-        while(!(p_heat_temp == RT_NULL))
-        {
-            /* 更新热量 */
-            #ifdef BULLET_17
-            p_heat_temp->heat_now       = Refdata->ref_power_heat_data.shooter_heat0;
-            p_heat_temp->ref_heat_limit = Refdata->ref_robot_state.shooter_heat0_cooling_limit + 0.4*10*250/Refdata->ref_robot_state.max_HP;
-            p_heat_temp->heating_rate   = BULLET_17_Q;	//每发17mm弹丸发热量
-            p_heat_temp->cooling_rate   = Refdata->ref_robot_state.shooter_heat0_cooling_rate/10;
-            #endif
-            #ifdef MOBILE_17 /* 工程发射机构 */
-            p_heat_temp->heat_now       = Refdata->ref_power_heat_data.shooter_heat0;
-            p_heat_temp->ref_heat_limit = 150;
-            p_heat_temp->heating_rate   = BULLET_17_Q;	//每发17mm弹丸发热量
-            p_heat_temp->cooling_rate   = Refdata->ref_robot_state.shooter_heat0_cooling_rate/10;
-            #endif
-            #ifdef BULLET_42
-            p_heat_temp->heat_now       = Refdata->ref_power_heat_data.shooter_heat1;
-            p_heat_temp->ref_heat_limit = Refdata->ref_robot_state.shooter_heat1_cooling_limit;
-            p_heat_temp->heating_rate   = BULLET_42_Q;	//每发42mm弹丸发热量
-            p_heat_temp->cool           = Refdata->ref_robot_state.shooter_heat1_cooling_rate/10;
-            #endif
-
-            p_heat_temp->heat_remain_percent = (100 * (p_heat_temp->ref_heat_limit - p_heat_temp->heat_now)) / p_heat_temp->ref_heat_limit;
-
-
-            /*热量控制*/
-            heat_control(p_heat_temp);					
-            #if LOCAL_HEAT_ENABLE
-            heatctrl_cool(p_heat_temp);					/*冷却*/
-            #endif
-            p_heat_temp = p_heat_temp->next;
-        }
-        rt_thread_mdelay(HEAT_PERIOD);
-    }
+		p_temp = p_heat;
+	 while(!(p_temp == RT_NULL))
+	 {
+		 /* 更新热量 */
+		 #ifdef BULLET_17
+		 p_temp->now = Refdata.heat_17;
+		 p_temp->max = Refdata.heat_limit_17;
+		 p_temp->cool = Refdata.cooling_rate_17;
+		 #endif
+		 #ifdef MOBILE_17 /* 工程发射机构 */
+		 p_temp->now = Refdata.heat_17;
+		 p_temp->cool = Refdata.cooling_rate_17;
+		 p_temp->max = 150;
+		 #endif
+		 #ifdef BULLET_42
+		 p_temp->now = Refdata.heat_42;
+		 p_temp->max = Refdata.heat_limit_42;
+		 p_temp->cool = Refdata.cooling_rate_42;
+		 #endif
+		 
+		 p_temp->rate = (100 * (p_temp->max-p_temp->now)) / p_temp->max;
+		 
+		 
+		 /*热量控制*/
+		 heat_control(p_temp);					
+		 #if LOCAL_HEAT_ENABLE
+		 heatctrl_cool(p_temp);					/*冷却*/
+		 #endif
+		 p_temp = p_temp->next;
+	 }
+	 rt_thread_mdelay(HEAT_PERIOD);
+ }
 }
 /**
  * @brief  热量参数设置
@@ -229,28 +212,23 @@ void heatctrl_init(Heatctrl_t *heat, rt_uint32_t max)
 {
 	static rt_uint8_t num = 0;
 	
-	/*设置超热量热量上限*/
-	//heat->ref_heat_limit = max + 0.4*10*250/Refdata->max_HP;
-    heat->ref_heat_limit = max + 0.4*10*250/Refdata->ref_robot_state.max_HP;
+	/*设置热量上限*/
+	heat->max = max;
 	/*状态量初始化*/
-	heat->heat_remain_percent = 100;
-	heat->heat_now = 0;
+	heat->rate = 100;
+	heat->now = 0;
 	heat->unlimit_heat = 0;
-	heat->overheat_permit = 0;
+	
 	/*如果使能本地热量计算*/
 	#if LOCAL_HEAT_ENABLE
-	heat->cooling_rate = 10;
+	heat->cool = 10;
 	heat->buff = 1;
 	#endif
-	/*开启热量控制线程*/
-	heatctrl_start();
+	
 	/*如果不是第一次初始化，则进行控制结构的单向链表连接*/
-//	if(num > 0)
-//	{
-//		p_heat->next = heat;
-//	}
+	if(num > 0){p_heat->next = heat;}
 	p_heat = heat;
-//	num++;
+	num++;
 }
 /**
  * @brief  开始热量控制（创建热量控制线程）
@@ -258,19 +236,10 @@ void heatctrl_init(Heatctrl_t *heat, rt_uint32_t max)
 void heatctrl_start(void)
 {
 	rt_thread_t thread;
-	rt_sem_init(&heat_10ms_sem, "heat_10ms_sem", 0, RT_IPC_FLAG_FIFO);
-	rt_timer_init(&heat_10ms,
-				  "heat_10mstask",
-				   heat_10ms_IRQHandler,
-				   RT_NULL,
-				   10, RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
-	 /* 启动定时器 */
-	rt_timer_start(&heat_10ms);
-	
-	thread = rt_thread_create("heatctrl", heatctrl_thread, RT_NULL, 1024, 1, 1);
+	thread = rt_thread_create("heatctrl", heatctrl_thread, RT_NULL, 1024, 2, 1);
 	if (thread != RT_NULL)
 	{
-		rt_thread_startup(thread);
+			rt_thread_startup(thread);
 	}
 }
 /************************************ End **************************************************/
@@ -345,8 +314,9 @@ void strike_stuck(Motor_t *motor, Strike_t *gun)
  * @param  gun：发射机构结构体指针
  * @param  if_fire：是否开火,1开火，0不开
  */
-void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t *if_fire)
+void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire)
 {
+	static rt_tick_t tick = 0;										/*记录系统时间*/
 	/* 如果摩擦轮速度小于一定值 */
 	if(ABS(gun->speed) < 11)
 	{
@@ -361,31 +331,24 @@ void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t *if_fire)
 	{
 		motor->ang.set = motor->dji.angle;
 		return;
-	}
-    
+	}						
 	if(rt_tick_get() - tick < tick_sleep){return;}					/*开火期间和休息期间，参数不允许改动，直接返回**/
 	else
 	{
-		if(*if_fire && overheat == 0)
+		if(if_fire==1)
 		{
 			/*一次发弹数量*/
-			if(gun->mode /*&*/== STRICK_NOLIMITE)							/*不停转动*/
+			if(gun->mode & STRICK_NOLIMITE)							/*不停转动*/
 			{									/*间隔时间*/
 				motor_angle_set(motor, FIRE_ANGLE);
-                if(*if_fire > 1)
-                {
-                    *if_fire = 0;
-                }
 			}
-			else if(gun->mode /*&*/== STRICK_SINGLE)						/*单发*/
+			else if(gun->mode & STRICK_SINGLE)						/*单发*/
 			{
 				motor_angle_set(motor, FIRE_ANGLE);
-                *if_fire = 0;
 			}
-			else if(gun->mode /*&*/== STRICK_TRIPLE)						/*三连发*/
+			else if(gun->mode & STRICK_TRIPLE)						/*三连发*/
 			{
 				motor_angle_set(motor, FIRE_ANGLE*3);
-                *if_fire = 0;
 			}
 			tick = rt_tick_get();
 		}
@@ -434,7 +397,7 @@ static void task_1ms_entry(void *parameter)
 		motor_current_send(can1_dev,0x1FF,launch_6020_cur[0],launch_6020_cur[1],launch_6020_cur[2],launch_6020_cur[3]);
 		#else   //2006拨弹
 		send_current[(LAUNCH_ID-0x201)] = m_launch.spe.out;
-		motor_current_send(can1_dev,LAUNCH_CTL,send_current[0],send_current[1],send_current[2],send_current[3]);
+		//motor_current_send(can2_dev,STDID_launch,send_current[0],send_current[1],send_current[2],send_current[3]);
 		#endif
 	}
 }
@@ -443,7 +406,6 @@ static void task_10ms_entry(void *parameter)
 	while(1)
 	{
 		rt_sem_take(&task_10ms_sem, RT_WAITING_FOREVER);
-        strike_fire(&m_launch, &gun1, &launch_multiple);
 		pid_output_motor(&m_launch.ang,m_launch.ang.set,m_launch.dji.angle);
 	}
 }
@@ -491,12 +453,6 @@ __weak void strike_pid_init(void)
 	//自己初始化发射机构(摩擦轮+发弹)的PID
 
 	//举例1:snail摩擦轮+2006拨弹
-	// pid_init(&m_launch.ang, 
-	// 				3.5,0,0,
-	// 				500,5000,-5000);
-	// pid_init(&m_launch.spe, 
-	// 				7.5,0,0,
-	// 				350,8000,-8000);
 
 	//举例2:3508摩擦轮+2006拨弹
 	// pid_init(&m_rub[0].spe,  
@@ -520,17 +476,17 @@ __weak void strike_pid_init(void)
  */
 void strike_init(Strike_t *gun, rt_uint32_t max)
 {
-    gun->mode = STRICK_NOLIMITE;
-//	gun->mode = STRICK_NOLIMITE | STRICK_LOWSPEED;				/*持续开火+低速高射频*/
-//	gun->speed = 0;
-//	gun->status = 0;
-//////	if(gun->mode == STRICK_NOLIMITE)
-//////	{tick_sleep = 300;}
-//////	else if(gun->mode == STRICK_SINGLE)
-//////	{tick_sleep = 300;}
-//////	else if(gun->mode == STRICK_TRIPLE)
-//////	{tick_sleep = 900;}
+	gun->mode = STRICK_NOLIMITE | STRICK_LOWSPEED;				/*持续开火+低速高射频*/
+	gun->speed = 0;
+	gun->status = 0;
+	tick_sleep = 50;
 	//摩擦轮电机选择:
+	 pid_init(&m_launch.ang, 
+	 				5.5,0,0,
+	 				500,5000,-5000);
+	 pid_init(&m_launch.spe, 
+	 				7.5,0,0,
+	 				350,8000,-8000);
 	//1. Snail
 	//2. 3508屁股
 	#ifdef RUB_SNAIL
@@ -541,8 +497,7 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	#endif
 
 	//	motor_servo_init();
-    m_launch.ang.set = m_launch.dji.angle;   //拨弹电机初值
-	motor_init(&m_launch,LAUNCH_CTL,0.018);    //0.027973
+	motor_init(&m_launch,LAUNCH_ID,0.027973);
 
 	strike_pid_init();
 

@@ -90,33 +90,30 @@ int computer_ctrl(RC_Ctrl_t *remote)
 * @return：		yaw轴角度，格式0-8191
 * @author：mqy
 */
+rt_int16_t pitchadd = 0;
+ rt_int16_t yawadd = 0;
 int remote_ctrl(RC_Ctrl_t *remote)
 {
-	rt_int16_t pitchadd = 0;
-	rt_int16_t yawadd = 0;
-	
 	//状态触发部分
 	//S2状态触发
 	if(remote->Remote_Data.s2 == 1)//右侧案件在上
 	{
 		//使用电脑数据进行操作，屏蔽其他控制
-		return 0;//computer_ctrl(remote);
-	}
-	else//右侧按键不在上
-	{
 		if(get_yawusetime() < 1){
 			yawadd = -get_yaw_add()/360.0f*8192;
 		}
-		else{
-			yawadd = -(rt_int16_t)((remote->Remote_Data.ch0 - 1024)/30);
-		}
-		//pitch增量设置，采用视觉数据或者遥控器数据
 		if(get_pitchusetime() < 1){
 			pitchadd = get_pitch_add()/360.0f*8192;
 		}
-		else{
-			pitchadd = (rt_int16_t)((remote->Remote_Data.ch1 - 1024)/30);
-		}
+	}
+	else//右侧按键不在上
+	{
+		//yaw增量设置，采用视觉数据或者遥控器数据
+		yawadd = -(rt_int16_t)((remote->Remote_Data.ch0 - 1024)/15);
+		//pitch增量设置，采用视觉数据或者遥控器数据
+		pitchadd = (rt_int16_t)((remote->Remote_Data.ch1 - 1024)/15);
+		if(pitchadd<8&&pitchadd>-8){pitchadd = 0;}
+		if(yawadd<8&&yawadd>-8){yawadd = 0;}
 	}
 	
 	//动作触发部分
@@ -170,14 +167,13 @@ int remote_ctrl(RC_Ctrl_t *remote)
 			chassis_ctl(0,0,0,0);
 			break;
 	}
-	//设置云台
 	if(pitchadd!=0)
 	{
-		pitch.setang = (pitchadd+get_pitchangle());
+		pitch.setang = pitchadd+get_pitchangle();
 	}
 	if(yawadd!=0)
 	{
-		yaw.setang = (yawadd+get_yawangle());
+		yaw.setang = yawadd+get_yawangle();
 	}
 	yawadd = 0;
 	pitchadd = 0;
@@ -186,4 +182,5 @@ int remote_ctrl(RC_Ctrl_t *remote)
 	pitch.setang %= 8192;
 	return 1;
 }
+
 

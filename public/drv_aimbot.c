@@ -159,14 +159,14 @@ int visual_ctl_UARTsend(rt_device_t dev,rt_int16_t yaw_ang,rt_int16_t pitch_ang,
 * @return：返回函数名对应的含义
 * @author：mqy
 */
-rt_int16_t get_yaw_add(void)
+float get_yaw_add(void)
 {
 	visual_rev.yaw_usetime++;
 	float temp = visual_rev.yawadd;
 	visual_rev.yawadd = 0;
 	return temp;
 }
-rt_int16_t get_pitch_add(void)
+float get_pitch_add(void)
 {
 	visual_rev.pitch_usetime++;
 	float temp = visual_rev.pitchadd;

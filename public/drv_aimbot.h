@@ -76,8 +76,8 @@ extern int visual_ctl_UARTsend(rt_device_t dev,rt_int16_t yaw_ang,rt_int16_t pit
 extern int visual_ctl_CANsend(rt_int16_t yaw_ang,rt_int16_t pitch_ang,float bullet_vel);
 
 //使用视觉控制数据调用的函数
-extern rt_int16_t get_yaw_add(void);
-extern rt_int16_t get_pitch_add(void);
+extern float get_yaw_add(void);
+extern float get_pitch_add(void);
 extern rt_int16_t get_yawusetime(void);
 extern rt_int16_t get_pitchusetime(void);
 

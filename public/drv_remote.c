@@ -36,7 +36,7 @@ void RCReadKeyBoard_Data(RC_Ctrl_t *RC_CtrlData)
 }
 void RemoteDataProcess(uint8_t *pData, RC_Ctrl_t *RC_CtrlData)
 {
-	int i;
+	int i = 0;
 	uint8_t s1 = 0;
 	uint8_t s2 = 0;
 	uint16_t ch0 = 0;

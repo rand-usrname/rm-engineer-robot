@@ -23,31 +23,17 @@
 /*机构状态*/
 #define STRICK_STUCK		    0x01							/*卡弹*/
 #define STRICK_STOP				0x02							/*禁止发射*/
-///*热量控制结构体*/
-//typedef struct _Heatctrl_t
-//{
-//	rt_int32_t 					now;							/*现在热量*/
-//	rt_uint32_t 				max;							/*热量上限*/
-//	rt_int8_t 					rate;							/*当前剩余热量百分比*/
-//	rt_uint8_t                  unlimit_heat;                   /* 无视热量发弹 */
-//	struct _Heatctrl_t *next;							        /*下个热量控制块*/
-//	rt_uint8_t 				cool;							    /*枪口冷却值*/
-//}Heatctrl_t;
-
 /*热量控制结构体*/
 typedef struct _Heatctrl_t
 {
-	rt_int32_t 					heat_now;						/*现在热量*/
-	rt_uint32_t					ref_heat_limit;					/*裁判系统热量限上限*/
-	rt_uint32_t 				over_heat_limit;				/*过热热量上限*/
-	rt_int8_t 					heat_remain_percent;			/*当前剩余热量百分比*/
-	rt_uint8_t					heating_rate;					/*发弹枪口加热值*/
-	rt_uint8_t 				    cooling_rate;					/*100ms枪口冷却值*/
-	rt_uint8_t                  unlimit_heat;                   /*无视热量发弹*/
-	rt_uint8_t					overheat_permit;				/*允许超热量标志位*/
-	struct _Heatctrl_t          *next;						    /*下个热量控制块*/
-	
+	rt_int32_t 					now;							/*现在热量*/
+	rt_uint32_t 				max;							/*热量上限*/
+	rt_int8_t 					rate;							/*当前剩余热量百分比*/
+	rt_uint8_t                  unlimit_heat;                   /* 无视热量发弹 */
+	struct _Heatctrl_t *next;							        /*下个热量控制块*/
+	rt_uint8_t 				cool;							    /*枪口冷却值*/
 }Heatctrl_t;
+
 
 /*发射机构结构体*/
 typedef struct
@@ -84,5 +70,5 @@ __weak void strike_pid_init(void);
 void strike_stuck(Motor_t *motor, Strike_t *gun);
 /*对于多枪管，需要重新再定义一个相同作用函数，待修改*/
 /*设置模式并开火*/
-void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t *if_fire);
+void strike_fire(Motor_t *motor, Strike_t *gun, rt_uint8_t if_fire);
 #endif
