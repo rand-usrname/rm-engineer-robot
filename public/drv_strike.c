@@ -397,7 +397,7 @@ static void task_1ms_entry(void *parameter)
 		motor_current_send(can1_dev,0x1FF,launch_6020_cur[0],launch_6020_cur[1],launch_6020_cur[2],launch_6020_cur[3]);
 		#else   //2006²¦µ¯
 		send_current[(LAUNCH_ID-0x201)] = m_launch.spe.out;
-		//motor_current_send(can2_dev,STDID_launch,send_current[0],send_current[1],send_current[2],send_current[3]);
+		motor_current_send(can2_dev,STDID_launch,send_current[0],send_current[1],send_current[2],send_current[3]);
 		#endif
 	}
 }
@@ -481,8 +481,14 @@ void strike_init(Strike_t *gun, rt_uint32_t max)
 	gun->status = 0;
 	tick_sleep = 50;
 	//Ä¦²ÁÂÖµç»úÑ¡Ôñ:
+	 pid_init(&m_rub[0].spe,  
+	 				8.2,0.05,0,
+	 				1200,14000,-14000);
+	 pid_init(&m_rub[1].spe, 
+	 				8.2,0.05,0,
+	 				1200,14000,-14000);
 	 pid_init(&m_launch.ang, 
-	 				5.5,0,0,
+	 				3.5,0,0,
 	 				500,5000,-5000);
 	 pid_init(&m_launch.spe, 
 	 				7.5,0,0,
