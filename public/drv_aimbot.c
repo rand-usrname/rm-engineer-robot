@@ -29,7 +29,7 @@ int vision_init(void)
 	visual_rev.pitch_usetime = 0;
 
 	//控制信息置为默认值
-	visual_head.aim_mode = NORMAL_AIM;
+	visual_head.aim_mode = SMALL_WINDWILL;
 	visual_head.tracolor = RED;
 
 	return 1;

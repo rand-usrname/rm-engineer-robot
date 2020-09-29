@@ -46,12 +46,19 @@ int main(void)
 	gimbal_init();
 	strike_init(&gun1,1000);
 	vision_init();
+<<<<<<< HEAD
 	strike_pid_init();
+=======
+>>>>>>> 2847d183ebe255e6e65b8f62f146679a52becd9d
 	while(1)
 	{
 		
 		remote_ctrl(&RC_data);
+<<<<<<< HEAD
 		visual_ctl_CANsend((8191 - yaw.motordata.angle)*36000/8192,gimbal_atti.pitch*100,20.0f);
+=======
+		visual_ctl_CANsend((8191 - yaw.motordata.angle)*36000/8191,gimbal_atti.pitch*36000/360,20000);
+>>>>>>> 2847d183ebe255e6e65b8f62f146679a52becd9d
 		rt_thread_mdelay(10);
 	}
 }
