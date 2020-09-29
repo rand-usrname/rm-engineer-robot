@@ -39,7 +39,7 @@ void gimbal_ctrl_init(void)
 	gimbal_ctrl_data.x_speed = 0;
 	gimbal_ctrl_data.y_speed = 0;
 	gimbal_ctrl_data.angular_velocity = 0;
-	gimbal_ctrl_data.chassis_ctrl = Follow;
+	gimbal_ctrl_data.chassis_ctrl = No_Follow;
 	gimbal_ctrl_data.follow_angle = 0;
 	gimbal_ctrl_data.rescue_cmd = 0x01;
 }

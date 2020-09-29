@@ -35,7 +35,7 @@ extern ammo_data_t ammo_ctrl_data;
 extern chassis_data_t chassis_ctrl_data;
 
 rt_size_t Send_ammo_data(rt_device_t dev);
-rt_size_t Send_chassis_data(rt_device_t dev);
+rt_size_t Send_chassis_data(rt_device_t dev,chassis_data_t *chassis_ctrl_data);
 
 void Comm_Deinit(void);
 #endif

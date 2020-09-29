@@ -41,8 +41,8 @@ static void main_thread_entry(void * parameter)
 		/* 对拖车进行控制 */
 		if((trailerl.state == rescue_unable)&&(trailerr.state == rescue_unable))
 		{
-		    trailerl.state = ((gimbal_ctrl_data.rescue_cmd)>>4);
-		    trailerr.state = ((gimbal_ctrl_data.rescue_cmd)>>4);
+		    trailerl.state = (rt_uint8_t)((gimbal_ctrl_data.rescue_cmd)>>4);
+		    trailerr.state = (rt_uint8_t)((gimbal_ctrl_data.rescue_cmd)>>4);
 		}
 		if(trailer_cur == 0x0F)
 		{trailer_go(&trailerl);}

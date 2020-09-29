@@ -89,8 +89,9 @@ static void main_thread_entry(void * parameter)
 //		}
 		gimbal_addangle_set(yaw_add,pitch_add);
 		
-		chassis_ctrl_data.x_speed = (RC_data.Remote_Data.ch2 - 1024)*1.5;
-		chassis_ctrl_data.y_speed = (RC_data.Remote_Data.ch3 - 1024)*1.5;
+		/* ¿ØÖÆµ×ÅÌ */
+		chassis_ctrl_data.x_speed = (RC_data.Remote_Data.ch2 - 1024)*1;
+		chassis_ctrl_data.y_speed = (RC_data.Remote_Data.ch3 - 1024)*1;
 		chassis_ctrl_data.angular_velocity = 0;
 		chassis_ctrl_data.follow_angle = 0;
 		if(s2_action == middle_to_down)
@@ -100,7 +101,7 @@ static void main_thread_entry(void * parameter)
 			else if(chassis_ctrl_data.chassis_ctrl == Follow)
 				chassis_ctrl_data.chassis_ctrl = No_Follow;
 		}
-		Send_chassis_data(can2_dev);
+		Send_chassis_data(can2_dev,&chassis_ctrl_data);
 #endif
 		
 		rt_thread_mdelay(20);

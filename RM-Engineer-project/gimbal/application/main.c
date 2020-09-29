@@ -22,6 +22,8 @@
 int main(void)
 {
 	/* 等待陀螺仪就绪 */
+	Comm_Deinit();
+	
 	while(!HERO_IMU.atti_ready);
 	/* 遥控器初始化 */
 	remote_uart_init();
@@ -36,6 +38,5 @@ int main(void)
 	/* 裁判系统初始化 */
 	//DJI_Init();
 	/* 云底 云抬通信组件初始化 */
-	Comm_Deinit();
 	return RT_EOK;
 }
